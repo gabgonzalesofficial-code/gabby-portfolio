@@ -33,7 +33,7 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 cursor-pointer"
       onClick={onClose}
     >
       {/* Backdrop */}
@@ -50,7 +50,7 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
             <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition p-1 rounded-lg hover:bg-gray-100"
+              className="text-gray-400 hover:text-gray-600 transition p-1 rounded-lg hover:bg-gray-100 cursor-pointer"
               aria-label="Close modal"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

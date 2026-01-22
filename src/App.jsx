@@ -27,6 +27,7 @@ function App() {
   // Get recent certifications (first 4)
   const recentCertifications = certifications.slice(0, 4)
 
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header Section */}
@@ -61,7 +62,7 @@ function App() {
               {/* Email */}
               <a 
                 href={`mailto:${profileInfo.contact.email}`}
-                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
+                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition cursor-pointer"
               >
                 <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -72,7 +73,7 @@ function App() {
               {/* Mobile */}
               <a 
                 href={`tel:${profileInfo.contact.mobile.replace(/\s/g, '')}`}
-                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
+                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition cursor-pointer"
               >
                 <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -85,13 +86,119 @@ function App() {
                 href={profileInfo.contact.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition"
+                className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition cursor-pointer"
               >
                 <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
                 </svg>
                 <span className="text-sm">LinkedIn Profile</span>
               </a>
+
+              {/* Donation Button */}
+              <button
+                onClick={() => {
+                  setModalContent({
+                    title: 'Support My Work',
+                    content: (
+                      <div className="space-y-6">
+                        <p className="text-gray-700 text-center">{profileInfo.donation.message}</p>
+                        
+                        {/* GCash Section */}
+                        <div className="border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-green-50">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                              <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                              </svg>
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900">GCash</h3>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between bg-white rounded-lg p-3">
+                              <span className="text-sm text-gray-600">Mobile Number:</span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono font-semibold text-gray-900">{profileInfo.donation.gcash.number}</span>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(profileInfo.donation.gcash.number)
+                                    alert('GCash number copied to clipboard!')
+                                  }}
+                                  className="text-blue-600 hover:text-blue-700 cursor-pointer"
+                                  title="Copy number"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between bg-white rounded-lg p-3">
+                              <span className="text-sm text-gray-600">Account Name:</span>
+                              <span className="font-semibold text-gray-900">{profileInfo.donation.gcash.name}</span>
+                            </div>
+                            <a
+                              href={`gcash://pay?number=${profileInfo.donation.gcash.number.replace(/\s/g, '')}`}
+                              className="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-2 px-4 rounded-lg transition cursor-pointer font-medium"
+                            >
+                              Open GCash App
+                            </a>
+                          </div>
+                        </div>
+
+                        {/* PayPal Section */}
+                        <div className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                              <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.13 6.537-6.983 6.537h-2.87c-.748 0-1.127.363-1.305.838l-1.17 3.279a1.098 1.098 0 0 1-.104.24.327.327 0 0 1-.112.12c-.04.025-.092.041-.148.041H9.43a.582.582 0 0 1-.536-.352L7.077 21.337zm1.461-13.966c-.073.01-.145.026-.213.05-.07.023-.14.05-.2.08-.06.03-.11.064-.15.1-.04.038-.07.08-.09.13-.02.05-.03.1-.03.15v.12l.57 3.074.04.2c.01.05.03.09.06.13.03.04.07.07.11.09.05.02.1.03.15.03h2.85c.08 0 .15-.01.2-.04.05-.02.1-.05.13-.1l.06-.1.38-2.28.04-.2c0-.05-.01-.1-.03-.15-.02-.05-.05-.09-.09-.13-.04-.04-.09-.07-.15-.1a1.26 1.26 0 0 0-.2-.08 1.2 1.2 0 0 0-.21-.05h-2.73z"/>
+                              </svg>
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900">PayPal</h3>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                              <span className="text-sm text-gray-600">Email:</span>
+                              <span className="font-semibold text-gray-900">{profileInfo.donation.paypal.email}</span>
+                            </div>
+                            <p className="text-xs text-gray-600 mb-2">Quick amounts:</p>
+                            <div className="grid grid-cols-3 gap-2 mb-3">
+                              {profileInfo.donation.paypal.defaultAmounts.map((amount) => (
+                                <a
+                                  key={amount}
+                                  href={`${profileInfo.donation.paypal.link}/${amount}${profileInfo.donation.paypal.currency}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3 py-2 rounded-lg border-2 border-gray-200 hover:border-blue-500 text-gray-700 hover:text-blue-600 transition cursor-pointer font-medium text-center text-sm"
+                                >
+                                  ₱{amount.toLocaleString()}
+                                </a>
+                              ))}
+                            </div>
+                            <a
+                              href={profileInfo.donation.paypal.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg transition cursor-pointer font-medium"
+                            >
+                              Donate via PayPal (Custom Amount)
+                            </a>
+                            <p className="text-xs text-gray-500 text-center">
+                              Accepts credit/debit cards and PayPal balance
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                  setIsModalOpen(true)
+                }}
+                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition cursor-pointer mt-4 pt-4 border-t border-gray-200"
+              >
+                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                <span className="text-sm font-medium">Support My Work</span>
+              </button>
             </div>
           </div>
         </div>
@@ -203,7 +310,7 @@ function App() {
                     })
                     setIsModalOpen(true)
                   }}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium transition"
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium transition cursor-pointer"
                 >
                   View All
                 </button>
@@ -232,7 +339,7 @@ function App() {
                 {memberships.map((org) => (
                   <li key={org.id} className="flex items-center justify-between text-gray-700">
                     <span>{org.name}</span>
-                    <a href={org.url} target="_blank" rel="noopener noreferrer">
+                    <a href={org.url} target="_blank" rel="noopener noreferrer" className="cursor-pointer">
                       <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
@@ -269,7 +376,7 @@ function App() {
                 </div>
                 <button
                   onClick={() => setGalleryIndex((prev) => (prev > 0 ? prev - 1 : galleryImages.length - 1))}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg cursor-pointer"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -277,7 +384,7 @@ function App() {
                 </button>
                 <button
                   onClick={() => setGalleryIndex((prev) => (prev < galleryImages.length - 1 ? prev + 1 : 0))}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg cursor-pointer"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -289,7 +396,7 @@ function App() {
                   <button
                     key={img.id}
                     onClick={() => setGalleryIndex(idx)}
-                    className={`w-2 h-2 rounded-full ${
+                    className={`w-2 h-2 rounded-full cursor-pointer ${
                       idx === galleryIndex ? 'bg-gray-900' : 'bg-gray-300'
                     }`}
                   />
@@ -344,7 +451,7 @@ function App() {
                   <div key={project.id} className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition">
                     <h3 className="font-semibold text-gray-900 mb-1">{project.name}</h3>
                     <p className="text-gray-600 text-sm mb-2">{project.description}</p>
-                    <a href={`https://${project.url}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
+                    <a href={`${project.url}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1 cursor-pointer">
                       {project.url}
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -382,7 +489,7 @@ function App() {
               </div>
             </section>
 
-            {/* Social Links Section */}
+            {/* Social Links Section 
             <section className="bg-white border border-gray-200 rounded-lg p-6">
               <div className="flex items-center gap-3 mb-4">
                 <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -407,8 +514,8 @@ function App() {
                 ))}
               </div>
             </section>
-
-            {/* Speaking Section */}
+*/}
+            {/* Speaking Section 
             <section className="bg-white border border-gray-200 rounded-lg p-6">
               <div className="flex items-center gap-3 mb-4">
                 <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -425,9 +532,9 @@ function App() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
         </button>
-            </section>
+            </section>*/}
 
-            {/* Contact Section */}
+            {/* Contact Section 
             <section className="bg-white border border-gray-200 rounded-lg p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Contact</h2>
               <div className="space-y-4">
@@ -457,6 +564,7 @@ function App() {
                 </a>
               </div>
             </section>
+            */}
           </div>
         </div>
       </main>
@@ -469,7 +577,7 @@ function App() {
       </footer>
 
       {/* Floating Chat Button */}
-      <button className="fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-gray-800 transition flex items-center gap-2 z-50">
+      <button className="fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-gray-800 transition flex items-center gap-2 z-50 cursor-pointer">
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>

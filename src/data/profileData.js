@@ -1,14 +1,37 @@
 // Profile Information
+import profileImage from '../assets/PP.png'
+import gcashQR from '../assets/QRgcash.png'
+
 export const profileInfo = {
   name: 'Gabriel Gonzales',
   location: 'Cebu City, Philippines',
   title: 'Web/WordPress Developer',
-  profileImage: 'src/assets/PP.png',
+  profileImage: profileImage,
   verified: false,
   contact: {
     email: 'gabgonzalesofficial@gmail.com',
     mobile: '+63 945 804 7946',
-    linkedin: 'https://linkedin.com/in/gabrielgonzales'
+    linkedin: 'https://www.linkedin.com/in/gabriel-gonzales-9733ab1a3'
+  },
+  donation: {
+    gcash: {
+      number: '09458047946',
+      name: 'Gabriel Gonzales',
+      qrCode: gcashQR // You can add a QR code image path here later
+    },
+    paypal: {
+      email: 'jibrilgon@gmail.com',
+      link: 'https://paypal.me/jibrilgonza', // Update with your PayPal link
+      // Default donation amounts (in PHP)
+      defaultAmounts: [100, 500, 1000, 2000, 5000],
+      currency: 'PHP'
+    },
+    paymaya: {
+      number: '', // Add your PayMaya number if you have one
+      name: 'Gabriel Gonzales',
+      qrCode: null // You can add a QR code image path here later
+    },
+    message: 'Thank you for your support! Your donation helps me continue creating great content and projects.'
   }
 }
 
@@ -69,6 +92,7 @@ export const techStack = {
     { name: 'jQuery', icon: 'jquery' },
     { name: 'Vue.js', icon: 'vue' },
     { name: 'React', icon: 'react' },
+    { name: 'Next.js', icon: 'nextjs' },
     { name: 'Tailwind CSS', icon: 'tailwind' },
     { name: 'Vite', icon: 'vite' },
     { name: 'JSON', icon: 'json' }
@@ -83,14 +107,16 @@ export const techStack = {
   ],
   database: [
     { name: 'MySQL', icon: 'mysql' },
-    { name: 'SQL', icon: 'sql' }
+    { name: 'SQL', icon: 'sql' },
+    { name: 'Supabase', icon: 'supabase' }
   ],
   tools: [
     { name: 'Git', icon: 'git' },
     { name: 'GitHub', icon: 'github' },
     { name: 'Bitbucket', icon: 'bitbucket' },
     { name: 'VS Code', icon: 'vscode' },
-    { name: 'Cursor', icon: 'cursor' }
+    { name: 'Cursor', icon: 'cursor' },
+    { name: 'Vercel', icon: 'vercel' }
   ],
   aiTools: [
     { name: 'Gemini AI Studio', icon: 'gemini', description: 'AI Integration' },
@@ -138,10 +164,9 @@ export const galleryImages = [
 export const experience = [
   { id: 1, role: 'Senior Web/WordPress Developer', company: 'Proweaver Inc.', year: '2023 - Present' },
   { id: 2, role: 'Salesforce Automation Testing Intern', company: 'Accenture', year: '2023 - 2023' },
-  { id: 3, role: 'Role 3', company: '', year: '2023' },
-  { id: 4, role: 'Role 4', company: 'Company 4', year: '2021' },
-  { id: 5, role: 'Role 5', company: 'Company 5', year: '2020' },
-  { id: 6, role: 'Role 6', company: 'Company 6', year: '2019' }
+  { id: 3, role: 'B.S. in Computer Science', company: 'University of Southern Philippines Foundation (graduate)', year: '2019 - 2023' },
+  { id: 4, role: 'Student Projects Developer', company: 'Freelance', year: '2016 - 2018' },
+  { id: 5, role: 'B.S. in Computer Science', company: 'University of Philippines College Cebu (non-graduate)', year: '2012 - 2015' }
 ]
 
 // Projects
@@ -149,16 +174,16 @@ export const projects = [
   { id: 1, name: 'AI Form Converter', description: 'Using Laravel Vue and Gemini AI Studio to convert forms to using AI to read references', url: 'project1.com' },
   { id: 2, name: 'Roseatte', description: 'A WordPress website I made for my girlfriend', url: 'project2.com' },
   { id: 3, name: 'Form Conversion Tool', description: 'A tool I developed using react to for form conversion', url: 'https://formconversiontool.vercel.app/' },
-  { id: 4, name: 'Project 4', description: 'Project description placeholder', url: 'project4.com' }
+  { id: 4, name: 'KB App 4', description: 'Knowledge Base App using Next.js and Supabase', url: 'https://kb-app-five.vercel.app/' }
 ]
 
 // Recommendations
 export const recommendations = [
   {
     id: 1,
-    quote: 'Recommendation text placeholder.',
-    author: 'Name',
-    position: 'Title at Company',
+    quote: 'Gabriel is a goal-oriented individual who consistently delivers high-quality outputs. He works independently, takes initiative in completing his tasks, and is always willing to extend a helping hand to his colleagues.',
+    author: 'Claudine Benitez',
+    position: 'Supervisor at Proweaver Inc.',
     active: true
   },
   {
