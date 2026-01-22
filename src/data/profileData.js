@@ -1,6 +1,6 @@
 // Profile Information
 import profileImage from '../assets/PP.png'
-import gcashQR from '../assets/QRgcash.png'
+import gcashQR from '../assets/QRgcash.jpg'
 
 export const profileInfo = {
   name: 'Gabriel Gonzales',
