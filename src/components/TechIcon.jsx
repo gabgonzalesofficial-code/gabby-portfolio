@@ -22,6 +22,11 @@ import {
   SiBitbucket,
   SiVscodium,
   SiVercel,
+  SiWordpress,
+  SiSalesforce,
+  SiFormspree,
+  SiPython,
+  SiSelenium,
   SiOpenai,
   SiGoogle
 } from 'react-icons/si'
@@ -54,6 +59,11 @@ function TechIcon({ name, className = "w-5 h-5" }) {
     bitbucket: SiBitbucket,
     vscode: SiVscodium,
     vercel: SiVercel,
+    wordpress: SiWordpress,
+    salesforce: SiSalesforce,
+    formspree: SiFormspree,
+    python: SiPython,
+    selenium: SiSelenium,
     cursor: FaCode,
     gemini: SiGoogle,
     chatgpt: SiOpenai

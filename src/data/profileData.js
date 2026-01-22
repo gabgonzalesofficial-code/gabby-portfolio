@@ -7,7 +7,7 @@ export const profileInfo = {
   location: 'Cebu City, Philippines',
   title: 'Web/WordPress Developer',
   profileImage: profileImage,
-  verified: false,
+  verified: true,
   contact: {
     email: 'gabgonzalesofficial@gmail.com',
     mobile: '+63 945 804 7946',
@@ -101,9 +101,17 @@ export const techStack = {
     { name: 'PHP', icon: 'php' },
     { name: 'Laravel', icon: 'laravel' },
     { name: 'Java', icon: 'java' },
+    { name: 'Python', icon: 'python' },
     { name: 'C', icon: 'c' },
     { name: 'C++', icon: 'cpp' },
     { name: 'C#', icon: 'csharp' }
+  ],
+  crmCms: [
+    { name: 'WordPress', icon: 'wordpress' },
+    { name: 'Salesforce', icon: 'salesforce' }
+  ],
+  automation: [
+    { name: 'Selenium', icon: 'selenium' }
   ],
   database: [
     { name: 'MySQL', icon: 'mysql' },
@@ -116,7 +124,8 @@ export const techStack = {
     { name: 'Bitbucket', icon: 'bitbucket' },
     { name: 'VS Code', icon: 'vscode' },
     { name: 'Cursor', icon: 'cursor' },
-    { name: 'Vercel', icon: 'vercel' }
+    { name: 'Vercel', icon: 'vercel' },
+    { name: 'Formspree', icon: 'formspree' }
   ],
   aiTools: [
     { name: 'Gemini AI Studio', icon: 'gemini', description: 'AI Integration' },
@@ -188,9 +197,9 @@ export const recommendations = [
   },
   {
     id: 2,
-    quote: 'Another recommendation text placeholder.',
-    author: 'Name 2',
-    position: 'Title at Company 2',
+    quote: 'An exceptional web developer at Proweaver, he consistently delivers high-quality work backed by strong technical expertise, keen attention to detail, and a solid understanding of modern web standards. Highly skilled yet very approachable, he is always willing to help, share knowledge, and step up whenever the team needs support—his many meaningful contributions have played a vital role in improving workflows and driving the team’s overall growth. From my perspective as his Team Leader, his professionalism, reliability, and collaborative mindset make him a valuable asset to the company and a developer any organization would be fortunate to have.',
+    author: 'Christopher Perez',
+    position: 'Team Leader at Proweaver Inc.',
     active: false
   },
   {
