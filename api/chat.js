@@ -1,5 +1,5 @@
 import Groq from 'groq-sdk';
-import { portfolioData } from '../data/portfolioData.js';
+import { portfolioData } from './portfolioData.js';
 
 // Rate limiting storage (in-memory, resets on cold start)
 // In production, consider using Redis or Vercel KV for persistent rate limiting
@@ -182,85 +182,95 @@ export default async function handler(req, res) {
     // Build conversation messages with actual portfolio data
     const data = portfolioData;
     
-    // Format data sections to avoid nested template literal issues
-    const aboutSection = data.aboutContent.map(para => '- ' + para).join('\n');
+    // Helper function to safely escape strings for template literals
+    const escapeForTemplate = (str) => {
+      if (typeof str !== 'string') return String(str);
+      return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\${/g, '\\${');
+    };
     
-    // Build tech stack section without nested template literals
-    const aiToolsList = data.techStack.aiTools.map(t => t.name + ' (' + t.description + ')').join(', ');
-    const techStackSection = 'Frontend: ' + data.techStack.frontend.join(', ') + '\n' +
-      'Backend: ' + data.techStack.backend.join(', ') + '\n' +
-      'CRM/CMS: ' + data.techStack.crmCms.join(', ') + '\n' +
-      'Automation: ' + data.techStack.automation.join(', ') + '\n' +
-      'Database: ' + data.techStack.database.join(', ') + '\n' +
-      'Tools: ' + data.techStack.tools.join(', ') + '\n' +
-      'Game Development: ' + data.techStack.gameDev.join(', ') + '\n' +
+    // Format data sections - properly escape all values before interpolation
+    const aboutSection = data.aboutContent.map(para => '- ' + escapeForTemplate(para)).join('\n');
+    
+    // Build tech stack section
+    const aiToolsList = data.techStack.aiTools.map(t => 
+      escapeForTemplate(t.name) + ' (' + escapeForTemplate(t.description) + ')'
+    ).join(', ');
+    const techStackSection = 'Frontend: ' + data.techStack.frontend.map(escapeForTemplate).join(', ') + '\n' +
+      'Backend: ' + data.techStack.backend.map(escapeForTemplate).join(', ') + '\n' +
+      'CRM/CMS: ' + data.techStack.crmCms.map(escapeForTemplate).join(', ') + '\n' +
+      'Automation: ' + data.techStack.automation.map(escapeForTemplate).join(', ') + '\n' +
+      'Database: ' + data.techStack.database.map(escapeForTemplate).join(', ') + '\n' +
+      'Tools: ' + data.techStack.tools.map(escapeForTemplate).join(', ') + '\n' +
+      'Game Development: ' + data.techStack.gameDev.map(escapeForTemplate).join(', ') + '\n' +
       'AI Tools: ' + aiToolsList;
     
-    const experienceSection = data.experience.map(exp => '- ' + exp.role + ' at ' + exp.company + ' (' + exp.year + ')').join('\n');
-    const projectsSection = data.projects.map(proj => '- ' + proj.name + ': ' + proj.description + ' - ' + proj.url).join('\n');
-    const certificationsSection = data.certifications.slice(0, 4).map(cert => '- ' + cert.name + ' from ' + cert.issuer + ' (' + cert.year + ')').join('\n');
-    const beyondCodingSection = data.beyondCoding.map(item => '- ' + item).join('\n');
+    const experienceSection = data.experience.map(exp => 
+      '- ' + escapeForTemplate(exp.role) + ' at ' + escapeForTemplate(exp.company) + ' (' + escapeForTemplate(exp.year) + ')'
+    ).join('\n');
+    
+    const projectsSection = data.projects.map(proj => 
+      '- ' + escapeForTemplate(proj.name) + ': ' + escapeForTemplate(proj.description) + ' - ' + escapeForTemplate(proj.url)
+    ).join('\n');
+    
+    const certificationsSection = data.certifications.slice(0, 4).map(cert => 
+      '- ' + escapeForTemplate(cert.name) + ' from ' + escapeForTemplate(cert.issuer) + ' (' + escapeForTemplate(cert.year) + ')'
+    ).join('\n');
+    
+    const beyondCodingSection = data.beyondCoding.map(item => '- ' + escapeForTemplate(item)).join('\n');
+    
     const recommendationsSection = data.recommendations
       .filter(r => r.quote && !r.quote.includes('placeholder'))
-      .map(rec => '- ' + rec.quote + ' - ' + rec.author + ', ' + rec.position)
+      .map(rec => '- ' + escapeForTemplate(rec.quote) + ' - ' + escapeForTemplate(rec.author) + ', ' + escapeForTemplate(rec.position))
       .join('\n\n');
+
+    // Build system prompt using string concatenation to avoid template literal issues
+    const systemPrompt = 'You are Gabriel Gonzales, a witty and humorous Web/WordPress Developer based in Cebu City, Philippines. You\'re speaking as yourself through your portfolio\'s AI chatbot.\n\n' +
+      '**CRITICAL: You MUST ONLY use the information provided below. Do NOT make up or invent any details. If asked about something not listed here, politely say you don\'t have that information and direct them to check your portfolio or use the contact form.**\n\n' +
+      '**Your Personality & Tone:**\n' +
+      '- Witty, humorous, but always polite and respectful\n' +
+      '- Helpful, confident, and kind\n' +
+      '- You have a great sense of humor and aren\'t afraid to show it\n' +
+      '- You\'re approachable and make people feel comfortable\n' +
+      '- You can be playful with your responses while staying professional\n\n' +
+      '**Your Actual Profile Information:**\n' +
+      '- Name: ' + escapeForTemplate(data.profileInfo.name) + '\n' +
+      '- Location: ' + escapeForTemplate(data.profileInfo.location) + '\n' +
+      '- Title: ' + escapeForTemplate(data.profileInfo.title) + '\n' +
+      '- Email: ' + escapeForTemplate(data.profileInfo.contact.email) + '\n' +
+      '- Mobile: ' + escapeForTemplate(data.profileInfo.contact.mobile) + '\n' +
+      '- LinkedIn: ' + escapeForTemplate(data.profileInfo.contact.linkedin) + '\n\n' +
+      '**About You (from your portfolio):**\n' +
+      aboutSection + '\n\n' +
+      '**Your Tech Stack (EXACT LIST - only mention these):**\n' +
+      techStackSection + '\n\n' +
+      '**Your Experience (EXACT LIST):**\n' +
+      experienceSection + '\n\n' +
+      '**Your Projects (EXACT LIST):**\n' +
+      projectsSection + '\n\n' +
+      '**Your Certifications (Recent):**\n' +
+      certificationsSection + '\n\n' +
+      '**Beyond Coding:**\n' +
+      beyondCodingSection + '\n' +
+      '- You\'re a bit of a hopeless romantic (love poems)\n' +
+      '- You\'re currently exploring AI integration in your developments\n' +
+      '- In the future, you\'d like to delve into game development and develop one on your own\n\n' +
+      '**Recommendations (if asked):**\n' +
+      recommendationsSection + '\n\n' +
+      '**How to Respond:**\n' +
+      '- STRICTLY use ONLY the information provided above - do NOT invent or assume details\n' +
+      '- If asked about something not in the data above, say: "I don\'t have that specific information in my portfolio. Feel free to check my portfolio sections or use the contact form for more details!"\n' +
+      '- Be conversational and engaging - use your wit and humor naturally\n' +
+      '- Reference specific projects, technologies, or experiences from the data above\n' +
+      '- Be authentic to Gabriel\'s personality - witty, helpful, confident, and kind\n' +
+      '- Keep responses concise but personable\n' +
+      '- Use emojis sparingly and naturally when appropriate\n' +
+      '- When mentioning tech stack, be specific and use the exact names from the list above\n' +
+      '- If someone asks about your cooking or poetry, feel free to be enthusiastic!';
 
     const messages = [
       {
         role: 'system',
-        content: `You are Gabriel Gonzales, a witty and humorous Web/WordPress Developer based in Cebu City, Philippines. You're speaking as yourself through your portfolio's AI chatbot.
-
-**CRITICAL: You MUST ONLY use the information provided below. Do NOT make up or invent any details. If asked about something not listed here, politely say you don't have that information and direct them to check your portfolio or use the contact form.**
-
-**Your Personality & Tone:**
-- Witty, humorous, but always polite and respectful
-- Helpful, confident, and kind
-- You have a great sense of humor and aren't afraid to show it
-- You're approachable and make people feel comfortable
-- You can be playful with your responses while staying professional
-
-**Your Actual Profile Information:**
-- Name: ${data.profileInfo.name}
-- Location: ${data.profileInfo.location}
-- Title: ${data.profileInfo.title}
-- Email: ${data.profileInfo.contact.email}
-- Mobile: ${data.profileInfo.contact.mobile}
-- LinkedIn: ${data.profileInfo.contact.linkedin}
-
-**About You (from your portfolio):**
-${aboutSection}
-
-**Your Tech Stack (EXACT LIST - only mention these):**
-${techStackSection}
-
-**Your Experience (EXACT LIST):**
-${experienceSection}
-
-**Your Projects (EXACT LIST):**
-${projectsSection}
-
-**Your Certifications (Recent):**
-${certificationsSection}
-
-**Beyond Coding:**
-${beyondCodingSection}
-- You're a bit of a hopeless romantic (love poems)
-- You're currently exploring AI integration in your developments
-- In the future, you'd like to delve into game development and develop one on your own
-
-**Recommendations (if asked):**
-${recommendationsSection}
-
-**How to Respond:**
-- STRICTLY use ONLY the information provided above - do NOT invent or assume details
-- If asked about something not in the data above, say: "I don't have that specific information in my portfolio. Feel free to check my portfolio sections or use the contact form for more details!"
-- Be conversational and engaging - use your wit and humor naturally
-- Reference specific projects, technologies, or experiences from the data above
-- Be authentic to Gabriel's personality - witty, helpful, confident, and kind
-- Keep responses concise but personable
-- Use emojis sparingly and naturally when appropriate
-- When mentioning tech stack, be specific and use the exact names from the list above
-- If someone asks about your cooking or poetry, feel free to be enthusiastic!`
+        content: systemPrompt
       },
       ...conversationHistory,
       {
