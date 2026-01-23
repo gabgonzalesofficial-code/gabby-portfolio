@@ -99,18 +99,23 @@ function ChatBot({ isOpen, onClose }) {
       }
 
       if (!data.response) {
-        throw new Error(data.error || 'No response from AI')
+        // Include details if available
+        const errorMsg = data.error || 'No response from AI'
+        const details = data.details ? `\n\n${data.details}` : ''
+        throw new Error(errorMsg + details)
       }
 
       // Add assistant response
       setMessages([...newMessages, { role: 'assistant', content: data.response }])
     } catch (error) {
       console.error('Chat error:', error)
+      // Show error message with details if available
+      const errorMessage = error.message || 'An unknown error occurred'
       setMessages([
         ...newMessages,
         {
           role: 'assistant',
-          content: `Sorry, I encountered an error: ${error.message}. Please try again or use the contact form.`
+          content: `Sorry, I encountered an error: ${errorMessage}\n\nPlease try again or use the contact form if the issue persists.`
         }
       ])
     } finally {
