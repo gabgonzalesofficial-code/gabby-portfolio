@@ -44,12 +44,26 @@ cd my-portfolio
 npm install
 ```
 
-3. Start the development server:
-```bash
-npm run dev
-```
+3. Set up environment variables (for chatbot):
+   - Create a `.env` file in the root directory
+   - Add your Groq API key:
+     ```
+     GROQ_API_KEY=your_groq_api_key_here
+     ```
+   - Get your API key from [Groq Console](https://console.groq.com/)
 
-4. Open [http://localhost:5173](http://localhost:5173) in your browser
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+   
+   **Note:** For local development with the chatbot API, use Vercel CLI:
+   ```bash
+   npm install -g vercel
+   vercel dev
+   ```
+
+5. Open [http://localhost:5173](http://localhost:5173) in your browser
 
 ### Build for Production
 
@@ -78,8 +92,12 @@ The chatbot will be available via the floating chat button in the bottom-right c
 
 ```
 my-portfolio/
-├── api/                # Serverless API routes
+├── api/                # Serverless API routes (Vercel)
 │   └── chat.js         # Groq API integration
+├── docs/               # Documentation
+│   ├── CHATBOT_SETUP.md
+│   ├── TROUBLESHOOTING.md
+│   └── VERCEL_SETUP.md
 ├── src/
 │   ├── components/     # Reusable components
 │   │   ├── Modal.jsx
@@ -93,7 +111,6 @@ my-portfolio/
 │   └── index.css       # Global styles
 ├── public/             # Public assets
 ├── vercel.json         # Vercel configuration
-├── .env.example        # Environment variables template
 └── package.json        # Dependencies
 ```
 
@@ -106,6 +123,13 @@ All content is stored in `src/data/profileData.js`. Simply edit this file to upd
 - Projects
 - Certifications
 - And more!
+
+## Documentation
+
+Additional documentation is available in the `docs/` folder:
+- `CHATBOT_SETUP.md` - Complete chatbot setup guide
+- `TROUBLESHOOTING.md` - Troubleshooting common issues
+- `VERCEL_SETUP.md` - Vercel deployment and environment variable setup
 
 ## License
 

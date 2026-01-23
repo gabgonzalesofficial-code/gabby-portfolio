@@ -9,14 +9,10 @@ import {
   techStack,
   beyondCoding,
   certifications,
-  memberships,
   galleryImages,
   experience,
   projects,
   recommendations,
-  socialLinks,
-  speaking,
-  contactInfo,
   footer
 } from './data/profileData'
 

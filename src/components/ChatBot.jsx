@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
 function ChatBot({ isOpen, onClose }) {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: "Hello! I'm an AI assistant here to help you learn about Gabriel Gonzales. Feel free to ask me about his skills, experience, projects, or anything else! 👋"
+      content: "Hey there! 👋 I'm Gabriel, and I'm here to chat! Ask me about my work, my tech stack, my love for cooking (and poetry, if you're into that sort of thing 😄), or anything else you're curious about. I'm pretty adaptable, so fire away!"
     }
   ])
   const [input, setInput] = useState('')
@@ -20,11 +20,12 @@ function ChatBot({ isOpen, onClose }) {
   // Focus input when chat opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
-      setTimeout(() => inputRef.current.focus(), 100)
+      const timer = setTimeout(() => inputRef.current?.focus(), 100)
+      return () => clearTimeout(timer)
     }
   }, [isOpen])
 
-  const handleSend = async (e) => {
+  const handleSend = useCallback(async (e) => {
     e.preventDefault()
     
     if (!input.trim() || isLoading) return
@@ -123,14 +124,18 @@ function ChatBot({ isOpen, onClose }) {
       // Refocus input after sending
       setTimeout(() => inputRef.current?.focus(), 100)
     }
-  }
+  }, [messages, isLoading])
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend(e)
     }
-  }
+  }, [handleSend])
+
+  const handleInputChange = useCallback((e) => {
+    setInput(e.target.value)
+  }, [])
 
   if (!isOpen) return null
 
@@ -209,7 +214,7 @@ function ChatBot({ isOpen, onClose }) {
               ref={inputRef}
               type="text"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={handleInputChange}
               onKeyPress={handleKeyPress}
               placeholder="Type your message..."
               disabled={isLoading}
