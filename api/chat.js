@@ -182,17 +182,17 @@ export default async function handler(req, res) {
     // Build conversation messages with actual portfolio data
     const data = portfolioData;
     
-    // Format tech stack for easy reference
-    const allTechStack = [
-      ...data.techStack.frontend,
-      ...data.techStack.backend,
-      ...data.techStack.crmCms,
-      ...data.techStack.automation,
-      ...data.techStack.database,
-      ...data.techStack.tools,
-      ...data.techStack.gameDev,
-      ...data.techStack.aiTools.map(t => t.name)
-    ].join(', ');
+    // Format data sections to avoid nested template literal issues
+    const aboutSection = data.aboutContent.map(para => `- ${para}`).join('\n');
+    const techStackSection = `Frontend: ${data.techStack.frontend.join(', ')}\nBackend: ${data.techStack.backend.join(', ')}\nCRM/CMS: ${data.techStack.crmCms.join(', ')}\nAutomation: ${data.techStack.automation.join(', ')}\nDatabase: ${data.techStack.database.join(', ')}\nTools: ${data.techStack.tools.join(', ')}\nGame Development: ${data.techStack.gameDev.join(', ')}\nAI Tools: ${data.techStack.aiTools.map(t => `${t.name} (${t.description})`).join(', ')}`;
+    const experienceSection = data.experience.map(exp => `- ${exp.role} at ${exp.company} (${exp.year})`).join('\n');
+    const projectsSection = data.projects.map(proj => `- ${proj.name}: ${proj.description} - ${proj.url}`).join('\n');
+    const certificationsSection = data.certifications.slice(0, 4).map(cert => `- ${cert.name} from ${cert.issuer} (${cert.year})`).join('\n');
+    const beyondCodingSection = data.beyondCoding.map(item => `- ${item}`).join('\n');
+    const recommendationsSection = data.recommendations
+      .filter(r => r.quote && !r.quote.includes('placeholder'))
+      .map(rec => `- ${rec.quote} - ${rec.author}, ${rec.position}`)
+      .join('\n\n');
 
     const messages = [
       {
@@ -217,35 +217,28 @@ export default async function handler(req, res) {
 - LinkedIn: ${data.profileInfo.contact.linkedin}
 
 **About You (from your portfolio):**
-${data.aboutContent.map(para => `- ${para}`).join('\n')}
+${aboutSection}
 
 **Your Tech Stack (EXACT LIST - only mention these):**
-Frontend: ${data.techStack.frontend.join(', ')}
-Backend: ${data.techStack.backend.join(', ')}
-CRM/CMS: ${data.techStack.crmCms.join(', ')}
-Automation: ${data.techStack.automation.join(', ')}
-Database: ${data.techStack.database.join(', ')}
-Tools: ${data.techStack.tools.join(', ')}
-Game Development: ${data.techStack.gameDev.join(', ')}
-AI Tools: ${data.techStack.aiTools.map(t => `${t.name} (${t.description})`).join(', ')}
+${techStackSection}
 
 **Your Experience (EXACT LIST):**
-${data.experience.map(exp => `- ${exp.role} at ${exp.company} (${exp.year})`).join('\n')}
+${experienceSection}
 
 **Your Projects (EXACT LIST):**
-${data.projects.map(proj => `- ${proj.name}: ${proj.description} - ${proj.url}`).join('\n')}
+${projectsSection}
 
 **Your Certifications (Recent):**
-${data.certifications.slice(0, 4).map(cert => `- ${cert.name} from ${cert.issuer} (${cert.year})`).join('\n')}
+${certificationsSection}
 
 **Beyond Coding:**
-${data.beyondCoding.map(item => `- ${item}`).join('\n')}
+${beyondCodingSection}
 - You're a bit of a hopeless romantic (love poems)
 - You're currently exploring AI integration in your developments
 - In the future, you'd like to delve into game development and develop one on your own
 
 **Recommendations (if asked):**
-${data.recommendations.filter(r => r.quote && !r.quote.includes('placeholder')).map(rec => `- "${rec.quote}" - ${rec.author}, ${rec.position}`).join('\n\n')}
+${recommendationsSection}
 
 **How to Respond:**
 - STRICTLY use ONLY the information provided above - do NOT invent or assume details
