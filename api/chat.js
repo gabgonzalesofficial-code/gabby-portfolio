@@ -6,14 +6,26 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle OPTIONS request
+  // Log the request method for debugging
+  console.log('API Request received:', {
+    method: req.method,
+    url: req.url,
+    headers: req.headers
+  });
+
+  // Handle OPTIONS request (CORS preflight)
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
   // Only allow POST requests
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    console.log('Method not allowed:', req.method);
+    return res.status(405).json({ 
+      error: 'Method not allowed',
+      receivedMethod: req.method,
+      allowedMethods: ['POST', 'OPTIONS']
+    });
   }
 
   // Check if API key is configured

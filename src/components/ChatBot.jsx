@@ -86,14 +86,23 @@ function ChatBot({ isOpen, onClose }) {
             if (errorData.details) {
               errorMessage += ` ${errorData.details}`
             }
+            // If method not allowed, show what was received
+            if (response.status === 405 && errorData.receivedMethod) {
+              errorMessage += ` (Received: ${errorData.receivedMethod}, Expected: POST)`
+            }
           }
             } catch (e) {
               // If response is not JSON, provide helpful error based on status
               if (response.status === 404) {
                 const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
                 const isVercel = window.location.hostname.includes('vercel.app');
-                if (isLocalDev) {
-                  errorMessage = 'API route not found. For local development, please use "vercel dev" instead of "npm run dev". The api/ folder is only available with Vercel CLI.';
+                const port = window.location.port;
+                const isViteDev = port === '5173' || port === '5174' || port === '3000';
+                
+                if (isLocalDev && isViteDev) {
+                  errorMessage = '⚠️ Local Development Issue:\n\nYou are using "npm run dev" (Vite), but the API routes only work with "vercel dev".\n\nTo fix this:\n1. Install Vercel CLI: npm install -g vercel\n2. Run: vercel dev\n3. This will start both frontend and API routes locally.\n\nAlternatively, test the chatbot on your deployed Vercel site.';
+                } else if (isLocalDev) {
+                  errorMessage = 'API route not found. For local development, please use "vercel dev" instead of "npm run dev".';
                 } else if (isVercel) {
                   errorMessage = 'API route not found on Vercel. Please check: 1) The api/chat.js file exists in your repository, 2) It has been deployed, 3) Check the Functions tab in your Vercel deployment.';
                 } else {
