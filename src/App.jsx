@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import Modal from './components/Modal'
 import TechIcon from './components/TechIcon'
+import ChatBot from './components/ChatBot'
 import {
   profileInfo,
   aboutContent,
@@ -27,6 +28,7 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [formStatus, setFormStatus] = useState({ type: '', message: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isChatOpen, setIsChatOpen] = useState(false)
   
   // Get recent certifications (first 4)
   const recentCertifications = certifications.slice(0, 4)
@@ -826,12 +828,20 @@ function App() {
       </footer>
 
       {/* Floating Chat Button */}
-      <button className="fixed bottom-6 right-6 bg-gray-900 dark:bg-gray-800 text-white dark:text-gray-100 px-6 py-3 rounded-lg shadow-lg hover:bg-gray-800 dark:hover:bg-gray-700 transition flex items-center gap-2 z-50 cursor-pointer">
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-        </svg>
-        Chat with Me
-      </button>
+      {!isChatOpen && (
+        <button 
+          onClick={() => setIsChatOpen(true)}
+          className="fixed bottom-6 right-6 bg-gray-900 dark:bg-gray-800 text-white dark:text-gray-100 px-6 py-3 rounded-lg shadow-lg hover:bg-gray-800 dark:hover:bg-gray-700 transition flex items-center gap-2 z-50 cursor-pointer animate-bounce"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          Chat with Me
+        </button>
+      )}
+
+      {/* ChatBot Component */}
+      <ChatBot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
 
       {/* Modal */}
       <Modal

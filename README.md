@@ -14,6 +14,7 @@ A modern, responsive portfolio website built with React and Vite.
 - 🖼️ Project gallery
 - 💬 Recommendations section
 - 📧 Contact information
+- 🤖 AI Chatbot powered by Groq
 
 ## Tech Stack
 
@@ -21,6 +22,7 @@ A modern, responsive portfolio website built with React and Vite.
 - Vite
 - Tailwind CSS v4
 - React Icons
+- Groq AI (for chatbot)
 
 ## Getting Started
 
@@ -61,14 +63,28 @@ The build output will be in the `dist` directory.
 
 This project is configured for easy deployment on Vercel. Simply connect your GitHub repository to Vercel and it will automatically deploy.
 
+### Setting up the Chatbot on Vercel
+
+1. After deploying to Vercel, go to your project settings
+2. Navigate to **Environment Variables**
+3. Add a new environment variable:
+   - **Name:** `GROQ_API_KEY`
+   - **Value:** Your Groq API key from [Groq Console](https://console.groq.com/)
+4. Redeploy your application for the changes to take effect
+
+The chatbot will be available via the floating chat button in the bottom-right corner of your portfolio.
+
 ## Project Structure
 
 ```
 my-portfolio/
+├── api/                # Serverless API routes
+│   └── chat.js         # Groq API integration
 ├── src/
 │   ├── components/     # Reusable components
 │   │   ├── Modal.jsx
-│   │   └── TechIcon.jsx
+│   │   ├── TechIcon.jsx
+│   │   └── ChatBot.jsx # AI Chatbot component
 │   ├── data/           # Data and content
 │   │   └── profileData.js
 │   ├── assets/         # Images and static assets
@@ -77,6 +93,7 @@ my-portfolio/
 │   └── index.css       # Global styles
 ├── public/             # Public assets
 ├── vercel.json         # Vercel configuration
+├── .env.example        # Environment variables template
 └── package.json        # Dependencies
 ```
 
