@@ -13,6 +13,9 @@ function ChatBot({ isOpen, onClose }) {
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const isSubmittingRef = useRef(false)
+  
+  // Character limit configuration
+  const MAX_MESSAGE_LENGTH = 1000
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -37,6 +40,12 @@ function ChatBot({ isOpen, onClose }) {
     }
 
     const userMessage = input.trim()
+    
+    // Check character limit on frontend
+    if (userMessage.length > MAX_MESSAGE_LENGTH) {
+      setError(`Message is too long. Maximum ${MAX_MESSAGE_LENGTH} characters allowed. (Current: ${userMessage.length})`)
+      return
+    }
     
     // Set submitting flag to prevent duplicates
     isSubmittingRef.current = true
@@ -250,26 +259,41 @@ function ChatBot({ isOpen, onClose }) {
               <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
-          <form onSubmit={handleSend} className="flex gap-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={handleInputChange}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message..."
-              disabled={isLoading}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-            <button
-              type="submit"
-              disabled={!input.trim() || isLoading}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition cursor-pointer"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
+          <form onSubmit={handleSend} className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your message..."
+                disabled={isLoading}
+                maxLength={MAX_MESSAGE_LENGTH}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              <button
+                type="submit"
+                disabled={!input.trim() || isLoading || input.length > MAX_MESSAGE_LENGTH}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 px-1">
+              <span>
+                {input.length > MAX_MESSAGE_LENGTH * 0.9 && (
+                  <span className={input.length >= MAX_MESSAGE_LENGTH ? 'text-red-500 font-medium' : 'text-yellow-500'}>
+                    {MAX_MESSAGE_LENGTH - input.length} characters remaining
+                  </span>
+                )}
+              </span>
+              <span className={input.length > MAX_MESSAGE_LENGTH * 0.9 ? (input.length >= MAX_MESSAGE_LENGTH ? 'text-red-500 font-medium' : 'text-yellow-500') : ''}>
+                {input.length}/{MAX_MESSAGE_LENGTH}
+              </span>
+            </div>
           </form>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
             Powered by Groq AI

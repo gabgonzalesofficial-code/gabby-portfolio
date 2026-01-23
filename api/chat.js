@@ -1,5 +1,89 @@
 import Groq from 'groq-sdk';
 
+// Rate limiting storage (in-memory, resets on cold start)
+// In production, consider using Redis or Vercel KV for persistent rate limiting
+const rateLimitStore = new Map();
+
+// Rate limit configuration
+const RATE_LIMIT_CONFIG = {
+  maxRequests: 10,        // Maximum requests per window
+  windowMs: 60000,        // Time window in milliseconds (1 minute)
+  cleanupInterval: 300000  // Cleanup old entries every 5 minutes
+};
+
+// Character limit configuration
+const MAX_MESSAGE_LENGTH = 1000;  // Maximum characters per message
+
+// Cleanup old rate limit entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, data] of rateLimitStore.entries()) {
+    if (now - data.firstRequest > RATE_LIMIT_CONFIG.windowMs * 2) {
+      rateLimitStore.delete(ip);
+    }
+  }
+}, RATE_LIMIT_CONFIG.cleanupInterval);
+
+// Helper function to get client IP
+function getClientIP(req) {
+  // Check various headers for the real IP (Vercel uses x-forwarded-for)
+  const forwarded = req.headers['x-forwarded-for'];
+  const realIP = req.headers['x-real-ip'];
+  
+  if (forwarded) {
+    // x-forwarded-for can contain multiple IPs, take the first one
+    return forwarded.split(',')[0].trim();
+  }
+  
+  return realIP || req.connection?.remoteAddress || 'unknown';
+}
+
+// Rate limiting middleware
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const record = rateLimitStore.get(ip);
+
+  if (!record) {
+    // First request from this IP
+    rateLimitStore.set(ip, {
+      count: 1,
+      firstRequest: now,
+      resetAt: now + RATE_LIMIT_CONFIG.windowMs
+    });
+    return { allowed: true, remaining: RATE_LIMIT_CONFIG.maxRequests - 1 };
+  }
+
+  // Check if window has expired
+  if (now > record.resetAt) {
+    // Reset the window
+    rateLimitStore.set(ip, {
+      count: 1,
+      firstRequest: now,
+      resetAt: now + RATE_LIMIT_CONFIG.windowMs
+    });
+    return { allowed: true, remaining: RATE_LIMIT_CONFIG.maxRequests - 1 };
+  }
+
+  // Check if limit exceeded
+  if (record.count >= RATE_LIMIT_CONFIG.maxRequests) {
+    const retryAfter = Math.ceil((record.resetAt - now) / 1000);
+    return { 
+      allowed: false, 
+      remaining: 0,
+      retryAfter 
+    };
+  }
+
+  // Increment count
+  record.count++;
+  rateLimitStore.set(ip, record);
+  
+  return { 
+    allowed: true, 
+    remaining: RATE_LIMIT_CONFIG.maxRequests - record.count 
+  };
+}
+
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -27,6 +111,30 @@ export default async function handler(req, res) {
       allowedMethods: ['POST', 'OPTIONS']
     });
   }
+
+  // Get client IP for rate limiting
+  const clientIP = getClientIP(req);
+  
+  // Check rate limit
+  const rateLimit = checkRateLimit(clientIP);
+  if (!rateLimit.allowed) {
+    res.setHeader('Retry-After', rateLimit.retryAfter);
+    res.setHeader('X-RateLimit-Limit', RATE_LIMIT_CONFIG.maxRequests);
+    res.setHeader('X-RateLimit-Remaining', rateLimit.remaining);
+    res.setHeader('X-RateLimit-Reset', new Date(Date.now() + rateLimit.retryAfter * 1000).toISOString());
+    
+    return res.status(429).json({
+      error: 'Rate limit exceeded',
+      details: `Too many requests. Please try again in ${rateLimit.retryAfter} seconds.`,
+      retryAfter: rateLimit.retryAfter,
+      limit: RATE_LIMIT_CONFIG.maxRequests,
+      window: '1 minute'
+    });
+  }
+
+  // Add rate limit headers to successful requests
+  res.setHeader('X-RateLimit-Limit', RATE_LIMIT_CONFIG.maxRequests);
+  res.setHeader('X-RateLimit-Remaining', rateLimit.remaining);
 
   // Check if API key is configured
   if (!process.env.GROQ_API_KEY) {
@@ -58,6 +166,16 @@ export default async function handler(req, res) {
 
     if (!message || !message.trim()) {
       return res.status(400).json({ error: 'Message is required' });
+    }
+
+    // Check character limit
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      return res.status(400).json({
+        error: 'Message too long',
+        details: `Message exceeds maximum length of ${MAX_MESSAGE_LENGTH} characters. Your message is ${message.length} characters.`,
+        maxLength: MAX_MESSAGE_LENGTH,
+        currentLength: message.length
+      });
     }
 
     // Build conversation messages
