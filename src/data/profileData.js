@@ -127,6 +127,9 @@ export const techStack = {
     { name: 'Vercel', icon: 'vercel' },
     { name: 'Formspree', icon: 'formspree' }
   ],
+  gameDev: [
+    { name: 'Godot', icon: 'godot' }
+  ],
   aiTools: [
     { name: 'Gemini AI Studio', icon: 'gemini', description: 'AI Integration' },
     { name: 'ChatGPT', icon: 'chatgpt', description: 'Content Generation' },

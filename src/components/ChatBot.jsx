@@ -9,8 +9,11 @@ function ChatBot({ isOpen, onClose }) {
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
+  
+  const MAX_MESSAGE_LENGTH = 2000
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -31,7 +34,15 @@ function ChatBot({ isOpen, onClose }) {
     if (!input.trim() || isLoading) return
 
     const userMessage = input.trim()
+    
+    // Client-side validation
+    if (userMessage.length > MAX_MESSAGE_LENGTH) {
+      setError(`Message is too long. Maximum ${MAX_MESSAGE_LENGTH} characters allowed.`)
+      return
+    }
+    
     setInput('')
+    setError('')
     
     // Add user message to chat
     const newMessages = [...messages, { role: 'user', content: userMessage }]
@@ -112,13 +123,20 @@ function ChatBot({ isOpen, onClose }) {
       console.error('Chat error:', error)
       // Show error message with details if available
       const errorMessage = error.message || 'An unknown error occurred'
-      setMessages([
-        ...newMessages,
-        {
-          role: 'assistant',
-          content: `Sorry, I encountered an error: ${errorMessage}\n\nPlease try again or use the contact form if the issue persists.`
-        }
-      ])
+      
+      // Handle rate limit errors
+      if (errorMessage.includes('Rate limit') || errorMessage.includes('429')) {
+        setError('Too many requests. Please wait a moment before trying again.')
+        setMessages([...newMessages])
+      } else {
+        setMessages([
+          ...newMessages,
+          {
+            role: 'assistant',
+            content: `Sorry, I encountered an error: ${errorMessage}\n\nPlease try again or use the contact form if the issue persists.`
+          }
+        ])
+      }
     } finally {
       setIsLoading(false)
       // Refocus input after sending
@@ -135,7 +153,11 @@ function ChatBot({ isOpen, onClose }) {
 
   const handleInputChange = useCallback((e) => {
     setInput(e.target.value)
-  }, [])
+    // Clear error when user starts typing
+    if (error) {
+      setError('')
+    }
+  }, [error])
 
   if (!isOpen) return null
 
@@ -209,17 +231,30 @@ function ChatBot({ isOpen, onClose }) {
 
         {/* Input */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          {error && (
+            <div className="mb-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          )}
           <form onSubmit={handleSend} className="flex gap-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={handleInputChange}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message..."
-              disabled={isLoading}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 disabled:cursor-not-allowed"
-            />
+            <div className="flex-1 relative">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your message..."
+                disabled={isLoading}
+                maxLength={MAX_MESSAGE_LENGTH}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              {input.length > MAX_MESSAGE_LENGTH * 0.8 && (
+                <div className="absolute bottom-full mb-1 right-0 text-xs text-gray-500 dark:text-gray-400">
+                  {input.length}/{MAX_MESSAGE_LENGTH}
+                </div>
+              )}
+            </div>
             <button
               type="submit"
               disabled={!input.trim() || isLoading}

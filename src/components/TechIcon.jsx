@@ -28,7 +28,8 @@ import {
   SiPython,
   SiSelenium,
   SiOpenai,
-  SiGoogle
+  SiGoogle,
+  SiGodotengine
 } from 'react-icons/si'
 import { DiMysql, DiDatabase, DiJava } from 'react-icons/di'
 import { FaCode } from 'react-icons/fa'
@@ -66,7 +67,8 @@ function TechIcon({ name, className = "w-5 h-5" }) {
     selenium: SiSelenium,
     cursor: FaCode,
     gemini: SiGoogle,
-    chatgpt: SiOpenai
+    chatgpt: SiOpenai,
+    godot: SiGodotengine
   }
 
   const IconComponent = iconMap[name.toLowerCase()]
