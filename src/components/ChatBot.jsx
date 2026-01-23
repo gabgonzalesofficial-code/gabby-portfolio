@@ -12,8 +12,7 @@ function ChatBot({ isOpen, onClose }) {
   const [error, setError] = useState('')
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
-  
-  const MAX_MESSAGE_LENGTH = 2000
+  const isSubmittingRef = useRef(false)
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -30,34 +29,36 @@ function ChatBot({ isOpen, onClose }) {
 
   const handleSend = useCallback(async (e) => {
     e.preventDefault()
+    e.stopPropagation()
     
-    if (!input.trim() || isLoading) return
+    // Prevent duplicate submissions
+    if (!input.trim() || isLoading || isSubmittingRef.current) {
+      return
+    }
 
     const userMessage = input.trim()
     
-    // Client-side validation
-    if (userMessage.length > MAX_MESSAGE_LENGTH) {
-      setError(`Message is too long. Maximum ${MAX_MESSAGE_LENGTH} characters allowed.`)
-      return
-    }
+    // Set submitting flag to prevent duplicates
+    isSubmittingRef.current = true
     
+    // Clear input immediately and set loading
     setInput('')
     setError('')
+    setIsLoading(true)
     
     // Add user message to chat
     const newMessages = [...messages, { role: 'user', content: userMessage }]
     setMessages(newMessages)
-    setIsLoading(true)
+    
+    // Prepare conversation history (excluding system message)
+    const conversationHistory = messages
+      .filter(msg => msg.role !== 'system')
+      .map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }))
 
     try {
-      // Prepare conversation history (excluding system message)
-      const conversationHistory = messages
-        .filter(msg => msg.role !== 'system')
-        .map(msg => ({
-          role: msg.role,
-          content: msg.content
-        }))
-
       // Call API
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -82,15 +83,26 @@ function ChatBot({ isOpen, onClose }) {
           if (responseText) {
             const errorData = JSON.parse(responseText)
             errorMessage = errorData.error || errorMessage
+            if (errorData.details) {
+              errorMessage += ` ${errorData.details}`
+            }
           }
-        } catch (e) {
-          // If response is not JSON, provide helpful error based on status
-          if (response.status === 404) {
-            errorMessage = 'API route not found. Make sure you are using "vercel dev" for local development or deploy to Vercel.'
-          } else if (response.status === 500) {
-            errorMessage = 'Server error. Please check your API key in your .env file and try again.'
+            } catch (e) {
+              // If response is not JSON, provide helpful error based on status
+              if (response.status === 404) {
+                const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const isVercel = window.location.hostname.includes('vercel.app');
+                if (isLocalDev) {
+                  errorMessage = 'API route not found. For local development, please use "vercel dev" instead of "npm run dev". The api/ folder is only available with Vercel CLI.';
+                } else if (isVercel) {
+                  errorMessage = 'API route not found on Vercel. Please check: 1) The api/chat.js file exists in your repository, 2) It has been deployed, 3) Check the Functions tab in your Vercel deployment.';
+                } else {
+                  errorMessage = 'API route not found. Make sure the api/chat.js file exists and is deployed correctly.';
+                }
+              } else if (response.status === 500) {
+            errorMessage = 'Server error. Please check your GROQ_API_KEY in Vercel environment variables and check the function logs.'
           } else if (response.status === 401) {
-            errorMessage = 'Invalid API key. Please check your GROQ_API_KEY in the .env file.'
+            errorMessage = 'Invalid API key. Please check your GROQ_API_KEY in Vercel environment variables.'
           }
         }
         throw new Error(errorMessage)
@@ -107,11 +119,10 @@ function ChatBot({ isOpen, onClose }) {
         data = JSON.parse(responseText)
       } catch (parseError) {
         console.error('JSON parse error:', parseError, 'Response text:', responseText.substring(0, 100))
-        throw new Error('Failed to parse server response. The API route may not be configured correctly. Make sure you are using "vercel dev" for local development.')
+        throw new Error('Failed to parse server response.')
       }
 
       if (!data.response) {
-        // Include details if available
         const errorMsg = data.error || 'No response from AI'
         const details = data.details ? `\n\n${data.details}` : ''
         throw new Error(errorMsg + details)
@@ -123,26 +134,20 @@ function ChatBot({ isOpen, onClose }) {
       console.error('Chat error:', error)
       // Show error message with details if available
       const errorMessage = error.message || 'An unknown error occurred'
-      
-      // Handle rate limit errors
-      if (errorMessage.includes('Rate limit') || errorMessage.includes('429')) {
-        setError('Too many requests. Please wait a moment before trying again.')
-        setMessages([...newMessages])
-      } else {
-        setMessages([
-          ...newMessages,
-          {
-            role: 'assistant',
-            content: `Sorry, I encountered an error: ${errorMessage}\n\nPlease try again or use the contact form if the issue persists.`
-          }
-        ])
-      }
+      setMessages([
+        ...newMessages,
+        {
+          role: 'assistant',
+          content: `Sorry, I encountered an error: ${errorMessage}\n\nPlease try again or use the contact form if the issue persists.`
+        }
+      ])
     } finally {
       setIsLoading(false)
+      isSubmittingRef.current = false
       // Refocus input after sending
       setTimeout(() => inputRef.current?.focus(), 100)
     }
-  }, [messages, isLoading])
+  }, [messages, input, isLoading])
 
   const handleKeyPress = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -237,24 +242,16 @@ function ChatBot({ isOpen, onClose }) {
             </div>
           )}
           <form onSubmit={handleSend} className="flex gap-2">
-            <div className="flex-1 relative">
-              <input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={handleInputChange}
-                onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
-                disabled={isLoading}
-                maxLength={MAX_MESSAGE_LENGTH}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-              {input.length > MAX_MESSAGE_LENGTH * 0.8 && (
-                <div className="absolute bottom-full mb-1 right-0 text-xs text-gray-500 dark:text-gray-400">
-                  {input.length}/{MAX_MESSAGE_LENGTH}
-                </div>
-              )}
-            </div>
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={handleInputChange}
+              onKeyPress={handleKeyPress}
+              placeholder="Type your message..."
+              disabled={isLoading}
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 disabled:cursor-not-allowed"
+            />
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
