@@ -26,7 +26,11 @@ export const portfolioData = {
     database: ['MySQL', 'SQL', 'Supabase'],
     tools: ['Git', 'GitHub', 'Bitbucket', 'VS Code', 'Cursor', 'Vercel', 'Formspree'],
     gameDev: ['Godot'],
-    aiTools: ['Gemini AI Studio', 'ChatGPT', 'Gemini']
+    aiTools: [
+      { name: 'Gemini AI Studio', description: 'AI Integration' },
+      { name: 'ChatGPT', description: 'Content Generation' },
+      { name: 'Gemini', description: 'Content Generation' }
+    ]
   },
   
   beyondCoding: [

@@ -183,15 +183,26 @@ export default async function handler(req, res) {
     const data = portfolioData;
     
     // Format data sections to avoid nested template literal issues
-    const aboutSection = data.aboutContent.map(para => `- ${para}`).join('\n');
-    const techStackSection = `Frontend: ${data.techStack.frontend.join(', ')}\nBackend: ${data.techStack.backend.join(', ')}\nCRM/CMS: ${data.techStack.crmCms.join(', ')}\nAutomation: ${data.techStack.automation.join(', ')}\nDatabase: ${data.techStack.database.join(', ')}\nTools: ${data.techStack.tools.join(', ')}\nGame Development: ${data.techStack.gameDev.join(', ')}\nAI Tools: ${data.techStack.aiTools.map(t => `${t.name} (${t.description})`).join(', ')}`;
-    const experienceSection = data.experience.map(exp => `- ${exp.role} at ${exp.company} (${exp.year})`).join('\n');
-    const projectsSection = data.projects.map(proj => `- ${proj.name}: ${proj.description} - ${proj.url}`).join('\n');
-    const certificationsSection = data.certifications.slice(0, 4).map(cert => `- ${cert.name} from ${cert.issuer} (${cert.year})`).join('\n');
-    const beyondCodingSection = data.beyondCoding.map(item => `- ${item}`).join('\n');
+    const aboutSection = data.aboutContent.map(para => '- ' + para).join('\n');
+    
+    // Build tech stack section without nested template literals
+    const aiToolsList = data.techStack.aiTools.map(t => t.name + ' (' + t.description + ')').join(', ');
+    const techStackSection = 'Frontend: ' + data.techStack.frontend.join(', ') + '\n' +
+      'Backend: ' + data.techStack.backend.join(', ') + '\n' +
+      'CRM/CMS: ' + data.techStack.crmCms.join(', ') + '\n' +
+      'Automation: ' + data.techStack.automation.join(', ') + '\n' +
+      'Database: ' + data.techStack.database.join(', ') + '\n' +
+      'Tools: ' + data.techStack.tools.join(', ') + '\n' +
+      'Game Development: ' + data.techStack.gameDev.join(', ') + '\n' +
+      'AI Tools: ' + aiToolsList;
+    
+    const experienceSection = data.experience.map(exp => '- ' + exp.role + ' at ' + exp.company + ' (' + exp.year + ')').join('\n');
+    const projectsSection = data.projects.map(proj => '- ' + proj.name + ': ' + proj.description + ' - ' + proj.url).join('\n');
+    const certificationsSection = data.certifications.slice(0, 4).map(cert => '- ' + cert.name + ' from ' + cert.issuer + ' (' + cert.year + ')').join('\n');
+    const beyondCodingSection = data.beyondCoding.map(item => '- ' + item).join('\n');
     const recommendationsSection = data.recommendations
       .filter(r => r.quote && !r.quote.includes('placeholder'))
-      .map(rec => `- ${rec.quote} - ${rec.author}, ${rec.position}`)
+      .map(rec => '- ' + rec.quote + ' - ' + rec.author + ', ' + rec.position)
       .join('\n\n');
 
     const messages = [
