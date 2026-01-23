@@ -1,5 +1,5 @@
 import Groq from 'groq-sdk';
-import { portfolioData } from './portfolioData.js';
+import { portfolioData } from '../data/portfolioData.js';
 
 // Rate limiting storage (in-memory, resets on cold start)
 // In production, consider using Redis or Vercel KV for persistent rate limiting
