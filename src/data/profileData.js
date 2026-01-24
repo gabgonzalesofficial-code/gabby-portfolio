@@ -19,7 +19,7 @@ export const profileInfo = {
   profileImage: profileImage,
   verified: true,
   contact: {
-    email: 'gabgonzalesofficial@gmail.com',
+    email: 'fdg.gonzalesgabriel@gmail.com',
     mobile: '+63 945 804 7946',
     linkedin: 'https://www.linkedin.com/in/gabriel-gonzales-9733ab1a3'
   },
