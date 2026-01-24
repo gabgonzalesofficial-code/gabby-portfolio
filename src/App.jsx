@@ -31,7 +31,8 @@ function App() {
   const [formStatus, setFormStatus] = useState({ type: '', message: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
-  
+  const [selectedCertificate, setSelectedCertificate] = useState(null)
+
   // Get recent certifications (first 4)
   const recentCertifications = certifications.slice(0, 4)
 
@@ -40,9 +41,9 @@ function App() {
     // Check localStorage
     const saved = localStorage.getItem('darkMode')
     const shouldBeDark = saved === 'true'
-    
+
     setIsDarkMode(shouldBeDark)
-    
+
     // Apply class to html element
     if (shouldBeDark) {
       document.documentElement.classList.add('dark')
@@ -64,7 +65,7 @@ function App() {
   // Auto-transition recommendations
   useEffect(() => {
     if (recommendations.length <= 1) return
-    
+
     const interval = setInterval(() => {
       setRecommendationIndex((prev) => (prev < recommendations.length - 1 ? prev + 1 : 0))
     }, 5000) // Change every 5 seconds
@@ -106,13 +107,13 @@ function App() {
         <div className="flex flex-col lg:flex-row items-start gap-6">
           {/* Profile Picture */}
           <div className="flex-shrink-0">
-            <img 
-              src={profileInfo.profileImage} 
-              alt="Profile" 
+            <img
+              src={profileInfo.profileImage}
+              alt="Profile"
               className="w-28 h-28 lg:w-32 lg:h-32 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
             />
           </div>
-          
+
           {/* Name and Title */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
@@ -125,8 +126,8 @@ function App() {
             </div>
             <p className="text-gray-600 dark:text-gray-400 text-sm mb-1.5">{profileInfo.location}</p>
             <p className="text-lg text-gray-800 dark:text-gray-200 font-medium mb-3">{profileInfo.title}</p>
-            <a 
-              href={resumePDF} 
+            <a
+              href={resumePDF}
               download="Gabriel_Gonzales_Resume.pdf"
               className="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors cursor-pointer"
             >
@@ -139,7 +140,7 @@ function App() {
           <div className="flex-shrink-0 lg:ml-auto">
             <div className="space-y-3">
               {/* Email */}
-              <a 
+              <a
                 href={`mailto:${profileInfo.contact.email}`}
                 className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition cursor-pointer"
               >
@@ -150,7 +151,7 @@ function App() {
               </a>
 
               {/* Mobile */}
-              <a 
+              <a
                 href={`tel:${profileInfo.contact.mobile.replace(/\s/g, '')}`}
                 className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition cursor-pointer"
               >
@@ -161,14 +162,14 @@ function App() {
               </a>
 
               {/* LinkedIn */}
-              <a 
+              <a
                 href={profileInfo.contact.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer"
               >
                 <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                 </svg>
                 <span className="text-sm">LinkedIn Profile</span>
               </a>
@@ -181,13 +182,13 @@ function App() {
                     content: (
                       <div className="space-y-6">
                         <p className="text-gray-700 dark:text-gray-300 text-center">{profileInfo.donation.message}</p>
-                        
+
                         {/* GCash Section */}
                         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20">
                           <div className="flex items-center gap-3 mb-3">
                             <div className="w-10 h-10 bg-white dark:bg-gray-700 rounded-lg flex items-center justify-center shadow-sm">
                               <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                               </svg>
                             </div>
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">GCash</h3>
@@ -229,7 +230,7 @@ function App() {
                           <div className="flex items-center gap-3 mb-3">
                             <div className="w-10 h-10 bg-white dark:bg-gray-700 rounded-lg flex items-center justify-center shadow-sm">
                               <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.13 6.537-6.983 6.537h-2.87c-.748 0-1.127.363-1.305.838l-1.17 3.279a1.098 1.098 0 0 1-.104.24.327.327 0 0 1-.112.12c-.04.025-.092.041-.148.041H9.43a.582.582 0 0 1-.536-.352L7.077 21.337zm1.461-13.966c-.073.01-.145.026-.213.05-.07.023-.14.05-.2.08-.06.03-.11.064-.15.1-.04.038-.07.08-.09.13-.02.05-.03.1-.03.15v.12l.57 3.074.04.2c.01.05.03.09.06.13.03.04.07.07.11.09.05.02.1.03.15.03h2.85c.08 0 .15-.01.2-.04.05-.02.1-.05.13-.1l.06-.1.38-2.28.04-.2c0-.05-.01-.1-.03-.15-.02-.05-.05-.09-.09-.13-.04-.04-.09-.07-.15-.1a1.26 1.26 0 0 0-.2-.08 1.2 1.2 0 0 0-.21-.05h-2.73z"/>
+                                <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.13 6.537-6.983 6.537h-2.87c-.748 0-1.127.363-1.305.838l-1.17 3.279a1.098 1.098 0 0 1-.104.24.327.327 0 0 1-.112.12c-.04.025-.092.041-.148.041H9.43a.582.582 0 0 1-.536-.352L7.077 21.337zm1.461-13.966c-.073.01-.145.026-.213.05-.07.023-.14.05-.2.08-.06.03-.11.064-.15.1-.04.038-.07.08-.09.13-.02.05-.03.1-.03.15v.12l.57 3.074.04.2c.01.05.03.09.06.13.03.04.07.07.11.09.05.02.1.03.15.03h2.85c.08 0 .15-.01.2-.04.05-.02.1-.05.13-.1l.06-.1.38-2.28.04-.2c0-.05-.01-.1-.03-.15-.02-.05-.05-.09-.09-.13-.04-.04-.09-.07-.15-.1a1.26 1.26 0 0 0-.2-.08 1.2 1.2 0 0 0-.21-.05h-2.73z" />
                               </svg>
                             </div>
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">PayPal</h3>
@@ -315,20 +316,20 @@ function App() {
                 {Object.entries(techStack).map(([category, techs]) => (
                   <div key={category}>
                     <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3 capitalize text-lg">
-                      {category === 'frontend' ? 'Frontend' : 
-                       category === 'backend' ? 'Backend' : 
-                       category === 'database' ? 'Database' : 
-                       category === 'crmCms' ? 'CRM/CMS' :
-                       category === 'automation' ? 'Automation & Testing' :
-                       category === 'tools' ? 'Tools & Version Control' :
-                       category === 'aiTools' ? 'AI Tools' :
-                       category === 'gameDev' ? 'Game Development' :
-                       category}
+                      {category === 'frontend' ? 'Frontend' :
+                        category === 'backend' ? 'Backend' :
+                          category === 'database' ? 'Database' :
+                            category === 'crmCms' ? 'CRM/CMS' :
+                              category === 'automation' ? 'Automation & Testing' :
+                                category === 'tools' ? 'Tools & Version Control' :
+                                  category === 'aiTools' ? 'AI Tools' :
+                                    category === 'gameDev' ? 'Game Development' :
+                                      category}
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {techs.map((tech, idx) => (
-                        <span 
-                          key={idx} 
+                        <span
+                          key={idx}
                           className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-2 rounded-md text-sm transition cursor-default"
                           title={tech.description ? `${tech.name} - ${tech.description}` : tech.name}
                         >
@@ -371,24 +372,10 @@ function App() {
                 </div>
                 <button
                   onClick={() => {
+                    setSelectedCertificate(null)
                     setModalContent({
                       title: 'All Certifications',
-                      content: (
-                        <div className="space-y-4">
-                          {certifications.map((cert) => (
-                            <div key={cert.id} className="flex items-start gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                              <svg className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                              </svg>
-      <div>
-                                <h3 className="font-semibold text-gray-900 dark:text-white">{cert.name}</h3>
-                                <p className="text-gray-600 dark:text-gray-300 text-sm">{cert.issuer}</p>
-                                <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">{cert.year}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )
+                      content: null
                     })
                     setIsModalOpen(true)
                   }}
@@ -442,13 +429,12 @@ function App() {
               <div className="relative">
                 <div className="flex overflow-hidden rounded-lg">
                   {galleryImages.map((img, idx) => (
-                    <div 
+                    <div
                       key={img.id}
-                      className={`flex-shrink-0 w-full transition-transform duration-300 ${
-                        idx === galleryIndex ? 'block' : 'hidden'
-                      }`}
+                      className={`flex-shrink-0 w-full transition-transform duration-300 ${idx === galleryIndex ? 'block' : 'hidden'
+                        }`}
                     >
-                      <img 
+                      <img
                         src={img.src}
                         alt={img.alt}
                         className="w-full h-64 object-cover rounded-lg"
@@ -478,9 +464,8 @@ function App() {
                   <button
                     key={img.id}
                     onClick={() => setGalleryIndex(idx)}
-                    className={`w-2 h-2 rounded-full cursor-pointer ${
-                      idx === galleryIndex ? 'bg-gray-900 dark:bg-white' : 'bg-gray-300 dark:bg-gray-600'
-                    }`}
+                    className={`w-2 h-2 rounded-full cursor-pointer ${idx === galleryIndex ? 'bg-gray-900 dark:bg-white' : 'bg-gray-300 dark:bg-gray-600'
+                      }`}
                   />
                 ))}
               </div>
@@ -500,7 +485,7 @@ function App() {
               <div className="relative">
                 {/* Vertical line */}
                 <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-300 dark:bg-gray-600"></div>
-                
+
                 {/* Timeline items */}
                 <div className="space-y-6">
                   {experience.map((exp) => (
@@ -509,7 +494,7 @@ function App() {
                       <div className={`absolute left-3 top-1 w-3 h-3 
                         ${exp === experience[0] ? 'bg-red-900' : 'bg-gray-900'} 
                         dark:${exp === experience[0] ? 'bg-red-100' : 'bg-white'}  rounded-full border-2 border-white dark:border-gray-800 shadow-sm`}></div>
-                      
+
                       {/* Content */}
                       <div className="pb-4 last:pb-0">
                         <h3 className="font-semibold text-gray-900 dark:text-white">{exp.role}</h3>
@@ -540,8 +525,8 @@ function App() {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
-        </a>
-      </div>
+                    </a>
+                  </div>
                 ))}
               </div>
             </section>
@@ -560,18 +545,16 @@ function App() {
                     const isActive = idx === recommendationIndex
                     const shouldTruncate = rec.quote.length > 300
                     const truncatedQuote = shouldTruncate ? rec.quote.substring(0, 300) + '...' : rec.quote
-                    
+
                     return (
-                      <div 
+                      <div
                         key={rec.id}
-                        className={`transition-opacity duration-500 absolute inset-0 ${
-                          isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                        }`}
-                      >
-                        <blockquote 
-                          className={`text-gray-700 dark:text-gray-300 italic border-l-4 border-gray-300 dark:border-gray-600 pl-4 ${
-                            shouldTruncate ? 'cursor-pointer hover:text-gray-900 dark:hover:text-gray-100' : ''
+                        className={`transition-opacity duration-500 absolute inset-0 ${isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
                           }`}
+                      >
+                        <blockquote
+                          className={`text-gray-700 dark:text-gray-300 italic border-l-4 border-gray-300 dark:border-gray-600 pl-4 ${shouldTruncate ? 'cursor-pointer hover:text-gray-900 dark:hover:text-gray-100' : ''
+                            }`}
                           onClick={shouldTruncate ? () => {
                             setModalContent({
                               title: 'Recommendation',
@@ -599,7 +582,7 @@ function App() {
                     )
                   })}
                 </div>
-                
+
                 {/* Indicator Dots */}
                 {recommendations.length > 1 && (
                   <div className="flex gap-1 justify-center pt-2">
@@ -607,9 +590,8 @@ function App() {
                       <button
                         key={rec.id}
                         onClick={() => setRecommendationIndex(idx)}
-                        className={`w-2 h-2 rounded-full cursor-pointer transition ${
-                          idx === recommendationIndex ? 'bg-gray-900 dark:bg-white' : 'bg-gray-300 dark:bg-gray-600'
-                        }`}
+                        className={`w-2 h-2 rounded-full cursor-pointer transition ${idx === recommendationIndex ? 'bg-gray-900 dark:bg-white' : 'bg-gray-300 dark:bg-gray-600'
+                          }`}
                         aria-label={`Go to recommendation ${idx + 1}`}
                       />
                     ))}
@@ -626,7 +608,7 @@ function App() {
                 </svg>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Get In Touch</h2>
               </div>
-              
+
               <form
                 action="https://formspree.io/f/mreenkwq"
                 method="POST"
@@ -636,7 +618,7 @@ function App() {
                   setFormStatus({ type: '', message: '' })
 
                   const formData = new FormData(e.target)
-                  
+
                   try {
                     const response = await fetch('https://formspree.io/f/mreenkwq', {
                       method: 'POST',
@@ -647,9 +629,9 @@ function App() {
                     })
 
                     if (response.ok) {
-                      setFormStatus({ 
-                        type: 'success', 
-                        message: 'Thank you! Your message has been sent successfully.' 
+                      setFormStatus({
+                        type: 'success',
+                        message: 'Thank you! Your message has been sent successfully.'
                       })
                       e.target.reset()
                     } else {
@@ -657,9 +639,9 @@ function App() {
                       throw new Error(data.error || 'Something went wrong')
                     }
                   } catch (error) {
-                    setFormStatus({ 
-                      type: 'error', 
-                      message: error.message || 'Failed to send message. Please try again.' 
+                    setFormStatus({
+                      type: 'error',
+                      message: error.message || 'Failed to send message. Please try again.'
                     })
                   } finally {
                     setIsSubmitting(false)
@@ -729,11 +711,10 @@ function App() {
 
                 {/* Status Message */}
                 {formStatus.message && (
-                  <div className={`p-3 rounded-lg ${
-                    formStatus.type === 'success' 
-                      ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800' 
-                      : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800'
-                  }`}>
+                  <div className={`p-3 rounded-lg ${formStatus.type === 'success'
+                    ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800'
+                    : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800'
+                    }`}>
                     <p className="text-sm">{formStatus.message}</p>
                   </div>
                 )}
@@ -742,11 +723,10 @@ function App() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`w-full py-3 px-4 rounded-lg font-medium transition cursor-pointer ${
-                    isSubmitting
-                      ? 'bg-gray-400 dark:bg-blue-600 text-gray-200 cursor-not-allowed'
-                      : 'bg-gray-900 dark:bg-blue-700 hover:bg-gray-800 dark:hover:bg-gray-600 text-white'
-                  }`}
+                  className={`w-full py-3 px-4 rounded-lg font-medium transition cursor-pointer ${isSubmitting
+                    ? 'bg-gray-400 dark:bg-blue-600 text-gray-200 cursor-not-allowed'
+                    : 'bg-gray-900 dark:bg-blue-700 hover:bg-gray-800 dark:hover:bg-gray-600 text-white'
+                    }`}
                 >
                   {isSubmitting ? 'Sending...' : 'Send Message'}
                 </button>
@@ -842,7 +822,7 @@ function App() {
 
       {/* Floating Chat Button */}
       {!isChatOpen && (
-        <button 
+        <button
           onClick={() => setIsChatOpen(true)}
           className="fixed bottom-6 right-6 bg-gray-900 dark:bg-gray-800 text-white dark:text-gray-100 px-6 py-3 rounded-lg shadow-lg hover:bg-gray-800 dark:hover:bg-gray-700 transition flex items-center gap-2 z-50 cursor-pointer animate-bounce"
         >
@@ -859,13 +839,80 @@ function App() {
       {/* Modal */}
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false)
+          setSelectedCertificate(null)
+        }}
         title={modalContent.title}
-        size="lg"
+        size={selectedCertificate ? "xl" : "lg"}
       >
-        {modalContent.content}
+        {modalContent.title === 'All Certifications' ? (
+          <div className="flex gap-6" style={{ height: 'calc(90vh - 180px)', minHeight: '500px' }}>
+            {/* Left side - Certificate List */}
+            <div className={`${selectedCertificate ? 'w-1/2' : 'w-full'} overflow-y-auto pr-2 flex-shrink-0`}>
+              <div className="space-y-3">
+                {certifications.map((cert) => (
+                  <div
+                    key={cert.id}
+                    onClick={() => setSelectedCertificate(cert)}
+                    className={`flex items-start gap-3 p-4 border rounded-lg transition cursor-pointer ${selectedCertificate?.id === cert.id
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-400'
+                      : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                  >
+                    <svg className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{cert.name}</h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">{cert.issuer}</p>
+                      <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">{cert.year}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right side - Certificate Preview */}
+            {selectedCertificate && (
+              <div className="w-1/2 border-l border-gray-200 dark:border-gray-700 pl-6 pr-6 flex flex-col flex-shrink-0">
+                <div className="sticky top-0 flex flex-col" style={{ maxHeight: 'calc(90vh - 180px)' }}>
+                  <div className="flex-shrink-0 mb-4">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                      {selectedCertificate.name}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-1">
+                      {selectedCertificate.issuer}
+                    </p>
+                    <p className="text-gray-500 dark:text-gray-400 text-xs mb-4">
+                      {selectedCertificate.year}
+                    </p>
+                  </div>
+                  {selectedCertificate.image ? (
+                    <div className="flex-1 overflow-y-auto pr-2">
+                      <img
+                        src={selectedCertificate.image}
+                        alt={selectedCertificate.name}
+                        className="w-full h-auto rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+                        style={{ maxWidth: '100%', objectFit: 'contain' }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="mt-4 p-8 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-center">
+                      <p className="text-gray-500 dark:text-gray-400">
+                        Certificate preview not available
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          modalContent.content
+        )}
       </Modal>
-      </div>
+    </div>
   )
 }
 

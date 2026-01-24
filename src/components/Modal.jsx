@@ -61,7 +61,7 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
         )}
         
         {/* Body */}
-        <div className="overflow-y-auto flex-1 p-6">
+        <div className="flex-1 p-6 overflow-hidden">
           {children}
         </div>
       </div>

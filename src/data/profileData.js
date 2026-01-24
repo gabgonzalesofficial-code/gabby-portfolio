@@ -1,6 +1,16 @@
 // Profile Information
 import profileImage from '../assets/PP.png'
 import gcashQR from '../assets/QRgcash.jpg'
+import TopPerformer from '../assets/certificates/TopPerformer.jpg'
+import TopConversion from '../assets/certificates/TopConversion.jpg'
+import TopConversion2 from '../assets/certificates/TopConversion2.jpg'
+import JavaProgramming from '../assets/certificates/JavaProgramming.png'
+import HackathonChampion from '../assets/certificates/HackathonChampion.jpg'
+import BestOralPresentation from '../assets/certificates/BestOralPresentation.jpg'
+import BestResearchPaper from '../assets/certificates/BestResearchPaper.jpg'
+import PautakanFirstPlace from '../assets/certificates/PautakanFirstPlace.jpg'
+import WordPressFundamentals from '../assets/certificates/WordPressFundamentals.jpg'
+import AIforCommmunitiesWorkshop from '../assets/certificates/AIworkshop.png'
 
 export const profileInfo = {
   name: 'Gabriel Gonzales',
@@ -145,16 +155,16 @@ export const beyondCoding = [
 
 // Certifications
 export const certifications = [
-  { id: 1, name: 'Certificate of Completion', issuer: 'Vjal Institure', year: '2026' },
-  { id: 2, name: 'Top Performer', issuer: 'Proweaver Inc.', year: '2025' },
-  { id: 3, name: 'Top Performer', issuer: 'Proweaver Inc.', year: '2024' },
-  { id: 4, name: 'Certification 4', issuer: 'Organization 4', year: '2023' },
-  { id: 5, name: 'Certification 5', issuer: 'Organization 5', year: '2022' },
-  { id: 6, name: 'Certification 6', issuer: 'Organization 6', year: '2022' },
-  { id: 7, name: 'Certification 7', issuer: 'Organization 7', year: '2021' },
-  { id: 8, name: 'Certification 8', issuer: 'Organization 8', year: '2021' },
-  { id: 9, name: 'Certification 9', issuer: 'Organization 9', year: '2020' },
-  { id: 10, name: 'Certification 10', issuer: 'Organization 10', year: '2020' }
+  { id: 1, name: 'WordPress Fundamentals (Content Management System)', issuer: 'Alison', year: '2026', image: WordPressFundamentals },
+  { id: 2, name: 'AI for Commmunities Workshop', issuer: 'Vjal Institure', year: '2026', image: AIforCommmunitiesWorkshop },
+
+  { id: 3, name: 'Top Performer (Multiple Awards)', issuer: 'Proweaver Inc.', year: '2024-2025', image: TopPerformer },
+  { id: 4, name: 'Top Conversion (Multiple Awards)', issuer: 'Proweaver Inc.', year: '2024-2025', image: TopConversion },
+  { id: 6, name: 'Java Programming', issuer: 'University of Southern Philippines Foundation', year: '2022', image: JavaProgramming },
+  { id: 7, name: 'Hackathon Champion', issuer: 'University of Southern Philippines Foundation', year: '2021', image: HackathonChampion },
+  { id: 8, name: 'Best Oral Presentation', issuer: 'University of Southern Philippines Foundation', year: '2021', image: BestOralPresentation },
+  { id: 9, name: 'Best Research Paper', issuer: 'University of Southern Philippines Foundation', year: '2020', image: BestResearchPaper },
+  { id: 10, name: 'Pautakan First Place', issuer: 'National Privacy Commission', year: '2020', image: PautakanFirstPlace }
 ]
 
 // Organizations/Memberships
