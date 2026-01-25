@@ -194,7 +194,7 @@ export const experience = [
 // Projects
 export const projects = [
   { id: 1, name: 'AI Form Converter', description: 'Using Laravel Vue and Gemini AI Studio to convert forms to using AI to read references', url: 'tobedeployed.com' },
-  { id: 2, name: 'Roseatte', description: 'A WordPress website I made for my girlfriend using a custom theme', url: 'tobedeployed2.com' },
+  { id: 2, name: 'Roseatte', description: 'A WordPress website I made for my girlfriend using a custom theme', url: 'https://roseatte.lovestoblog.com' },
   { id: 3, name: 'Form Conversion Tool', description: 'A tool I developed using react to for form conversion using reactJS and Vite', url: 'https://formconversiontool.vercel.app/' },
   { id: 4, name: 'Knowledge Base App', description: 'An app I developed to be used by my friends to share knowledge and resourece. Made using Next.js and Supabase', url: 'https://kb-app-five.vercel.app/' }
 ]
