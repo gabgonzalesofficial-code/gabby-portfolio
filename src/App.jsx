@@ -180,11 +180,12 @@ function App() {
                   setModalContent({
                     title: 'Support My Work',
                     content: (
-                      <div className="space-y-6">
+                      <div className="space-y-4">
                         <p className="text-gray-700 dark:text-gray-300 text-center">{profileInfo.donation.message}</p>
 
-                        {/* GCash Section */}
-                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* GCash – left column */}
+                          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20">
                           <div className="flex items-center gap-3 mb-3">
                             <div className="w-10 h-10 bg-white dark:bg-gray-700 rounded-lg flex items-center justify-center shadow-sm">
                               <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
@@ -223,10 +224,10 @@ function App() {
                               Open GCash App
                             </a>
                           </div>
-                        </div>
+                          </div>
 
-                        {/* PayPal Section */}
-                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                          {/* PayPal – right column */}
+                          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                           <div className="flex items-center gap-3 mb-3">
                             <div className="w-10 h-10 bg-white dark:bg-gray-700 rounded-lg flex items-center justify-center shadow-sm">
                               <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
@@ -265,6 +266,7 @@ function App() {
                             <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
                               Accepts credit/debit cards and PayPal balance
                             </p>
+                          </div>
                           </div>
                         </div>
                       </div>
@@ -845,12 +847,13 @@ function App() {
         }}
         title={modalContent.title}
         size={selectedCertificate ? "xl" : "lg"}
+        bodyScroll={modalContent.title !== 'All Certifications'}
       >
         {modalContent.title === 'All Certifications' ? (
-          <div className="flex gap-6" style={{ height: 'calc(90vh - 180px)', minHeight: '500px' }}>
+          <div className="flex gap-6 flex-1 min-h-0" style={{ minHeight: '400px' }}>
             {/* Left side - Certificate List */}
-            <div className={`${selectedCertificate ? 'w-1/2' : 'w-full'} overflow-y-auto pr-2 flex-shrink-0`}>
-              <div className="space-y-3">
+            <div className={`${selectedCertificate ? 'w-1/2' : 'w-full'} min-h-0 overflow-y-auto pr-2 flex-shrink-0`}>
+              <div className="space-y-3 pb-4">
                 {certifications.map((cert) => (
                   <div
                     key={cert.id}
@@ -875,8 +878,8 @@ function App() {
 
             {/* Right side - Certificate Preview */}
             {selectedCertificate && (
-              <div className="w-1/2 border-l border-gray-200 dark:border-gray-700 pl-6 pr-6 flex flex-col flex-shrink-0">
-                <div className="sticky top-0 flex flex-col" style={{ maxHeight: 'calc(90vh - 180px)' }}>
+              <div className="w-1/2 border-l border-gray-200 dark:border-gray-700 pl-6 pr-6 flex flex-col flex-shrink-0 min-h-0">
+                <div className="flex flex-col min-h-0 flex-1">
                   <div className="flex-shrink-0 mb-4">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                       {selectedCertificate.name}

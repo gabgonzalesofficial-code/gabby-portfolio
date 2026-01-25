@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-function Modal({ isOpen, onClose, title, children, size = 'md' }) {
+function Modal({ isOpen, onClose, title, children, size = 'md', bodyScroll = true }) {
   // Close modal on ESC key press
   useEffect(() => {
     const handleEscape = (e) => {
@@ -61,7 +61,7 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
         )}
         
         {/* Body */}
-        <div className="flex-1 p-6 overflow-hidden">
+        <div className={`flex-1 p-6 min-h-0 flex flex-col ${bodyScroll !== false ? 'overflow-y-auto' : 'overflow-hidden'}`}>
           {children}
         </div>
       </div>
