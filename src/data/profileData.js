@@ -213,21 +213,21 @@ export const recommendations = [
     quote: 'An exceptional web developer at Proweaver, he consistently delivers high-quality work backed by strong technical expertise, keen attention to detail, and a solid understanding of modern web standards. Highly skilled yet very approachable, he is always willing to help, share knowledge, and step up whenever the team needs support—his many meaningful contributions have played a vital role in improving workflows and driving the team’s overall growth. From my perspective as his Team Leader, his professionalism, reliability, and collaborative mindset make him a valuable asset to the company and a developer any organization would be fortunate to have.',
     author: 'Christopher Perez',
     position: 'Team Leader at Proweaver Inc.',
-    active: false
+    active: true
   },
   {
     id: 3,
-    quote: 'Third recommendation text placeholder.',
-    author: 'Name 3',
-    position: 'Title at Company 3',
-    active: false
+    quote: 'Sir Gabriel is an exceptional colleague who consistently completes tasks with precision and excellence. He works efficiently, stays highly organized, and is very easy to communicate and collaborate with. He is also attentive, approachable, and a pleasure to work with.',
+    author: 'Eliezer Aguipo',
+    position: 'Quality Checker Specialist at Proweaver Inc.',
+    active: true
   },
   {
     id: 4,
-    quote: 'Fourth recommendation text placeholder.',
-    author: 'Name 4',
-    position: 'Title at Company 4',
-    active: false
+    quote: 'He is a motivated and reliable team member who consistently delivers high-quality work. He takes initiative, handles tasks efficiently with little supervision, and is always willing to assist others when needed. He is also approachable and easy to work with, helping create a positive and comfortable environment for the team.',
+    author: 'Angelica Sullano',
+    position: 'Web Developer at Proweaver Inc.',
+    active: true
   }
 ]
 
