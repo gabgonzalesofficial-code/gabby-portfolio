@@ -11,6 +11,8 @@ import BestResearchPaper from '../assets/certificates/BestResearchPaper.jpg'
 import PautakanFirstPlace from '../assets/certificates/PautakanFirstPlace.jpg'
 import WordPressFundamentals from '../assets/certificates/WordPressFundamentals.jpg'
 import AIforCommmunitiesWorkshop from '../assets/certificates/AIworkshop.png'
+import GalleryPic1 from '../assets/gallery/Gallery1.jpg'
+import GalleryPic2 from '../assets/gallery/Gallery2.jpg'
 
 export const profileInfo = {
   name: 'Gabriel Gonzales',
@@ -175,11 +177,8 @@ export const memberships = [
 
 // Gallery Images
 export const galleryImages = [
-  { id: 1, src: 'https://via.placeholder.com/600x400?text=Gallery+Image+1', alt: 'Gallery Image 1' },
-  { id: 2, src: 'https://via.placeholder.com/600x400?text=Gallery+Image+2', alt: 'Gallery Image 2' },
-  { id: 3, src: 'https://via.placeholder.com/600x400?text=Gallery+Image+3', alt: 'Gallery Image 3' },
-  { id: 4, src: 'https://via.placeholder.com/600x400?text=Gallery+Image+4', alt: 'Gallery Image 4' },
-  { id: 5, src: 'https://via.placeholder.com/600x400?text=Gallery+Image+5', alt: 'Gallery Image 5' }
+  { id: 1, src: GalleryPic1, alt: 'Gallery Image 1' },
+  { id: 2, src: GalleryPic2, alt: 'Gallery Image 2' }
 ]
 
 // Experience Timeline
