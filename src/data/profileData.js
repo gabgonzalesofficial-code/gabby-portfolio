@@ -227,6 +227,13 @@ export const recommendations = [
     author: 'Angelica Sullano',
     position: 'Web Developer at Proweaver Inc.',
     active: true
+  },
+  {
+    id: 5,
+    quote: 'I would like to express my sincere appreciation for the opportunity to work with Gabriel. He consistently demonstrates a high level of professionalism, reliability, and accountability in all responsibilities entrusted to him. His strong attention to detail, effective communication, and willingness to collaborate contribute significantly to the team’s efficiency and overall success. Gabriel remains composed and solution-oriented even under pressure, allowing him to deliver quality results while meeting deadlines. He takes initiative when addressing challenges and can be relied upon to work independently with minimal supervision. Beyond his technical capabilities, Gabriel maintains a respectful, positive, and professional attitude that promotes a healthy and productive work environment. His strong work ethic, commitment to excellence, and supportive nature make him a valuable asset to the team. It has been a pleasure working alongside him, and his consistent contributions deserve recognition.',
+    author: 'Kenrick Labuca',
+    position: 'Web Developer at Proweaver Inc.',
+    active: true
   }
 ]
 
