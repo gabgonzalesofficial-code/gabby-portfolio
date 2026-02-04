@@ -7,7 +7,7 @@ export const portfolioData = {
     location: 'Cebu City, Philippines',
     title: 'Web/WordPress Developer',
     contact: {
-      email: 'fdg.gonzalesgabriel@gmail.com',
+      email: 'gabgonzalesofficial@gmail.com',
       mobile: '+63 945 804 7946',
       linkedin: 'https://www.linkedin.com/in/gabriel-gonzales-9733ab1a3'
     }
@@ -77,14 +77,19 @@ export const portfolioData = {
       position: 'Team Leader at Proweaver Inc.'
     },
     {
-      quote: 'Third recommendation text placeholder.',
-      author: 'Name 3',
-      position: 'Title at Company 3'
+      quote: 'Sir Gabriel is an exceptional colleague who consistently completes tasks with precision and excellence. He works efficiently, stays highly organized, and is very easy to communicate and collaborate with. He is also attentive, approachable, and a pleasure to work with.',
+      author: 'Eliezer Aguipo',
+      position: 'Quality Checker Specialist at Proweaver Inc.',
     },
     {
-      quote: 'Fourth recommendation text placeholder.',
-      author: 'Name 4',
-      position: 'Title at Company 4'
+      quote: 'He is a motivated and reliable team member who consistently delivers high-quality work. He takes initiative, handles tasks efficiently with little supervision, and is always willing to assist others when needed. He is also approachable and easy to work with, helping create a positive and comfortable environment for the team.',
+      author: 'Angelica Sullano',
+      position: 'Web Developer at Proweaver Inc.',
+    },
+    {
+      quote: 'I would like to express my sincere appreciation for the opportunity to work with Gabriel. He consistently demonstrates a high level of professionalism, reliability, and accountability in all responsibilities entrusted to him. His strong attention to detail, effective communication, and willingness to collaborate contribute significantly to the team’s efficiency and overall success. Gabriel remains composed and solution-oriented even under pressure, allowing him to deliver quality results while meeting deadlines. He takes initiative when addressing challenges and can be relied upon to work independently with minimal supervision. Beyond his technical capabilities, Gabriel maintains a respectful, positive, and professional attitude that promotes a healthy and productive work environment. His strong work ethic, commitment to excellence, and supportive nature make him a valuable asset to the team. It has been a pleasure working alongside him, and his consistent contributions deserve recognition.',
+      author: 'Kenrick Labuca',
+      position: 'Web Developer at Proweaver Inc.',
     }
   ]
 }
