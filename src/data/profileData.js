@@ -159,7 +159,6 @@ export const beyondCoding = [
 export const certifications = [
   { id: 1, name: 'WordPress Fundamentals (Content Management System)', issuer: 'Alison', year: '2026', image: WordPressFundamentals },
   { id: 2, name: 'AI for Commmunities Workshop', issuer: 'Vjal Institure', year: '2026', image: AIforCommmunitiesWorkshop },
-
   { id: 3, name: 'Top Performer (Multiple Awards)', issuer: 'Proweaver Inc.', year: '2024-2025', image: TopPerformer },
   { id: 4, name: 'Top Conversion (Multiple Awards)', issuer: 'Proweaver Inc.', year: '2024-2025', image: TopConversion },
   { id: 6, name: 'Java Programming', issuer: 'University of Southern Philippines Foundation', year: '2022', image: JavaProgramming },
@@ -192,7 +191,7 @@ export const experience = [
 
 // Projects
 export const projects = [
-  { id: 1, name: 'AI Form Converter', description: 'Using Laravel Vue and Gemini AI Studio to convert forms to using AI to read references', url: 'tobedeployed.com' },
+  { id: 1, name: 'Smart POS', description: 'A Smart Point of Sale System for a small business', url: 'https://smart-pos-web-xi.vercel.app/' },
   { id: 2, name: 'Roseatte', description: 'A WordPress website I made for my girlfriend using a custom theme', url: 'https://roseatte.lovestoblog.com' },
   { id: 3, name: 'Form Conversion Tool', description: 'A tool I developed using react to for form conversion using reactJS and Vite', url: 'https://formconversiontool.vercel.app/' },
   { id: 4, name: 'Knowledge Base App', description: 'An app I developed to be used by my friends to share knowledge and resourece. Made using Next.js and Supabase', url: 'https://kb-app-five.vercel.app/' }

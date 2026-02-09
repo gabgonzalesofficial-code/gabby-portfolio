@@ -59,7 +59,7 @@ export const portfolioData = {
   ],
 
   projects: [
-    { name: 'AI Form Converter', description: 'Using Laravel Vue and Gemini AI Studio to convert forms to using AI to read references', url: 'tobedeployed.com' },
+    { name: 'Smart POS', description: 'A Smart Point of Sale System for a small business. Deployed in Vercel for Front end and Render for Back end through GitHub. Uses technologies like NextJS, NestJS, Prisma ORM', url: 'https://smart-pos-web-xi.vercel.app/' },
     { name: 'Roseatte', description: 'A WordPress website I made for my girlfriend using a custom theme, I deployed this on Free hosting platform, InfinityFree. This is also still a work in progress. It needs polishing and more features to be added as well as content.', url: 'https://roseatte.lovestoblog.com' },
     { name: 'Form Conversion Tool', description: 'A tool I developed using react to for form conversion using reactJS and Vite. Deployed in Vercel through GitHub', url: 'https://formconversiontool.vercel.app/' },
     { name: 'Knowledge Base App', description: 'An app I developed to be used by my friends to share knowledge and resourece. Made using Next.js and Supabase. Deployed in Vercel through GitHub', url: 'https://kb-app-five.vercel.app/' }
