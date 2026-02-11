@@ -3,6 +3,7 @@ import './App.css'
 import Modal from './components/Modal'
 import TechIcon from './components/TechIcon'
 import ChatBot from './components/ChatBot'
+import { AnimatedBackground } from './components/AnimatedBackground'
 import { PiDownloadLight } from 'react-icons/pi'
 import resumePDF from './assets/resume/Gabriel_Gonzales_Resume.pdf'
 import {
@@ -79,7 +80,8 @@ function App() {
 
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-[#F4F4F4] dark:bg-gray-900">
+      <AnimatedBackground />
       {/* Header Section */}
       <header className="max-w-7xl mx-auto px-4 py-8">
         {/* Dark Mode Toggle - Top Right */}
