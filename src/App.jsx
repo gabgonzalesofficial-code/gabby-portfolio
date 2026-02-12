@@ -824,16 +824,24 @@ function App() {
         </p>
       </footer>
 
-      {/* Floating Chat Button */}
+      {/* Floating Chat Robot Button */}
       {!isChatOpen && (
         <button
           onClick={() => setIsChatOpen(true)}
-          className="fixed bottom-6 right-6 bg-gray-900 dark:bg-gray-800 text-white dark:text-gray-100 px-6 py-3 rounded-lg shadow-lg hover:bg-gray-800 dark:hover:bg-gray-700 transition flex items-center gap-2 z-50 cursor-pointer animate-bounce"
+          className="chatbot-robot-button"
+          aria-label="Open chat with Gabriel"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-          Chat with Me
+          <div className="chatbot-robot" aria-hidden="true">
+            <div className="chatbot-robot-antenna" />
+            <div className="chatbot-robot-face">
+              <div className="chatbot-robot-eye chatbot-robot-eye-left" />
+              <div className="chatbot-robot-eye chatbot-robot-eye-right" />
+              <div className="chatbot-robot-mouth" />
+            </div>
+            <div className="chatbot-robot-body" />
+            <div className="chatbot-robot-shadow" />
+          </div>
+          <span className="chatbot-robot-label">Chat with me</span>
         </button>
       )}
 
