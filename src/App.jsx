@@ -3,6 +3,7 @@ import './App.css'
 import Modal from './components/Modal'
 import TechIcon from './components/TechIcon'
 import ChatBot from './components/ChatBot'
+import EveRobot from './components/EveRobot'
 import { AnimatedBackground } from './components/AnimatedBackground'
 import { PiDownloadLight } from 'react-icons/pi'
 import resumePDF from './assets/resume/Gabriel_Gonzales_Resume.pdf'
@@ -824,25 +825,12 @@ function App() {
         </p>
       </footer>
 
-      {/* Floating Chat Robot Button */}
+      {/* EVE Robot — Chat trigger */}
       {!isChatOpen && (
-        <button
+        <EveRobot
           onClick={() => setIsChatOpen(true)}
-          className="chatbot-robot-button"
           aria-label="Open chat with Gabriel"
-        >
-          <div className="chatbot-robot" aria-hidden="true">
-            <div className="chatbot-robot-antenna" />
-            <div className="chatbot-robot-face">
-              <div className="chatbot-robot-eye chatbot-robot-eye-left" />
-              <div className="chatbot-robot-eye chatbot-robot-eye-right" />
-              <div className="chatbot-robot-mouth" />
-            </div>
-            <div className="chatbot-robot-body" />
-            <div className="chatbot-robot-shadow" />
-          </div>
-          <span className="chatbot-robot-label">Chat with me</span>
-        </button>
+        />
       )}
 
       {/* ChatBot Component */}

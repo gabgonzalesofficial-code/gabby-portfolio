@@ -59,6 +59,7 @@ export const portfolioData = {
   ],
 
   projects: [
+    { name: 'Budgjet', description: 'A budget tracking app with AI insights', url: 'https://budgjet.vercel.app/' },
     { name: 'Smart POS', description: 'A Smart Point of Sale System for a small business. Deployed in Vercel for Front end and Render for Back end through GitHub. Uses technologies like NextJS, NestJS, Prisma ORM', url: 'https://smart-pos-web-xi.vercel.app/' },
     { name: 'Roseatte', description: 'A WordPress website I made for my girlfriend using a custom theme, I deployed this on Free hosting platform, InfinityFree. This is also still a work in progress. It needs polishing and more features to be added as well as content.', url: 'https://roseatte.lovestoblog.com' },
     { name: 'Form Conversion Tool', description: 'A tool I developed using react to for form conversion using reactJS and Vite. Deployed in Vercel through GitHub', url: 'https://formconversiontool.vercel.app/' },
