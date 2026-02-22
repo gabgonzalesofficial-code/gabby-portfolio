@@ -9,15 +9,16 @@
   right: 1.5rem;
   bottom: 1.5rem;
   z-index: 50;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
+  width: 140px;
+  height: 120px;
+  padding: 0;
+  margin: 0;
+  display: block;
   cursor: pointer;
   font-family: 'Rajdhani', sans-serif;
   background: none;
   border: none;
-  padding: 0;
-  margin: 0;
+  overflow: visible;
   -webkit-tap-highlight-color: transparent;
 }
 .eve-chat-trigger:focus {
@@ -28,8 +29,29 @@
   outline-offset: 4px;
 }
 
+/* Mobile: smaller trigger hit area and robot */
+@media (max-width: 768px) {
+  .eve-chat-trigger {
+    right: 0.75rem;
+    bottom: 0.75rem;
+    width: 110px;
+    height: 100px;
+  }
+  .eve-chat-trigger .eve-scene {
+    transform: scale(0.4);
+    transform-origin: bottom right;
+  }
+  .eve-chat-trigger .eve-bubble {
+    font-size: 18px;
+    padding: 10px 12px;
+    max-width: 180px;
+  }
+}
+
 .eve-chat-trigger .eve-scene {
-  position: relative;
+  position: absolute;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -4,6 +4,7 @@ import Modal from './components/Modal'
 import TechIcon from './components/TechIcon'
 import ChatBot from './components/ChatBot'
 import EveRobot from './components/EveRobot'
+import Loader from './components/Loader'
 import { AnimatedBackground } from './components/AnimatedBackground'
 import { PiDownloadLight } from 'react-icons/pi'
 import resumePDF from './assets/resume/Gabriel_Gonzales_Resume.pdf'
@@ -34,10 +35,31 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [selectedCertificate, setSelectedCertificate] = useState(null)
+  const [loaderPhase, setLoaderPhase] = useState('idle')
 
   // Get recent certifications and projects (first 4 each)
   const recentCertifications = certifications.slice(0, 4)
   const recentProjects = projects.slice(0, 4)
+
+  // Loader sequence: initializing -> requesting -> granted -> exiting -> done
+  useEffect(() => {
+    if (loaderPhase === 'initializing') {
+      const t = setTimeout(() => setLoaderPhase('requesting'), 1200)
+      return () => clearTimeout(t)
+    }
+    if (loaderPhase === 'requesting') {
+      const t = setTimeout(() => setLoaderPhase('granted'), 1200)
+      return () => clearTimeout(t)
+    }
+    if (loaderPhase === 'granted') {
+      const t = setTimeout(() => setLoaderPhase('exiting'), 1200)
+      return () => clearTimeout(t)
+    }
+    if (loaderPhase === 'exiting') {
+      const t = setTimeout(() => setLoaderPhase('done'), 800)
+      return () => clearTimeout(t)
+    }
+  }, [loaderPhase])
 
   // Initialize and apply dark mode
   useEffect(() => {
@@ -81,8 +103,17 @@ function App() {
   }
 
 
+  if (loaderPhase !== 'done') {
+    return (
+      <Loader
+        step={loaderPhase}
+        onRequestAccess={() => setLoaderPhase('initializing')}
+      />
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-[#F4F4F4] dark:bg-gray-900">
+    <div className="min-h-screen bg-[#F4F4F4] dark:bg-gray-900 portfolio-enter">
       <AnimatedBackground />
       {/* Header Section */}
       <header className="max-w-7xl mx-auto px-4 py-8">
@@ -291,7 +322,7 @@ function App() {
       </header>
 
       {/* Main Content - Two Column Layout */}
-      <main className="max-w-7xl mx-auto px-4 pb-12">
+      <main className="max-w-7xl mx-auto px-4 pb-28 sm:pb-24 md:pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column */}
           <div className="space-y-8">
@@ -403,7 +434,7 @@ function App() {
             </section>
 
             {/* A member of Section
-            <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+            <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-3 mb-4">
                 <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -575,44 +606,53 @@ function App() {
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recommendations</h2>
               </div>
               <div className="space-y-4">
-                <div className="relative min-h-[180px] max-h-[180px]">
+                <div className="relative min-h-[140px]">
                   {recommendations.map((rec, idx) => {
                     const isActive = idx === recommendationIndex
                     const shouldTruncate = rec.quote.length > 300
                     const truncatedQuote = shouldTruncate ? rec.quote.substring(0, 300) + '...' : rec.quote
+                    const openFull = () => {
+                      setModalContent({
+                        title: 'Recommendation',
+                        content: (
+                          <div className="space-y-4">
+                            <blockquote className="text-gray-700 dark:text-gray-300 italic border-l-4 border-gray-300 dark:border-gray-600 pl-4 text-lg">
+                              "{rec.quote}"
+                            </blockquote>
+                            <p className="text-gray-600 dark:text-gray-400">
+                              — <span className="font-semibold">{rec.author}</span>, {rec.position}
+                            </p>
+                          </div>
+                        )
+                      })
+                      setIsModalOpen(true)
+                    }
 
                     return (
                       <div
                         key={rec.id}
-                        className={`transition-opacity duration-500 absolute inset-0 ${isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                        className={`transition-opacity duration-500 ${isActive ? 'opacity-100 block' : 'opacity-0 pointer-events-none absolute inset-0'
                           }`}
                       >
-                        <blockquote
-                          className={`text-gray-700 dark:text-gray-300 italic border-l-4 border-gray-300 dark:border-gray-600 pl-4 ${shouldTruncate ? 'cursor-pointer hover:text-gray-900 dark:hover:text-gray-100' : ''
-                            }`}
-                          onClick={shouldTruncate ? () => {
-                            setModalContent({
-                              title: 'Recommendation',
-                              content: (
-                                <div className="space-y-4">
-                                  <blockquote className="text-gray-700 dark:text-gray-300 italic border-l-4 border-gray-300 dark:border-gray-600 pl-4 text-lg">
-                                    "{rec.quote}"
-                                  </blockquote>
-                                  <p className="text-gray-600 dark:text-gray-400">
-                                    — <span className="font-semibold">{rec.author}</span>, {rec.position}
-                                  </p>
-                                </div>
-                              )
-                            })
-                            setIsModalOpen(true)
-                          } : undefined}
-                          title={shouldTruncate ? 'Click to read full recommendation' : ''}
-                        >
-                          "{truncatedQuote}"
-                        </blockquote>
+                        <div className="max-h-[280px] overflow-y-auto pr-2">
+                          <blockquote
+                            className={`text-gray-700 dark:text-gray-300 italic border-l-4 border-gray-300 dark:border-gray-600 pl-4 ${shouldTruncate ? '' : ''}`}
+                          >
+                            "{truncatedQuote}"
+                          </blockquote>
+                        </div>
                         <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">
                           — <span className="font-semibold">{rec.author}</span>, {rec.position}
                         </p>
+                        {shouldTruncate && (
+                          <button
+                            type="button"
+                            onClick={openFull}
+                            className="mt-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 rounded"
+                          >
+                            Read full recommendation
+                          </button>
+                        )}
                       </div>
                     )
                   })}
@@ -769,7 +809,7 @@ function App() {
             </section>
 
             {/* Social Links Section 
-            <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+            <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-3 mb-4">
                 <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -795,7 +835,7 @@ function App() {
             </section>
 */}
             {/* Speaking Section 
-            <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+            <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-3 mb-4">
                 <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
@@ -814,7 +854,7 @@ function App() {
             </section>*/}
 
             {/* Contact Section 
-            <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+            <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-300">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Contact</h2>
               <div className="space-y-4">
                 <div className="flex items-center gap-3 text-gray-700">

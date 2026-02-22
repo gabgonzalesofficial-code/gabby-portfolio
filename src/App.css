@@ -5,3 +5,12 @@ body {
   font-family: "SN Pro", sans-serif;
 }
 
+/* Soft fade-in when portfolio appears after loader */
+.portfolio-enter {
+  animation: portfolioFadeIn 0.6s ease-out forwards;
+}
+@keyframes portfolioFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
