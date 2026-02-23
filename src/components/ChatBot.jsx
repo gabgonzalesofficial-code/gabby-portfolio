@@ -185,15 +185,15 @@ function ChatBot({ isOpen, onClose }) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-end pointer-events-none">
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:justify-end pointer-events-none p-0 sm:p-0">
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-black/50 dark:bg-black/70 transition-opacity pointer-events-auto"
         onClick={onClose}
       />
 
-      {/* Chat Window */}
-      <div className="relative w-full max-w-md h-[600px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-t-lg shadow-2xl flex flex-col pointer-events-auto mr-4 mb-4">
+      {/* Chat Window — full width on mobile, clears widget on desktop */}
+      <div className="relative w-full max-w-[calc(100vw-2rem)] sm:max-w-md h-[min(85vh,600px)] max-h-[600px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-t-lg shadow-2xl flex flex-col pointer-events-auto mx-4 mb-24 sm:mx-0 sm:mr-36 sm:mb-36 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-t-lg">
           <div className="flex items-center gap-3">
@@ -260,7 +260,7 @@ function ChatBot({ isOpen, onClose }) {
             </div>
           )}
           <form onSubmit={handleSend} className="flex flex-col gap-2">
-            <div className="flex gap-2">
+            <div className="flex gap-2 min-w-0">
               <input
                 ref={inputRef}
                 type="text"
@@ -270,7 +270,7 @@ function ChatBot({ isOpen, onClose }) {
                 placeholder="Type your message..."
                 disabled={isLoading}
                 maxLength={MAX_MESSAGE_LENGTH}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 min-w-0 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <button
                 type="submit"

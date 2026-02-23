@@ -17,6 +17,7 @@ import {
   SiSharp,
   SiMysql,
   SiSupabase,
+  SiPrisma,
   SiGit,
   SiGithub,
   SiBitbucket,
@@ -29,10 +30,14 @@ import {
   SiSelenium,
   SiOpenai,
   SiGoogle,
-  SiGodotengine
+  SiGodotengine,
+  SiFigma,
+  SiCanva,
+  SiClaude,
+  SiSuno
 } from 'react-icons/si'
 import { DiMysql, DiDatabase, DiJava } from 'react-icons/di'
-import { FaCode } from 'react-icons/fa'
+import { FaCode, FaBolt } from 'react-icons/fa'
 
 function TechIcon({ name, className = "w-5 h-5" }) {
   const iconMap = {
@@ -55,6 +60,7 @@ function TechIcon({ name, className = "w-5 h-5" }) {
     mysql: SiMysql,
     sql: DiDatabase,
     supabase: SiSupabase,
+    prisma: SiPrisma,
     git: SiGit,
     github: SiGithub,
     bitbucket: SiBitbucket,
@@ -68,7 +74,12 @@ function TechIcon({ name, className = "w-5 h-5" }) {
     cursor: FaCode,
     gemini: SiGoogle,
     chatgpt: SiOpenai,
-    godot: SiGodotengine
+    godot: SiGodotengine,
+    figma: SiFigma,
+    canva: SiCanva,
+    claude: SiClaude,
+    groq: FaBolt,
+    suno: SiSuno
   }
 
   const IconComponent = iconMap[name.toLowerCase()]

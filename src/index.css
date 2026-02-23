@@ -16,8 +16,44 @@
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
+html,
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  cursor: url('./assets/cursor.png') 0 0, auto;
+}
+
+/* Pointer cursor for all clickable elements — overrides custom cursor for better UX */
+a,
+button,
+[role="button"],
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+select,
+summary,
+label[for],
+[tabindex]:not([tabindex="-1"]),
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+/* Keep text input cursor as default */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="number"],
+textarea {
+  cursor: text !important;
+}
+
+/* Disabled elements show not-allowed */
+button:disabled,
+input:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed !important;
 }

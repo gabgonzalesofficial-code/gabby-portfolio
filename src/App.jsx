@@ -7,12 +7,12 @@ import EveRobot from './components/EveRobot'
 import Loader from './components/Loader'
 import { AnimatedBackground } from './components/AnimatedBackground'
 import { PiDownloadLight } from 'react-icons/pi'
+import { FaAward, FaPalette, FaMusic, FaUtensils } from 'react-icons/fa'
 import resumePDF from './assets/resume/Gabriel_Gonzales_Resume.pdf'
 import {
   profileInfo,
   aboutContent,
   techStack,
-  beyondCoding,
   certifications,
   memberships,
   galleryImages,
@@ -36,6 +36,8 @@ function App() {
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [selectedCertificate, setSelectedCertificate] = useState(null)
   const [loaderPhase, setLoaderPhase] = useState('idle')
+  // Flatten tech stack for compact view
+  const flatTechStack = Object.values(techStack).flat()
 
   // Get recent certifications and projects (first 4 each)
   const recentCertifications = certifications.slice(0, 4)
@@ -179,7 +181,7 @@ function App() {
                 href={`mailto:${profileInfo.contact.email}`}
                 className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition cursor-pointer"
               >
-                <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-yellow-500 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 <span className="text-sm">{profileInfo.contact.email}</span>
@@ -190,7 +192,7 @@ function App() {
                 href={`tel:${profileInfo.contact.mobile.replace(/\s/g, '')}`}
                 className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition cursor-pointer"
               >
-                <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="white" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
                 <span className="text-sm">{profileInfo.contact.mobile}</span>
@@ -203,7 +205,7 @@ function App() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer"
               >
-                <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-blue-500 dark:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                 </svg>
                 <span className="text-sm">LinkedIn Profile</span>
@@ -311,7 +313,7 @@ function App() {
                 }}
                 className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition cursor-pointer mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
               >
-                <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-red-500 dark:text-red-400" fill="red" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
                 <span className="text-sm font-medium">Support My Work</span>
@@ -343,42 +345,72 @@ function App() {
 
             {/* Tech Stack Section */}
             <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
-                </svg>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Tech Stack</h2>
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <div className="flex items-center gap-3">
+                  <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                  </svg>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Tech Stack</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCertificate(null)
+                    setModalContent({
+                      title: 'Tech Stack',
+                      content: (
+                        <div className="space-y-4">
+                          {Object.entries(techStack).map(([category, techs]) => (
+                            <div key={category}>
+                              <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3 capitalize text-lg">
+                                {category === 'frontend' ? 'Frontend' :
+                                  category === 'backend' ? 'Backend' :
+                                    category === 'database' ? 'Database' :
+                                      category === 'crmCms' ? 'CRM/CMS' :
+                                        category === 'automation' ? 'Automation & Testing' :
+                                          category === 'design' ? 'Design' :
+                                            category === 'tools' ? 'Tools & Version Control' :
+                                              category === 'aiTools' ? 'AI Tools' :
+                                                category === 'gameDev' ? 'Game Development' :
+                                                  category}
+                              </h3>
+                              <div className="flex flex-wrap gap-2">
+                                {techs.map((tech, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-2 rounded-md text-sm transition cursor-default"
+                                    title={tech.description ? `${tech.name} - ${tech.description}` : tech.name}
+                                  >
+                                    <TechIcon name={tech.icon} className="w-4 h-4" />
+                                    <span>{tech.name}</span>
+                                    {tech.description && (
+                                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({tech.description})</span>
+                                    )}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    })
+                    setIsModalOpen(true)
+                  }}
+                  className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                >
+                  View all
+                </button>
               </div>
-              <div className="space-y-4">
-                {Object.entries(techStack).map(([category, techs]) => (
-                  <div key={category}>
-                    <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3 capitalize text-lg">
-                      {category === 'frontend' ? 'Frontend' :
-                        category === 'backend' ? 'Backend' :
-                          category === 'database' ? 'Database' :
-                            category === 'crmCms' ? 'CRM/CMS' :
-                              category === 'automation' ? 'Automation & Testing' :
-                                category === 'tools' ? 'Tools & Version Control' :
-                                  category === 'aiTools' ? 'AI Tools' :
-                                    category === 'gameDev' ? 'Game Development' :
-                                      category}
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {techs.map((tech, idx) => (
-                        <span
-                          key={idx}
-                          className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-2 rounded-md text-sm transition cursor-default"
-                          title={tech.description ? `${tech.name} - ${tech.description}` : tech.name}
-                        >
-                          <TechIcon name={tech.icon} className="w-4 h-4" />
-                          <span>{tech.name}</span>
-                          {tech.description && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({tech.description})</span>
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+              <div className="flex flex-wrap gap-2">
+                {flatTechStack.map((tech, idx) => (
+                  <span
+                    key={idx}
+                    className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-2 rounded-md text-sm transition cursor-default"
+                    title={tech.description ? `${tech.name} - ${tech.description}` : tech.name}
+                  >
+                    <TechIcon name={tech.icon} className="w-4 h-4" />
+                    <span>{tech.name}</span>
+                  </span>
                 ))}
               </div>
             </section>
@@ -391,10 +423,52 @@ function App() {
                 </svg>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Beyond Coding</h2>
               </div>
-              <div className="space-y-3 text-gray-700 dark:text-gray-300 leading-relaxed">
-                {beyondCoding.map((paragraph, idx) => (
-                  <p key={idx}>{paragraph}</p>
-                ))}
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCertificate(null)
+                    setModalContent({
+                      title: 'Art',
+                      content: <div className="text-gray-600 dark:text-gray-300">Add your art content here.</div>
+                    })
+                    setIsModalOpen(true)
+                  }}
+                  className="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg font-medium transition-colors"
+                >
+                  <FaPalette className="w-5 h-5" />
+                  Art
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCertificate(null)
+                    setModalContent({
+                      title: 'Music',
+                      content: <div className="text-gray-600 dark:text-gray-300">Add your music content here.</div>
+                    })
+                    setIsModalOpen(true)
+                  }}
+                  className="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg font-medium transition-colors"
+                >
+                  <FaMusic className="w-5 h-5" />
+                  Music
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCertificate(null)
+                    setModalContent({
+                      title: 'Cooking',
+                      content: <div className="text-gray-600 dark:text-gray-300">Add your cooking content here.</div>
+                    })
+                    setIsModalOpen(true)
+                  }}
+                  className="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg font-medium transition-colors"
+                >
+                  <FaUtensils className="w-5 h-5" />
+                  Cooking
+                </button>
               </div>
             </section>
 
@@ -405,7 +479,7 @@ function App() {
                   <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                   </svg>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recent Certifications</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Certifications and Awards</h2>
                 </div>
                 <button
                   onClick={() => {
@@ -423,10 +497,8 @@ function App() {
               </div>
               <ul className="space-y-2">
                 {recentCertifications.map((cert) => (
-                  <li key={cert.id} className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                    <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
+                  <li key={cert.id} className="flex items-center gap-2 text-[#555] dark:text-gray-400">
+                    <FaAward className="w-5 h-5 text-gray-500 dark:text-gray-500 flex-shrink-0" aria-hidden />
                     {cert.name}
                   </li>
                 ))}
@@ -529,7 +601,7 @@ function App() {
                     <div key={exp.id} className="relative pl-10">
                       {/* Node (dot) */}
                       <div className={`absolute left-3 top-1 w-3 h-3 
-                        ${exp === experience[0] ? 'bg-red-900' : 'bg-gray-900'} 
+                        ${exp === experience[0] ? 'bg-red-700' : 'bg-gray-900'} 
                         dark:${exp === experience[0] ? 'bg-red-100' : 'bg-white'}  rounded-full border-2 border-white dark:border-gray-800 shadow-sm`}></div>
 
                       {/* Content */}
@@ -895,13 +967,11 @@ function App() {
         </p>
       </footer>
 
-      {/* EVE Robot — Chat trigger */}
-      {!isChatOpen && (
-        <EveRobot
-          onClick={() => setIsChatOpen(true)}
-          aria-label="Open chat with Gabriel"
-        />
-      )}
+      {/* EVE Robot — Chat trigger (always visible, toggles chat) */}
+      <EveRobot
+        onClick={() => setIsChatOpen((prev) => !prev)}
+        aria-label={isChatOpen ? "Close chat" : "Open chat with Gabriel"}
+      />
 
       {/* ChatBot Component */}
       <ChatBot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
@@ -926,14 +996,12 @@ function App() {
                   <div
                     key={cert.id}
                     onClick={() => setSelectedCertificate(cert)}
-                    className={`flex items-start gap-3 p-4 border rounded-lg transition cursor-pointer ${selectedCertificate?.id === cert.id
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-400'
-                      : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    className={`flex items-start gap-3 p-4 rounded transition cursor-pointer ${selectedCertificate?.id === cert.id
+                      ? 'ring-2 ring-accent bg-accent/5 dark:bg-accent/10'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700'
                       }`}
                   >
-                    <svg className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
+                    <FaAward className="w-6 h-6 text-gray-500 dark:text-gray-500 flex-shrink-0 mt-0.5" aria-hidden />
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900 dark:text-white">{cert.name}</h3>
                       <p className="text-gray-600 dark:text-gray-300 text-sm">{cert.issuer}</p>

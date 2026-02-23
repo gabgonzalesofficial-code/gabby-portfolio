@@ -128,7 +128,12 @@ export const techStack = {
   database: [
     { name: 'MySQL', icon: 'mysql' },
     { name: 'SQL', icon: 'sql' },
-    { name: 'Supabase', icon: 'supabase' }
+    { name: 'Supabase', icon: 'supabase' },
+    { name: 'Prisma', icon: 'prisma' }
+  ],
+  design: [
+    { name: 'Figma', icon: 'figma' },
+    { name: 'Canva', icon: 'canva' }
   ],
   tools: [
     { name: 'Git', icon: 'git' },
@@ -145,7 +150,10 @@ export const techStack = {
   aiTools: [
     { name: 'Gemini AI Studio', icon: 'gemini', description: 'AI Integration' },
     { name: 'ChatGPT', icon: 'chatgpt', description: 'Content Generation' },
-    { name: 'Gemini', icon: 'gemini', description: 'Content Generation' }
+    { name: 'Gemini', icon: 'gemini', description: 'Content Generation' },
+    { name: 'Claude', icon: 'claude', description: 'AI Assistant' },
+    { name: 'Groq', icon: 'groq', description: 'AI Inference API' },
+    { name: 'Suno', icon: 'suno', description: 'AI Music Generation' }
   ]
 }
 

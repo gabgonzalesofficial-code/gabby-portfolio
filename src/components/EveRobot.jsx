@@ -418,7 +418,7 @@ export default function EveRobot({ onClick, "aria-label": ariaLabel }) {
       onClick={handleClick}
       aria-label={ariaLabel}
       style={{
-        position:"fixed", right:"1.5rem", bottom:"1.5rem", zIndex:50,
+        position:"fixed", right:"1.5rem", bottom:"1.5rem", zIndex:9999,
         padding:0, margin:0, background:"none", border:"none",
         cursor:"pointer", display:"flex", flexDirection:"column",
         alignItems:"center", overflow:"visible",
