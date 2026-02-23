@@ -606,7 +606,7 @@ function App() {
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recommendations</h2>
               </div>
               <div className="space-y-4">
-                <div className="relative min-h-[140px]">
+                <div className="relative h-[200px]">
                   {recommendations.map((rec, idx) => {
                     const isActive = idx === recommendationIndex
                     const shouldTruncate = rec.quote.length > 300
@@ -634,7 +634,7 @@ function App() {
                         className={`transition-opacity duration-500 ${isActive ? 'opacity-100 block' : 'opacity-0 pointer-events-none absolute inset-0'
                           }`}
                       >
-                        <div className="max-h-[280px] overflow-y-auto pr-2">
+                        <div className="max-h-[140px] overflow-y-auto pr-2">
                           <blockquote
                             className={`text-gray-700 dark:text-gray-300 italic border-l-4 border-gray-300 dark:border-gray-600 pl-4 ${shouldTruncate ? '' : ''}`}
                           >
