@@ -1,307 +1,539 @@
+/**
+ * ChatBot.jsx — AI Chat Panel (same organism as EveRobot)
+ *
+ * Props:
+ *   isOpen        — boolean
+ *   onClose       — fn
+ *   onStateChange — fn('idle' | 'listening' | 'thinking' | 'speaking')
+ */
 import { useState, useRef, useEffect, useCallback } from 'react'
 
-function ChatBot({ isOpen, onClose }) {
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: "Hey there! 👋 I'm Gabriel, and I'm here to chat! Ask me about my work, my tech stack, my love for cooking (and poetry, if you're into that sort of thing 😄), or anything else you're curious about. I'm pretty adaptable, so fire away!"
+// ─── Hex Thinking Loader ──────────────────────────────────────────────────────
+function HexLoader() {
+  return (
+    <div style={{ display:'flex', gap:5, alignItems:'center', height:18 }}>
+      {[0,1,2].map(i => (
+        <div key={i} style={{
+          width:9, height:9,
+          clipPath:'polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)',
+          background:'rgba(0,200,255,0.8)',
+          animationName:'hexPulse',
+          animationDuration:'1.1s',
+          animationTimingFunction:'ease-in-out',
+          animationDelay:`${i*0.22}s`,
+          animationIterationCount:'infinite',
+        }}/>
+      ))}
+    </div>
+  );
+}
+
+// ─── Status dot ───────────────────────────────────────────────────────────────
+var STATUS = {
+  idle:      { label:'Standby',      color:'rgba(0,200,255,0.45)' },
+  listening: { label:'Listening',    color:'rgba(0,230,160,0.9)'  },
+  thinking:  { label:'Thinking…',    color:'rgba(0,190,255,1.0)'  },
+  speaking:  { label:'Responding',   color:'rgba(0,255,190,0.9)'  },
+};
+
+function StatusRow({ state }) {
+  var s = STATUS[state] || STATUS.idle;
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+      <div style={{
+        width:6, height:6, borderRadius:'50%',
+        background: s.color,
+        boxShadow: `0 0 5px ${s.color}`,
+        transition: 'background 0.4s, box-shadow 0.4s',
+        animationName: state !== 'idle' ? 'statusBlink' : 'none',
+        animationDuration: '1.2s',
+        animationTimingFunction: 'ease-in-out',
+        animationIterationCount: 'infinite',
+      }}/>
+      <span style={{
+        fontSize:11,
+        color: s.color,
+        fontFamily:"'SF Mono','Fira Code','Fira Mono','Roboto Mono',monospace",
+        letterSpacing:'0.06em',
+        transition:'color 0.4s',
+      }}>
+        {s.label}
+      </span>
+    </div>
+  );
+}
+
+// ─── Message bubble ───────────────────────────────────────────────────────────
+function Bubble({ role, text, streaming }) {
+  var isUser = role === 'user';
+  return (
+    <div style={{
+      display:'flex',
+      justifyContent: isUser ? 'flex-end' : 'flex-start',
+      marginBottom: 2,
+    }}>
+      <div style={{
+        maxWidth:'80%',
+        padding:'9px 13px',
+        borderRadius: isUser ? '14px 14px 3px 14px' : '3px 14px 14px 14px',
+        background: isUser
+          ? 'rgba(0,100,180,0.35)'
+          : 'rgba(255,255,255,0.04)',
+        border: isUser
+          ? '1px solid rgba(0,160,240,0.3)'
+          : '1px solid rgba(255,255,255,0.08)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      }}>
+        <p style={{
+          margin:0,
+          fontSize:13.5,
+          lineHeight:1.6,
+          whiteSpace:'pre-wrap',
+          wordBreak:'break-word',
+          color: isUser ? 'rgba(200,230,255,0.92)' : 'rgba(210,235,255,0.85)',
+          fontFamily: isUser
+            ? "-apple-system,'Helvetica Neue',sans-serif"
+            : "'SF Mono','Fira Code','Fira Mono','Roboto Mono',monospace",
+          fontSize: isUser ? 13.5 : 13,
+          letterSpacing: isUser ? 0 : '0.015em',
+        }}>
+          {text}
+          {streaming && (
+            <span style={{
+              display:'inline-block',
+              width:'0.5em', height:'1em',
+              background:'rgba(0,200,255,0.75)',
+              marginLeft:2,
+              verticalAlign:'text-bottom',
+              animationName:'cursorBlink',
+              animationDuration:'0.75s',
+              animationTimingFunction:'step-end',
+              animationIterationCount:'infinite',
+            }}/>
+          )}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── ChatBot ──────────────────────────────────────────────────────────────────
+export default function ChatBot({ isOpen, onClose, onStateChange }) {
+  var [messages, setMessages] = useState([{
+    role:'assistant',
+    content:"Hey there! 👋 I'm Gabriel, and I'm here to chat! Ask me about my work, my tech stack, my love for cooking (and poetry, if you're into that sort of thing 😄), or anything else you're curious about. Fire away!",
+  }]);
+  var [input,         setInput]        = useState('');
+  var [isLoading,     setIsLoading]    = useState(false);
+  var [streamText,    setStreamText]   = useState('');
+  var [isStreaming,   setIsStreaming]  = useState(false);
+  var [panelState,    setPanelState]   = useState('idle');
+  var [error,         setError]        = useState('');
+  var messagesEndRef  = useRef(null);
+  var inputRef        = useRef(null);
+  var isSubmitting    = useRef(false);
+  var streamTimer     = useRef(null);
+  var MAX = 1000;
+
+  function emit(s) { setPanelState(s); onStateChange && onStateChange(s); }
+
+  useEffect(function(){
+    messagesEndRef.current?.scrollIntoView({ behavior:'smooth' });
+  }, [messages, streamText]);
+
+  useEffect(function(){
+    if(isOpen) {
+      var t = setTimeout(function(){ inputRef.current?.focus(); }, 150);
+      emit('listening');
+      return function(){ clearTimeout(t); };
+    } else {
+      emit('idle');
     }
-  ])
-  const [input, setInput] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const messagesEndRef = useRef(null)
-  const inputRef = useRef(null)
-  const isSubmittingRef = useRef(false)
-  
-  // Character limit configuration
-  const MAX_MESSAGE_LENGTH = 1000
+  }, [isOpen]);
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  useEffect(function(){
+    return function(){ if(streamTimer.current) clearTimeout(streamTimer.current); };
+  }, []);
 
-  // Focus input when chat opens
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      const timer = setTimeout(() => inputRef.current?.focus(), 100)
-      return () => clearTimeout(timer)
+  // Variable-speed character streaming
+  var runStream = useCallback(function(fullText, onDone) {
+    if(streamTimer.current) clearTimeout(streamTimer.current);
+    var chars = [...fullText], i = 0;
+    function tick() {
+      if(i >= chars.length){ onDone && onDone(); return; }
+      var c = chars[i++];
+      setStreamText(function(p){ return p + c; });
+      var delay = 13 + Math.random()*11;
+      if('.!?'.includes(c))   delay = 85 + Math.random()*65;
+      else if(',;:'.includes(c)) delay = 42 + Math.random()*22;
+      else if(c === ' ')      delay = 6;
+      else if(c === '\n')     delay = 50;
+      streamTimer.current = setTimeout(tick, delay);
     }
-  }, [isOpen])
+    tick();
+  }, []);
 
-  const handleSend = useCallback(async (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    
-    // Prevent duplicate submissions
-    if (!input.trim() || isLoading || isSubmittingRef.current) {
-      return
-    }
-
-    const userMessage = input.trim()
-    
-    // Check character limit on frontend
-    if (userMessage.length > MAX_MESSAGE_LENGTH) {
-      setError(`Message is too long. Maximum ${MAX_MESSAGE_LENGTH} characters allowed. (Current: ${userMessage.length})`)
-      return
-    }
-    
-    // Set submitting flag to prevent duplicates
-    isSubmittingRef.current = true
-    
-    // Clear input immediately and set loading
-    setInput('')
-    setError('')
-    setIsLoading(true)
-    
-    // Add user message to chat
-    const newMessages = [...messages, { role: 'user', content: userMessage }]
-    setMessages(newMessages)
-    
-    // Prepare conversation history (excluding system message)
-    const conversationHistory = messages
-      .filter(msg => msg.role !== 'system')
-      .map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }))
-
+  var handleSend = useCallback(async function(e) {
+    e.preventDefault(); e.stopPropagation();
+    if(!input.trim() || isLoading || isSubmitting.current) return;
+    var msg = input.trim();
+    if(msg.length > MAX){ setError('Message too long (max '+MAX+' chars).'); return; }
+    isSubmitting.current = true;
+    setInput(''); setError(''); setIsLoading(true); emit('thinking');
+    var next = [...messages, { role:'user', content:msg }];
+    setMessages(next);
+    var history = messages.filter(m=>m.role!=='system').map(m=>({role:m.role,content:m.content}));
     try {
-      // Call API
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          conversationHistory: conversationHistory
-        }),
-      })
-
-      // Read response text once (can only read body once)
-      const responseText = await response.text()
-      
-      // Check if response is ok
-      if (!response.ok) {
-        let errorMessage = `HTTP error! status: ${response.status}`
-        
-        // Try to parse as JSON for error details
-        try {
-          if (responseText) {
-            const errorData = JSON.parse(responseText)
-            errorMessage = errorData.error || errorMessage
-            if (errorData.details) {
-              errorMessage += ` ${errorData.details}`
-            }
-            // If method not allowed, show what was received
-            if (response.status === 405 && errorData.receivedMethod) {
-              errorMessage += ` (Received: ${errorData.receivedMethod}, Expected: POST)`
-            }
-          }
-            } catch (e) {
-              // If response is not JSON, provide helpful error based on status
-              if (response.status === 404) {
-                const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                const isVercel = window.location.hostname.includes('vercel.app');
-                const port = window.location.port;
-                const isViteDev = port === '5173' || port === '5174' || port === '3000';
-                
-                if (isLocalDev && isViteDev) {
-                  errorMessage = '⚠️ Local Development Issue:\n\nYou are using "npm run dev" (Vite), but the API routes only work with "vercel dev".\n\nTo fix this:\n1. Install Vercel CLI: npm install -g vercel\n2. Run: vercel dev\n3. This will start both frontend and API routes locally.\n\nAlternatively, test the chatbot on your deployed Vercel site.';
-                } else if (isLocalDev) {
-                  errorMessage = 'API route not found. For local development, please use "vercel dev" instead of "npm run dev".';
-                } else if (isVercel) {
-                  errorMessage = 'API route not found on Vercel. Please check: 1) The api/chat.js file exists in your repository, 2) It has been deployed, 3) Check the Functions tab in your Vercel deployment.';
-                } else {
-                  errorMessage = 'API route not found. Make sure the api/chat.js file exists and is deployed correctly.';
-                }
-              } else if (response.status === 500) {
-            errorMessage = 'Server error. Please check your GROQ_API_KEY in Vercel environment variables and check the function logs.'
-          } else if (response.status === 401) {
-            errorMessage = 'Invalid API key. Please check your GROQ_API_KEY in Vercel environment variables.'
-          }
+      var res = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,conversationHistory:history})});
+      var txt = await res.text();
+      if(!res.ok){
+        var em='Error '+res.status;
+        try{ var ed=JSON.parse(txt); em=ed.error||em; }catch(e){
+          if(res.status===404) em='API not found. Use "vercel dev" locally.';
+          else if(res.status===500) em='Server error — check GROQ_API_KEY.';
+          else if(res.status===401) em='Unauthorized — check your API key.';
         }
-        throw new Error(errorMessage)
+        throw new Error(em);
       }
-
-      // Check if response has content
-      if (!responseText) {
-        throw new Error('Empty response from server')
-      }
-
-      // Parse JSON response
-      let data
-      try {
-        data = JSON.parse(responseText)
-      } catch (parseError) {
-        console.error('JSON parse error:', parseError, 'Response text:', responseText.substring(0, 100))
-        throw new Error('Failed to parse server response.')
-      }
-
-      if (!data.response) {
-        const errorMsg = data.error || 'No response from AI'
-        const details = data.details ? `\n\n${data.details}` : ''
-        throw new Error(errorMsg + details)
-      }
-
-      // Add assistant response
-      setMessages([...newMessages, { role: 'assistant', content: data.response }])
-    } catch (error) {
-      console.error('Chat error:', error)
-      // Show error message with details if available
-      const errorMessage = error.message || 'An unknown error occurred'
-      setMessages([
-        ...newMessages,
-        {
-          role: 'assistant',
-          content: `Sorry, I encountered an error: ${errorMessage}\n\nPlease try again or use the contact form if the issue persists.`
-        }
-      ])
-    } finally {
-      setIsLoading(false)
-      isSubmittingRef.current = false
-      // Refocus input after sending
-      setTimeout(() => inputRef.current?.focus(), 100)
+      var data; try{ data=JSON.parse(txt); }catch(e){ throw new Error('Bad server response.'); }
+      if(!data.response) throw new Error(data.error||'No response.');
+      // Stream the reply
+      setIsLoading(false); setIsStreaming(true); setStreamText(''); emit('speaking');
+      runStream(data.response, function(){
+        setMessages(function(prev){ return [...prev,{role:'assistant',content:data.response}]; });
+        setStreamText(''); setIsStreaming(false);
+        isSubmitting.current=false; emit('listening');
+        setTimeout(function(){ inputRef.current?.focus(); }, 100);
+      });
+    } catch(err) {
+      setMessages(function(prev){ return [...prev,{role:'assistant',content:'⚠ '+(err.message||'Something went wrong.')+'  \nPlease try again.'}]; });
+      setIsLoading(false); setIsStreaming(false);
+      isSubmitting.current=false; emit('listening');
+      setTimeout(function(){ inputRef.current?.focus(); }, 100);
     }
-  }, [messages, input, isLoading])
+  }, [messages, input, isLoading, runStream]);
 
-  const handleKeyPress = useCallback((e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSend(e)
-    }
-  }, [handleSend])
+  var handleKeyDown = useCallback(function(e){
+    if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); handleSend(e); }
+  }, [handleSend]);
 
-  const handleInputChange = useCallback((e) => {
-    setInput(e.target.value)
-    // Clear error when user starts typing
-    if (error) {
-      setError('')
-    }
-  }, [error])
+  var handleChange = useCallback(function(e){
+    setInput(e.target.value);
+    if(error) setError('');
+  }, [error]);
 
-  if (!isOpen) return null
+  if(!isOpen) return null;
+
+  var fraction = input.length / MAX;
+  var charColor = fraction >= 1 ? '#ff4466' : fraction > 0.9 ? '#ffaa00' : 'rgba(0,200,255,0.35)';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:justify-end pointer-events-none p-0 sm:p-0">
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/50 dark:bg-black/70 transition-opacity pointer-events-auto"
+    <>
+      {/* ── Global keyframes ── */}
+      <style>{`
+        @keyframes chatSlideUp {
+          from { opacity:0; transform:translateY(16px) scale(0.98); }
+          to   { opacity:1; transform:translateY(0)    scale(1);    }
+        }
+        @keyframes hexPulse {
+          0%,100% { opacity:0.3;  transform:scale(0.8);  }
+          50%     { opacity:1.0;  transform:scale(1.15); }
+        }
+        @keyframes cursorBlink {
+          0%,100% { opacity:1; }
+          50%     { opacity:0; }
+        }
+        @keyframes statusBlink {
+          0%,100% { opacity:1;    }
+          50%     { opacity:0.35; }
+        }
+        @keyframes scanLine {
+          from { top: -2px; }
+          to   { top: 100%; }
+        }
+      `}</style>
+
+      {/* ── Backdrop ── */}
+      <div
         onClick={onClose}
+        style={{
+          position:'fixed', inset:0, zIndex:50,
+          background:'rgba(0,4,14,0.65)',
+          backdropFilter:'blur(4px)',
+          WebkitBackdropFilter:'blur(4px)',
+        }}
       />
 
-      {/* Chat Window — full width on mobile, clears widget on desktop */}
-      <div className="relative w-full max-w-[calc(100vw-2rem)] sm:max-w-md h-[min(85vh,600px)] max-h-[600px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-t-lg shadow-2xl flex flex-col pointer-events-auto mx-4 mb-24 sm:mx-0 sm:mr-36 sm:mb-36 overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-t-lg">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
+      {/* ── Panel ── */}
+      <div style={{
+        position:'fixed',
+        right:'calc(1.5rem + 120px)',   // clears the orb
+        bottom:'1.5rem',
+        zIndex:51,
+        width:'min(90vw, 400px)',
+        height:'min(82vh, 580px)',
+        display:'flex',
+        flexDirection:'column',
+        background:'rgba(3, 8, 22, 0.96)',
+        border:'1px solid rgba(0,200,255,0.16)',
+        borderRadius:16,
+        boxShadow:[
+          '0 0 0 1px rgba(0,200,255,0.05)',
+          '0 8px 32px rgba(0,0,0,0.55)',
+          '0 0 60px rgba(0,120,255,0.1)',
+        ].join(', '),
+        overflow:'hidden',
+        animationName:'chatSlideUp',
+        animationDuration:'0.26s',
+        animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)',
+        animationFillMode:'both',
+      }}>
+
+        {/* Subtle top scan line */}
+        <div style={{
+          position:'absolute', left:0, right:0, height:1,
+          background:'linear-gradient(90deg,transparent,rgba(0,200,255,0.18),transparent)',
+          animationName:'scanLine',
+          animationDuration:'6s',
+          animationTimingFunction:'linear',
+          animationIterationCount:'infinite',
+          pointerEvents:'none',
+          zIndex:1,
+        }}/>
+
+        {/* ── Header ── */}
+        <div style={{
+          padding:'14px 16px 12px',
+          borderBottom:'1px solid rgba(255,255,255,0.06)',
+          display:'flex',
+          alignItems:'center',
+          justifyContent:'space-between',
+          flexShrink:0,
+          background:'rgba(0,200,255,0.03)',
+        }}>
+          <div style={{ display:'flex', alignItems:'center', gap:11 }}>
+            {/* Clean circle avatar with inner orb glow */}
+            <div style={{
+              width:36, height:36, borderRadius:'50%',
+              background:'radial-gradient(circle at 38% 38%, rgba(0,200,255,0.25), rgba(0,40,100,0.6))',
+              border:'1px solid rgba(0,200,255,0.35)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              boxShadow:'0 0 12px rgba(0,200,255,0.25)',
+              flexShrink:0,
+            }}>
+              <div style={{
+                width:10, height:10, borderRadius:'50%',
+                background:'rgba(0,220,255,0.85)',
+                boxShadow:'0 0 8px rgba(0,220,255,0.7)',
+              }}/>
             </div>
+
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">AI Assistant</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Ask me anything!</p>
+              <div style={{
+                fontSize:13,
+                fontWeight:600,
+                color:'rgba(210,240,255,0.95)',
+                letterSpacing:'0.04em',
+                fontFamily:"-apple-system,'Helvetica Neue',sans-serif",
+                lineHeight:1.2,
+                marginBottom:3,
+              }}>
+                Gabriel
+              </div>
+              <StatusRow state={panelState}/>
             </div>
           </div>
+
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition cursor-pointer"
             aria-label="Close chat"
+            style={{
+              width:30, height:30,
+              borderRadius:8,
+              background:'rgba(255,255,255,0.05)',
+              border:'1px solid rgba(255,255,255,0.09)',
+              cursor:'pointer',
+              color:'rgba(160,200,230,0.6)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              transition:'all 0.15s',
+              flexShrink:0,
+            }}
+            onMouseEnter={function(e){e.currentTarget.style.background='rgba(255,255,255,0.1)';e.currentTarget.style.color='rgba(200,230,255,0.9)';}}
+            onMouseLeave={function(e){e.currentTarget.style.background='rgba(255,255,255,0.05)';e.currentTarget.style.color='rgba(160,200,230,0.6)';}}
           >
-            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
           </button>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((message, idx) => (
-            <div
-              key={idx}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                  message.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
-                }`}
-              >
-                <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-              </div>
-            </div>
-          ))}
-          
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                </div>
+        {/* ── Messages ── */}
+        <div style={{
+          flex:1,
+          overflowY:'auto',
+          padding:'16px 14px 8px',
+          display:'flex',
+          flexDirection:'column',
+          gap:8,
+          scrollbarWidth:'thin',
+          scrollbarColor:'rgba(0,200,255,0.15) transparent',
+        }}>
+          {messages.map(function(m, i) {
+            var isLastAI = m.role==='assistant' && i===messages.length-1 && isStreaming;
+            return (
+              <Bubble
+                key={i}
+                role={m.role}
+                text={isLastAI ? streamText : m.content}
+                streaming={isLastAI}
+              />
+            );
+          })}
+
+          {/* Streaming bubble after user message */}
+          {isStreaming && messages[messages.length-1]?.role==='user' && (
+            <Bubble role="assistant" text={streamText} streaming={true}/>
+          )}
+
+          {/* Hex thinking indicator */}
+          {isLoading && !isStreaming && (
+            <div style={{ display:'flex', justifyContent:'flex-start', paddingLeft:2 }}>
+              <div style={{
+                padding:'10px 14px',
+                borderRadius:'3px 14px 14px 14px',
+                background:'rgba(255,255,255,0.04)',
+                border:'1px solid rgba(255,255,255,0.08)',
+              }}>
+                <HexLoader/>
               </div>
             </div>
           )}
-          
-          <div ref={messagesEndRef} />
+
+          <div ref={messagesEndRef}/>
         </div>
 
-        {/* Input */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        {/* ── Input ── */}
+        <div style={{
+          padding:'10px 12px 12px',
+          borderTop:'1px solid rgba(255,255,255,0.06)',
+          background:'rgba(0,0,0,0.25)',
+          flexShrink:0,
+        }}>
           {error && (
-            <div className="mb-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+            <div style={{
+              marginBottom:8,
+              padding:'6px 10px',
+              background:'rgba(255,50,80,0.08)',
+              border:'1px solid rgba(255,50,80,0.25)',
+              borderRadius:7,
+              fontSize:11,
+              color:'rgba(255,130,140,0.9)',
+              fontFamily:"'SF Mono','Fira Code',monospace",
+            }}>
+              {error}
             </div>
           )}
-          <form onSubmit={handleSend} className="flex flex-col gap-2">
-            <div className="flex gap-2 min-w-0">
+
+          <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+            <div style={{ flex:1, position:'relative' }}>
               <input
                 ref={inputRef}
                 type="text"
                 value={input}
-                onChange={handleInputChange}
-                onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
-                disabled={isLoading}
-                maxLength={MAX_MESSAGE_LENGTH}
-                className="flex-1 min-w-0 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 disabled:cursor-not-allowed"
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask me anything…"
+                disabled={isLoading || isStreaming}
+                maxLength={MAX}
+                style={{
+                  width:'100%',
+                  padding:'10px 36px 10px 14px',
+                  background:'rgba(255,255,255,0.05)',
+                  border:'1px solid rgba(255,255,255,0.1)',
+                  borderRadius:10,
+                  color:'rgba(210,235,255,0.9)',
+                  fontSize:13.5,
+                  fontFamily:"-apple-system,'Helvetica Neue',sans-serif",
+                  outline:'none',
+                  boxSizing:'border-box',
+                  transition:'border-color 0.2s, box-shadow 0.2s',
+                  caretColor:'rgba(0,200,255,0.9)',
+                  opacity:(isLoading||isStreaming)?0.5:1,
+                  '::placeholder':{ color:'rgba(120,160,200,0.4)' },
+                }}
+                onFocus={function(e){e.target.style.borderColor='rgba(0,200,255,0.4)';e.target.style.boxShadow='0 0 0 2px rgba(0,200,255,0.08), 0 0 12px rgba(0,150,255,0.1)';}}
+                onBlur={function(e){e.target.style.borderColor='rgba(255,255,255,0.1)';e.target.style.boxShadow='none';}}
               />
-              <button
-                type="submit"
-                disabled={!input.trim() || isLoading || input.length > MAX_MESSAGE_LENGTH}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition cursor-pointer"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              {/* Char arc */}
+              <div style={{position:'absolute',right:9,top:'50%',transform:'translateY(-50%)',width:16,height:16,pointerEvents:'none'}}>
+                <svg viewBox="0 0 16 16" style={{transform:'rotate(-90deg)'}}>
+                  <circle cx="8" cy="8" r="6" fill="none" stroke="rgba(0,200,255,0.1)" strokeWidth="1.8"/>
+                  <circle cx="8" cy="8" r="6" fill="none" stroke={charColor}
+                    strokeWidth="1.8"
+                    strokeDasharray={`${Math.min(fraction,1)*37.7} 37.7`}
+                    style={{transition:'stroke-dasharray 0.2s, stroke 0.3s'}}
+                  />
                 </svg>
-              </button>
+              </div>
             </div>
-            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 px-1">
-              <span>
-                {input.length > MAX_MESSAGE_LENGTH * 0.9 && (
-                  <span className={input.length >= MAX_MESSAGE_LENGTH ? 'text-red-500 font-medium' : 'text-yellow-500'}>
-                    {MAX_MESSAGE_LENGTH - input.length} characters remaining
-                  </span>
-                )}
+
+            {/* Send button — clean circle */}
+            <button
+              onClick={handleSend}
+              disabled={!input.trim()||isLoading||isStreaming||input.length>MAX}
+              aria-label="Send"
+              style={{
+                width:38, height:38, borderRadius:'50%',
+                background: (!input.trim()||isLoading||isStreaming)
+                  ? 'rgba(0,100,160,0.25)'
+                  : 'rgba(0,200,255,0.85)',
+                border:'none',
+                cursor:(!input.trim()||isLoading||isStreaming)?'not-allowed':'pointer',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                color:(!input.trim()||isLoading||isStreaming)?'rgba(0,150,200,0.35)':'rgba(0,10,30,0.95)',
+                transition:'all 0.18s',
+                flexShrink:0,
+              }}
+              onMouseEnter={function(e){if(!e.currentTarget.disabled)e.currentTarget.style.background='rgba(0,225,255,1)';}}
+              onMouseLeave={function(e){if(!e.currentTarget.disabled)e.currentTarget.style.background='rgba(0,200,255,0.85)';}}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+              </svg>
+            </button>
+          </div>
+
+          <div style={{marginTop:7,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <span style={{fontSize:10,color:'rgba(0,200,255,0.2)',fontFamily:"'SF Mono','Fira Code',monospace",letterSpacing:'0.12em'}}>
+              GROQ AI
+            </span>
+            {fraction > 0.85 && (
+              <span style={{fontSize:10,color:charColor,fontFamily:"'SF Mono','Fira Code',monospace",transition:'color 0.3s'}}>
+                {MAX-input.length} left
               </span>
-              <span className={input.length > MAX_MESSAGE_LENGTH * 0.9 ? (input.length >= MAX_MESSAGE_LENGTH ? 'text-red-500 font-medium' : 'text-yellow-500') : ''}>
-                {input.length}/{MAX_MESSAGE_LENGTH}
-              </span>
-            </div>
-          </form>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-            Powered by Groq AI
-          </p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  )
-}
 
-export default ChatBot
+      {/* Mobile: panel goes full-width at bottom */}
+      <style>{`
+        @media (max-width: 640px) {
+          /* target the panel by its bottom position */
+          div[style*="chatSlideUp"] {
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            border-radius: 16px 16px 0 0 !important;
+          }
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,200,255,0.15); border-radius:2px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,200,255,0.3); }
+      `}</style>
+    </>
+  );
+}
