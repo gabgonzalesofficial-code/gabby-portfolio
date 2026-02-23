@@ -1,470 +1,458 @@
 import { useEffect, useRef, useState } from "react";
 
-// ─── PrismaticBurst — exact React Bits fragment shader ────────────────────────
-const VERT = `#version 300 es
-in vec2 position;
-in vec2 uv;
-out vec2 vUv;
-void main() { vUv = uv; gl_Position = vec4(position, 0.0, 1.0); }
-`;
+// ─── Shaders (WebGL1 safe — no float loop index) ──────────────────────────────
+var VERT_SRC = [
+  "precision highp float;",
+  "attribute vec3 aPosition;",
+  "attribute vec3 aNormal;",
+  "attribute vec2 aUV;",
+  "uniform mat4 uProjection;",
+  "uniform mat4 uView;",
+  "uniform mat4 uModel;",
+  "uniform mat3 uNormalMatrix;",
+  "varying vec3 vNormal;",
+  "varying vec2 vUv;",
+  "void main() {",
+  "  vNormal = normalize(uNormalMatrix * aNormal);",
+  "  vUv = aUV;",
+  "  gl_Position = uProjection * uView * uModel * vec4(aPosition, 1.0);",
+  "}",
+].join("\n");
 
-const FRAG = `#version 300 es
-precision highp float;
-precision highp int;
-out vec4 fragColor;
+var FRAG_SRC = [
+  "precision highp float;",
+  "uniform float uTime;",
+  "uniform vec2 uMouse;",
+  "uniform float uAmplitude;",
+  "uniform float uSpeed;",
+  "uniform vec3 uColor;",
+  "varying vec3 vNormal;",
+  "varying vec2 vUv;",
+  "void main() {",
+  "  vec2 uv = vUv * 2.0 - 1.0;",
+  "  uv += (uMouse - vec2(0.5)) * uAmplitude;",
+  "  float d = -uTime * 0.5 * uSpeed;",
+  "  float a = 0.0;",
+  "  a += cos(0.0 - d - a * uv.x); d += sin(uv.y * 0.0 + a);",
+  "  a += cos(1.0 - d - a * uv.x); d += sin(uv.y * 1.0 + a);",
+  "  a += cos(2.0 - d - a * uv.x); d += sin(uv.y * 2.0 + a);",
+  "  a += cos(3.0 - d - a * uv.x); d += sin(uv.y * 3.0 + a);",
+  "  a += cos(4.0 - d - a * uv.x); d += sin(uv.y * 4.0 + a);",
+  "  a += cos(5.0 - d - a * uv.x); d += sin(uv.y * 5.0 + a);",
+  "  a += cos(6.0 - d - a * uv.x); d += sin(uv.y * 6.0 + a);",
+  "  a += cos(7.0 - d - a * uv.x); d += sin(uv.y * 7.0 + a);",
+  "  d += uTime * 0.5 * uSpeed;",
+  "  vec3 col = vec3(cos(uv * vec2(d, a)) * 0.6 + 0.4, cos(a + d) * 0.5 + 0.5);",
+  "  col = cos(col * cos(vec3(d, a, 2.5)) * 0.5 + 0.5) * uColor;",
+  "  col = pow(col, vec3(1.1));",
+  "  vec3 lightDir = normalize(vec3(1.0, 1.5, 2.0));",
+  "  float diff = clamp(dot(vNormal, lightDir), 0.0, 1.0);",
+  "  float light = 0.72 + diff * 0.45;",
+  "  col *= light;",
+  "  gl_FragColor = vec4(col, 1.0);",
+  "}",
+].join("\n");
 
-uniform vec2  uResolution;
-uniform float uTime;
-uniform float uIntensity;
-uniform float uSpeed;
-uniform int   uAnimType;
-uniform vec2  uMouse;
-uniform int   uColorCount;
-uniform float uDistort;
-uniform vec2  uOffset;
-uniform sampler2D uGradient;
-uniform float uNoiseAmount;
-uniform int   uRayCount;
+// ─── Matrix math ──────────────────────────────────────────────────────────────
+function mat4Id() { return new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]); }
 
-float hash21(vec2 p){
-  p=floor(p);
-  float f=52.9829189*fract(dot(p,vec2(0.065,0.005)));
-  return fract(f);
+function mat4Persp(out, fovy, aspect, near, far) {
+  var f = 1.0 / Math.tan(fovy / 2), nf = 1 / (near - far);
+  out[0]=f/aspect; out[1]=0;  out[2]=0;              out[3]=0;
+  out[4]=0;        out[5]=f;  out[6]=0;              out[7]=0;
+  out[8]=0;        out[9]=0;  out[10]=(far+near)*nf; out[11]=-1;
+  out[12]=0;       out[13]=0; out[14]=2*far*near*nf; out[15]=0;
 }
-mat2 rot30(){ return mat2(0.8,-0.5,0.5,0.8); }
-float layeredNoise(vec2 fragPx){
-  vec2 p=mod(fragPx+vec2(uTime*30.0,-uTime*21.0),1024.0);
-  vec2 q=rot30()*p;
-  float n=0.0;
-  n+=0.40*hash21(q);
-  n+=0.25*hash21(q*2.0+17.0);
-  n+=0.20*hash21(q*4.0+47.0);
-  n+=0.10*hash21(q*8.0+113.0);
-  n+=0.05*hash21(q*16.0+191.0);
-  return n;
+
+function mat4LookAt(out, eye, center, up) {
+  var fx=center[0]-eye[0], fy=center[1]-eye[1], fz=center[2]-eye[2];
+  var l=Math.sqrt(fx*fx+fy*fy+fz*fz); fx/=l; fy/=l; fz/=l;
+  var sx=fy*up[2]-fz*up[1], sy=fz*up[0]-fx*up[2], sz=fx*up[1]-fy*up[0];
+  l=Math.sqrt(sx*sx+sy*sy+sz*sz); sx/=l; sy/=l; sz/=l;
+  var ux=sy*fz-sz*fy, uy=sz*fx-sx*fz, uz=sx*fy-sy*fx;
+  out[0]=sx;  out[1]=ux;  out[2]=-fx; out[3]=0;
+  out[4]=sy;  out[5]=uy;  out[6]=-fy; out[7]=0;
+  out[8]=sz;  out[9]=uz;  out[10]=-fz;out[11]=0;
+  out[12]=-(sx*eye[0]+sy*eye[1]+sz*eye[2]);
+  out[13]=-(ux*eye[0]+uy*eye[1]+uz*eye[2]);
+  out[14]= (fx*eye[0]+fy*eye[1]+fz*eye[2]);
+  out[15]=1;
 }
-vec3 rayDir(vec2 frag,vec2 res,vec2 offset,float dist){
-  float focal=res.y*max(dist,1e-3);
-  return normalize(vec3(2.0*(frag-offset)-res,focal));
+
+function mat4Mul(out, a, b) {
+  for (var i=0;i<4;i++) for (var j=0;j<4;j++)
+    out[j*4+i] = a[i]*b[j*4] + a[4+i]*b[j*4+1] + a[8+i]*b[j*4+2] + a[12+i]*b[j*4+3];
 }
-float edgeFade(vec2 frag,vec2 res,vec2 offset){
-  vec2 toC=frag-0.5*res-offset;
-  float r=length(toC)/(0.5*min(res.x,res.y));
-  float x=clamp(r,0.0,1.0);
-  float q=x*x*x*(x*(x*6.0-15.0)+10.0);
-  float s=q*0.5; s=pow(s,1.5);
-  float tail=1.0-pow(1.0-s,2.0); s=mix(s,tail,0.2);
-  float dn=(layeredNoise(frag*0.15)-0.5)*0.0015*s;
-  return clamp(s+dn,0.0,1.0);
+
+function mat4RX(out, a) {
+  var c=Math.cos(a), s=Math.sin(a);
+  out[0]=1; out[1]=0;  out[2]=0;  out[3]=0;
+  out[4]=0; out[5]=c;  out[6]=s;  out[7]=0;
+  out[8]=0; out[9]=-s; out[10]=c; out[11]=0;
+  out[12]=0;out[13]=0; out[14]=0; out[15]=1;
 }
-mat3 rotX(float a){ float c=cos(a),s=sin(a); return mat3(1,0,0, 0,c,-s, 0,s,c); }
-mat3 rotY(float a){ float c=cos(a),s=sin(a); return mat3(c,0,s, 0,1,0, -s,0,c); }
-mat3 rotZ(float a){ float c=cos(a),s=sin(a); return mat3(c,-s,0, s,c,0, 0,0,1); }
-vec3 sampleGradient(float t){ return texture(uGradient,vec2(clamp(t,0.0,1.0),0.5)).rgb; }
-vec2 rot2(vec2 v,float a){ float s=sin(a),c=cos(a); return mat2(c,-s,s,c)*v; }
-float bendAngle(vec3 q,float t){
-  return 0.8*sin(q.x*0.55+t*0.6)+0.7*sin(q.y*0.50-t*0.5)+0.6*sin(q.z*0.60+t*0.7);
+
+function mat4RY(out, a) {
+  var c=Math.cos(a), s=Math.sin(a);
+  out[0]=c;  out[1]=0; out[2]=-s; out[3]=0;
+  out[4]=0;  out[5]=1; out[6]=0;  out[7]=0;
+  out[8]=s;  out[9]=0; out[10]=c; out[11]=0;
+  out[12]=0; out[13]=0;out[14]=0; out[15]=1;
 }
-void main(){
-  vec2 frag=gl_FragCoord.xy;
-  float t=uTime*uSpeed;
-  float jitterAmp=0.1*clamp(uNoiseAmount,0.0,1.0);
-  vec3 dir=rayDir(frag,uResolution,uOffset,1.0);
-  float marchT=0.0; vec3 col=vec3(0.0);
-  float n=layeredNoise(frag);
-  vec4 c=cos(t*0.2+vec4(0,33,11,0));
-  mat2 M2=mat2(c.x,c.y,c.z,c.w);
-  float amp=clamp(uDistort,0.0,50.0)*0.15;
-  mat3 rot3dMat=mat3(1.0);
-  if(uAnimType==1){ vec3 ang=vec3(t*0.31,t*0.21,t*0.17); rot3dMat=rotZ(ang.z)*rotY(ang.y)*rotX(ang.x); }
-  mat3 hoverMat=mat3(1.0);
-  if(uAnimType==2){ vec2 m=uMouse*2.0-1.0; hoverMat=rotY(m.x*0.6)*rotX(m.y*0.6); }
-  for(int i=0;i<44;++i){
-    vec3 P=marchT*dir; P.z-=2.0;
-    float rad=length(P);
-    vec3 Pl=P*(10.0/max(rad,1e-6));
-    if(uAnimType==0){ Pl.xz*=M2; }
-    else if(uAnimType==1){ Pl=rot3dMat*Pl; }
-    else { Pl=hoverMat*Pl; }
-    float stepLen=min(rad-0.3,n*jitterAmp)+0.1;
-    float grow=smoothstep(0.35,3.0,marchT);
-    float a1=amp*grow*bendAngle(Pl*0.6,t);
-    float a2=0.5*amp*grow*bendAngle(Pl.zyx*0.5+3.1,t*0.9);
-    vec3 Pb=Pl; Pb.xz=rot2(Pb.xz,a1); Pb.xy=rot2(Pb.xy,a2);
-    float rayPattern=smoothstep(0.5,0.7,
-      sin(Pb.x+cos(Pb.y)*cos(Pb.z))*sin(Pb.z+sin(Pb.y)*cos(Pb.x+t)));
-    if(uRayCount>0){
-      float ang=atan(Pb.y,Pb.x);
-      float comb=0.5+0.5*cos(float(uRayCount)*ang);
-      comb=pow(comb,3.0);
-      rayPattern*=smoothstep(0.15,0.95,comb);
-    }
-    vec3 spectralDefault=1.0+vec3(cos(marchT*3.0),cos(marchT*3.0+1.0),cos(marchT*3.0+2.0));
-    float saw=fract(marchT*0.25);
-    float tRay=saw*saw*(3.0-2.0*saw);
-    vec3 userGradient=2.0*sampleGradient(tRay);
-    vec3 spectral=(uColorCount>0)?userGradient:spectralDefault;
-    vec3 base=(0.08/(0.4+stepLen))*smoothstep(5.0,0.0,rad)*spectral;
-    col+=base*rayPattern;
-    marchT+=stepLen;
+
+function mat3FromMat4(out, m) {
+  out[0]=m[0]; out[1]=m[1]; out[2]=m[2];
+  out[3]=m[4]; out[4]=m[5]; out[5]=m[6];
+  out[6]=m[8]; out[7]=m[9]; out[8]=m[10];
+}
+
+// ─── Icosphere geometry ───────────────────────────────────────────────────────
+function buildIcosphere(subdivisions) {
+  var phi = (1 + Math.sqrt(5)) / 2;
+  var raw = [
+    [-1,phi,0],[1,phi,0],[-1,-phi,0],[1,-phi,0],
+    [0,-1,phi],[0,1,phi],[0,-1,-phi],[0,1,-phi],
+    [phi,0,-1],[phi,0,1],[-phi,0,-1],[-phi,0,1],
+  ];
+  var verts = raw.map(function(v) {
+    var l = Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+    return [v[0]/l, v[1]/l, v[2]/l];
+  });
+  var faces = [
+    [0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],
+    [1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],
+    [3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],
+    [4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1],
+  ].map(function(f){ return [f[0],f[1],f[2]]; });
+
+  var cache = {};
+  function mid(a, b) {
+    var k = a < b ? a+"_"+b : b+"_"+a;
+    if (cache[k] !== undefined) return cache[k];
+    var va=verts[a], vb=verts[b];
+    var x=(va[0]+vb[0])/2, y=(va[1]+vb[1])/2, z=(va[2]+vb[2])/2;
+    var l=Math.sqrt(x*x+y*y+z*z);
+    var idx=verts.length;
+    verts.push([x/l,y/l,z/l]);
+    cache[k]=idx; return idx;
   }
-  col*=edgeFade(frag,uResolution,uOffset);
-  col*=uIntensity;
-  fragColor=vec4(clamp(col,0.0,1.0),1.0);
-}
-`;
 
-// ─── WebGL helpers ────────────────────────────────────────────────────────────
-function mkShader(gl, type, src) {
-  const s = gl.createShader(type);
+  for (var s=0; s<subdivisions; s++) {
+    var next=[];
+    for (var fi=0; fi<faces.length; fi++) {
+      var f=faces[fi];
+      var ab=mid(f[0],f[1]), bc=mid(f[1],f[2]), ca=mid(f[2],f[0]);
+      next.push([f[0],ab,ca],[f[1],bc,ab],[f[2],ca,bc],[ab,bc,ca]);
+    }
+    faces=next;
+  }
+
+  var seed=99991;
+  function rand() {
+    seed=(seed*1664525+1013904223)&0x7fffffff;
+    return seed/0x7fffffff;
+  }
+
+  var pos=[], nrm=[], uvs=[];
+  for (var i=0; i<faces.length; i++) {
+    var fa=faces[i];
+    var va=verts[fa[0]], vb=verts[fa[1]], vc=verts[fa[2]];
+    var e1x=vb[0]-va[0], e1y=vb[1]-va[1], e1z=vb[2]-va[2];
+    var e2x=vc[0]-va[0], e2y=vc[1]-va[1], e2z=vc[2]-va[2];
+    var nx=e1y*e2z-e1z*e2y, ny=e1z*e2x-e1x*e2z, nz=e1x*e2y-e1y*e2x;
+    var nl=Math.sqrt(nx*nx+ny*ny+nz*nz);
+    nx/=nl; ny/=nl; nz/=nl;
+
+    var uo=rand(), vo=rand(), rot=rand()*6.2832;
+    var co=Math.cos(rot), si=Math.sin(rot);
+    var triUV=[[0,0],[1,0],[0.5,0.866]].map(function(uv) {
+      var u=uv[0]-0.5, v=uv[1]-0.333;
+      return [(co*u-si*v)*0.28+uo*0.72+0.14, (si*u+co*v)*0.28+vo*0.72+0.14];
+    });
+
+    var pts=[va,vb,vc];
+    for (var vi=0; vi<3; vi++) {
+      pos.push(pts[vi][0],pts[vi][1],pts[vi][2]);
+      nrm.push(nx,ny,nz);
+      uvs.push(triUV[vi][0],triUV[vi][1]);
+    }
+  }
+
+  return {
+    positions: new Float32Array(pos),
+    normals:   new Float32Array(nrm),
+    uvs:       new Float32Array(uvs),
+    count:     faces.length*3,
+  };
+}
+
+// ─── WebGL setup (runs once, stored in a module-level ref) ────────────────────
+function compileShader(gl, type, src) {
+  var s = gl.createShader(type);
   gl.shaderSource(s, src);
   gl.compileShader(s);
-  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
-    console.warn(gl.getShaderInfoLog(s));
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    console.error("Shader error:", gl.getShaderInfoLog(s), "\n", src);
+    return null;
+  }
   return s;
 }
-function mkProg(gl, vs, fs) {
-  const p = gl.createProgram();
-  gl.attachShader(p, mkShader(gl, gl.VERTEX_SHADER, vs));
-  gl.attachShader(p, mkShader(gl, gl.FRAGMENT_SHADER, fs));
-  gl.linkProgram(p);
-  if (!gl.getProgramParameter(p, gl.LINK_STATUS))
-    console.warn(gl.getProgramInfoLog(p));
-  return p;
-}
-function hexToRgb(hex) {
-  let h = hex.trim().replace("#", "");
-  if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
-  const n = parseInt(h, 16);
-  return [((n>>16)&255)/255, ((n>>8)&255)/255, (n&255)/255];
-}
 
-// ─── Offscreen PrismaticBurst renderer ───────────────────────────────────────
-function useBurstTexture(texSize = 256) {
-  const s = useRef(null);
+function createGLResources(canvas, size) {
+  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+  var W = size * DPR, H = size * DPR;
+  canvas.width = W; canvas.height = H;
+  canvas.style.width = size + "px"; canvas.style.height = size + "px";
 
-  // Lazy init — one canvas, one WebGL2 context, lives for component lifetime
-  if (!s.current) {
-    const cv = document.createElement("canvas");
-    cv.width = cv.height = texSize;
-    const gl = cv.getContext("webgl2", { alpha: false, antialias: false });
-    if (gl) {
-      const prog = mkProg(gl, VERT, FRAG);
-      gl.useProgram(prog);
+  var gl = canvas.getContext("webgl", { antialias: true, alpha: true, premultipliedAlpha: false });
+  if (!gl) { console.error("WebGL unavailable"); return null; }
 
-      // Full-screen triangle
-      const mkBuf = (data) => {
-        const b = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, b);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
-        return b;
-      };
-      const bindAttr = (prog, name, buf, size) => {
-        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-        const loc = gl.getAttribLocation(prog, name);
-        gl.enableVertexAttribArray(loc);
-        gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0);
-      };
-      const posBuf = mkBuf([-1,-1, 3,-1, -1,3]);
-      const uvBuf  = mkBuf([0,0, 2,0, 0,2]);
-      bindAttr(prog, "position", posBuf, 2);
-      bindAttr(prog, "uv", uvBuf, 2);
+  gl.enable(gl.DEPTH_TEST);
+  gl.enable(gl.CULL_FACE);
+  gl.cullFace(gl.BACK);
+  gl.clearColor(0,0,0,0);
+  gl.viewport(0,0,W,H);
 
-      // Gradient texture — vibrant prismatic spectrum
-      const COLORS = ["#8b5cf6","#a78bfa","#c084fc","#f472b6","#fb923c","#38bdf8","#60a5fa","#c084fc"];
-      const gradData = new Uint8Array(COLORS.length * 4);
-      COLORS.forEach((hex, i) => {
-        const [r,g,b] = hexToRgb(hex);
-        gradData[i*4]=r*255; gradData[i*4+1]=g*255; gradData[i*4+2]=b*255; gradData[i*4+3]=255;
-      });
-      const gradTex = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, gradTex);
-      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,COLORS.length,1,0,gl.RGBA,gl.UNSIGNED_BYTE,gradData);
-      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  var vs = compileShader(gl, gl.VERTEX_SHADER, VERT_SRC);
+  var fs = compileShader(gl, gl.FRAGMENT_SHADER, FRAG_SRC);
+  if (!vs || !fs) return null;
 
-      const u = n => gl.getUniformLocation(prog, n);
-      // Static uniforms
-      gl.uniform2f(u("uResolution"), texSize, texSize);
-      gl.uniform1f(u("uIntensity"), 4.2);
-      gl.uniform1f(u("uSpeed"), 0.55);
-      gl.uniform1i(u("uAnimType"), 1);        // rotate3d
-      gl.uniform2f(u("uMouse"), 0.5, 0.5);
-      gl.uniform1i(u("uColorCount"), COLORS.length);
-      gl.uniform1f(u("uDistort"), 5.5);
-      gl.uniform2f(u("uOffset"), 0, 0);
-      gl.uniform1f(u("uNoiseAmount"), 0.8);
-      gl.uniform1i(u("uRayCount"), 8);        // 8 prismatic rays
-      gl.uniform1i(u("uGradient"), 0);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, gradTex);
-      gl.clearColor(0,0,0,1);
-
-      s.current = { cv, gl, u, t: 0 };
-    }
+  var prog = gl.createProgram();
+  gl.attachShader(prog, vs); gl.attachShader(prog, fs);
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+    console.error("Link error:", gl.getProgramInfoLog(prog)); return null;
   }
 
-  const tick = () => {
-    const st = s.current;
-    if (!st) return null;
-    st.t += 0.016;
-    const { gl, u } = st;
-    gl.viewport(0, 0, texSize, texSize);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.uniform1f(u("uTime"), st.t);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-    return st.cv;
-  };
+  var geo = buildIcosphere(2);
 
-  return tick;
+  function mkBuf(data) {
+    var b = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, b);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+    return b;
+  }
+
+  return {
+    gl, prog,
+    posBuf: mkBuf(geo.positions),
+    nrmBuf: mkBuf(geo.normals),
+    uvBuf:  mkBuf(geo.uvs),
+    count:  geo.count,
+    uProj:  gl.getUniformLocation(prog, "uProjection"),
+    uView:  gl.getUniformLocation(prog, "uView"),
+    uMdl:   gl.getUniformLocation(prog, "uModel"),
+    uNrm:   gl.getUniformLocation(prog, "uNormalMatrix"),
+    uTime:  gl.getUniformLocation(prog, "uTime"),
+    uMouse: gl.getUniformLocation(prog, "uMouse"),
+    uAmp:   gl.getUniformLocation(prog, "uAmplitude"),
+    uSpd:   gl.getUniformLocation(prog, "uSpeed"),
+    uCol:   gl.getUniformLocation(prog, "uColor"),
+  };
 }
 
-// ─── 3D Prismatic Cube ───────────────────────────────────────────────────────
-const PROXIMITY_RADIUS = 220;
-const ROT_SENSITIVITY = 0.85;
-const LERP_SPEED = 0.11;
+// ─── Component ────────────────────────────────────────────────────────────────
+function IridescentIcosphere({ size, onClick }) {
+  size = size || 110;
+  var cvRef    = useRef(null);
+  var glRes    = useRef(null);   // WebGL resources — created once, never destroyed
+  var rafRef   = useRef(null);
+  var rotRef   = useRef({ x: 0.4, y: 0.0 });
+  var tgtRot   = useRef({ x: 0.4, y: 0.0 });
+  var dragRef  = useRef(null);
+  var hovered  = useRef(false);
+  var inProx   = useRef(false);
+  var mouseRef = useRef({ x:0.5, y:0.5 });
+  var t0       = useRef(null);
+  var PROX     = 220;
 
-function PrismaticCube({ size = 110, onClick }) {
-  const canvasRef = useRef(null);
-  const containerRef = useRef(null);
-  const rafRef    = useRef(null);
-  const rotRef    = useRef({ x: 0.52, y: 0.3 });
-  const targetRot = useRef({ x: 0.52, y: 0.3 });
-  const hovered   = useRef(false);
-  const dragRef   = useRef(null);
-  const inProximity = useRef(false);
-  const burstTick = useBurstTexture(256);
-
-  // Cursor-proximity rotation + drag (window-level for continuity)
-  useEffect(() => {
-    const onMouseMove = (e) => {
-      const d = dragRef.current;
+  // Window-level pointer events
+  useEffect(function() {
+    function mv(e) {
+      var d = dragRef.current;
       if (d) {
-        rotRef.current.y = d.ry + (e.clientX - d.x) * 0.013;
-        rotRef.current.x = d.rx + (e.clientY - d.y) * 0.013;
-        targetRot.current.y = rotRef.current.y;
-        targetRot.current.x = rotRef.current.x;
+        rotRef.current.y = d.ry + (e.clientX - d.x) * 0.015;
+        rotRef.current.x = d.rx + (e.clientY - d.y) * 0.015;
+        tgtRot.current.x = rotRef.current.x;
+        tgtRot.current.y = rotRef.current.y;
         return;
       }
-      const el = containerRef.current || canvasRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dx = e.clientX - cx;
-      const dy = e.clientY - cy;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < PROXIMITY_RADIUS) {
-        inProximity.current = true;
-        const t = dist / PROXIMITY_RADIUS;
-        const strength = 1 - t * 0.4;
-        targetRot.current.y = (dx / PROXIMITY_RADIUS) * ROT_SENSITIVITY * strength;
-        targetRot.current.x = 0.52 + (dy / PROXIMITY_RADIUS) * ROT_SENSITIVITY * strength;
+      var el = cvRef.current; if (!el) return;
+      var r = el.getBoundingClientRect();
+      var dx = e.clientX - (r.left + r.width/2);
+      var dy = e.clientY - (r.top  + r.height/2);
+      var dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < PROX) {
+        inProx.current = true;
+        var str = 1 - (dist/PROX)*0.4;
+        tgtRot.current.y = (dx/PROX)*1.1*str;
+        tgtRot.current.x = 0.4 + (dy/PROX)*0.8*str;
+        mouseRef.current = { x: 0.5+(dx/PROX)*0.4, y: 0.5+(dy/PROX)*0.4 };
       } else {
-        inProximity.current = false;
+        inProx.current = false;
+        mouseRef.current = { x:0.5, y:0.5 };
       }
-    };
-    const onMouseUp = () => { dragRef.current = null; };
-    window.addEventListener("mousemove", onMouseMove, { passive: true });
-    window.addEventListener("mouseup", onMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+    }
+    function mu() { dragRef.current = null; }
+    window.addEventListener("mousemove", mv, { passive: true });
+    window.addEventListener("mouseup", mu);
+    return function() {
+      window.removeEventListener("mousemove", mv);
+      window.removeEventListener("mouseup", mu);
     };
   }, []);
 
-  useEffect(() => {
-    const cv = canvasRef.current;
-    if (!cv) return;
-    const C = size * 2;
-    cv.width = C; cv.height = C;
-    cv.style.width  = size + "px";
-    cv.style.height = size + "px";
-    const ctx = cv.getContext("2d");
-    const half = C / 2;
+  // WebGL render loop — initialises once, restarts loop on re-mount
+  useEffect(function() {
+    var canvas = cvRef.current;
+    if (!canvas) return;
 
-    const project = (x, y, z, rx, ry) => {
-      const x1=  x*Math.cos(ry)+z*Math.sin(ry);
-      const z1= -x*Math.sin(ry)+z*Math.cos(ry);
-      const y2=  y*Math.cos(rx)-z1*Math.sin(rx);
-      const z2=  y*Math.sin(rx)+z1*Math.cos(rx);
-      const fov = C * 1.8;
-      const sc  = fov / (fov + z2 + C * 0.5);
-      return { sx: half + x1*sc, sy: half + y2*sc, z: z2 };
-    };
+    // Create GL resources only once — reuse on subsequent mounts
+    if (!glRes.current) {
+      glRes.current = createGLResources(canvas, size);
+    }
+    var R = glRes.current;
+    if (!R) return;
 
-    const draw = () => {
-      const tex = burstTick();
+    var gl = R.gl;
+    var proj = mat4Id(), view = mat4Id();
+    var rx = mat4Id(), ry = mat4Id(), model = mat4Id();
+    var nm = new Float32Array(9);
 
-      if (dragRef.current) {
-        // Dragging: handled by onMouseMove
-      } else if (inProximity.current) {
-        rotRef.current.y += (targetRot.current.y - rotRef.current.y) * LERP_SPEED;
-        rotRef.current.x += (targetRot.current.x - rotRef.current.x) * LERP_SPEED;
-      } else if (!hovered.current) {
-        rotRef.current.y += 0.007;
-        rotRef.current.x += 0.002;
+    mat4Persp(proj, Math.PI/4, 1.0, 0.1, 100.0);
+    mat4LookAt(view, [0,0,3.4], [0,0,0], [0,1,0]);
+
+    if (!t0.current) t0.current = performance.now();
+
+    var raf;
+    function frame() {
+      var t = (performance.now() - t0.current) * 0.001;
+
+      if (!dragRef.current) {
+        var L = 0.1;
+        if (inProx.current) {
+          rotRef.current.y += (tgtRot.current.y - rotRef.current.y) * L;
+          rotRef.current.x += (tgtRot.current.x - rotRef.current.x) * L;
+        } else if (!hovered.current) {
+          rotRef.current.y += 0.007;
+          rotRef.current.x += 0.002;
+        }
       }
 
-      const { x: rx, y: ry } = rotRef.current;
-      ctx.clearRect(0, 0, C, C);
-      const s = C * 0.28;
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-      const rawVerts = [
-        [-s,-s,-s],[s,-s,-s],[s,s,-s],[-s,s,-s],
-        [-s,-s, s],[s,-s, s],[s,s, s],[-s,s, s],
-      ];
-      const verts = rawVerts.map(([x,y,z]) => project(x,y,z,rx,ry));
+      mat4RX(rx, rotRef.current.x);
+      mat4RY(ry, rotRef.current.y);
+      mat4Mul(model, ry, rx);
+      mat3FromMat4(nm, model);
 
-      const faces = [
-        { idx:[4,5,6,7] }, { idx:[1,0,3,2] },
-        { idx:[5,1,2,6] }, { idx:[0,4,7,3] },
-        { idx:[0,1,5,4] }, { idx:[3,2,6,7] },
-      ];
-      faces.forEach(f => { f.avgZ = f.idx.reduce((a,i) => a + verts[i].z, 0) / 4; });
-      faces.sort((a, b) => a.avgZ - b.avgZ);
+      gl.useProgram(R.prog);
 
-      faces.forEach(({ idx }) => {
-        const pts = idx.map(i => verts[i]);
-        // Back-face cull
-        const ax=pts[1].sx-pts[0].sx, ay=pts[1].sy-pts[0].sy;
-        const bx=pts[3].sx-pts[0].sx, by=pts[3].sy-pts[0].sy;
-        if (ax*by - ay*bx > 0) return;
+      function attr(name, buf, sz) {
+        var loc = gl.getAttribLocation(R.prog, name);
+        if (loc < 0) return;
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.enableVertexAttribArray(loc);
+        gl.vertexAttribPointer(loc, sz, gl.FLOAT, false, 0, 0);
+      }
+      attr("aPosition", R.posBuf, 3);
+      attr("aNormal",   R.nrmBuf, 3);
+      attr("aUV",       R.uvBuf,  2);
 
-        // ── Clip to face polygon ──────────────────────────────────
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(pts[0].sx, pts[0].sy);
-        pts.slice(1).forEach(p => ctx.lineTo(p.sx, p.sy));
-        ctx.closePath();
-        ctx.clip();
+      gl.uniformMatrix4fv(R.uProj,  false, proj);
+      gl.uniformMatrix4fv(R.uView,  false, view);
+      gl.uniformMatrix4fv(R.uMdl,   false, model);
+      gl.uniformMatrix3fv(R.uNrm,   false, nm);
+      gl.uniform1f(R.uTime,  t);
+      gl.uniform2f(R.uMouse, mouseRef.current.x, mouseRef.current.y);
+      gl.uniform1f(R.uAmp,   0.25);
+      gl.uniform1f(R.uSpd,   0.85);
+      gl.uniform3f(R.uCol,   0.75, 0.65, 0.95);
 
-        // ── Texture via affine transform p0→p1 (u-axis), p0→p3 (v-axis) ──
-        if (tex) {
-          const GS  = tex.width;
-          const dx1 = pts[1].sx - pts[0].sx, dy1 = pts[1].sy - pts[0].sy;
-          const dx2 = pts[3].sx - pts[0].sx, dy2 = pts[3].sy - pts[0].sy;
-          ctx.setTransform(dx1/GS, dy1/GS, dx2/GS, dy2/GS, pts[0].sx, pts[0].sy);
-          ctx.globalAlpha = 1.0;
-          ctx.drawImage(tex, 0, 0);
-        }
-        ctx.restore();
+      gl.drawArrays(gl.TRIANGLES, 0, R.count);
+      raf = requestAnimationFrame(frame);
+    }
 
-        // ── Glowing edges (uniform across all faces for consistent shape) ──
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(pts[0].sx, pts[0].sy);
-        pts.slice(1).forEach(p => ctx.lineTo(p.sx, p.sy));
-        ctx.closePath();
-        const edgeAlpha = 0.85;
-        ctx.strokeStyle = `rgba(255,220,255,${edgeAlpha})`;
-        ctx.lineWidth   = 2;
-        ctx.shadowColor = "rgba(180,100,255,1)";
-        ctx.shadowBlur  = 20;
-        ctx.stroke();
-        ctx.restore();
-      });
+    frame();
 
-      rafRef.current = requestAnimationFrame(draw);
+    // On unmount: stop the loop ONLY — do NOT destroy GL context or buffers
+    return function() {
+      cancelAnimationFrame(raf);
     };
-
-    draw();
-    return () => cancelAnimationFrame(rafRef.current);
   }, [size]);
 
-  const onMouseDown = e => {
-    e.preventDefault();
-    dragRef.current = { x:e.clientX, y:e.clientY, rx:rotRef.current.x, ry:rotRef.current.y };
-  };
-  const onMouseMove = () => {}; // Handled by window mousemove
-  const onMouseUp = () => { dragRef.current = null; };
-
   return (
-    <div ref={containerRef} style={{ position: "relative", display: "inline-block" }}>
-    <canvas ref={canvasRef}
+    <canvas
+      ref={cvRef}
       style={{
-        display:"block", background:"transparent", cursor:"grab", position:"relative", zIndex:10,
-        filter:"drop-shadow(0 0 28px rgba(168,100,255,0.9)) drop-shadow(0 0 64px rgba(139,92,246,0.55)) drop-shadow(0 0 12px rgba(96,165,250,0.4))",
+        display: "block", background: "transparent", cursor: "grab",
+        filter: "drop-shadow(0 0 18px rgba(180,130,255,0.6)) drop-shadow(0 0 45px rgba(140,160,255,0.28))",
       }}
       onClick={onClick}
-      onMouseDown={onMouseDown}
-      onMouseMove={onMouseMove}
-      onMouseUp={onMouseUp}
-      onMouseEnter={() => { hovered.current = true; }}
-      onMouseLeave={() => { hovered.current = false; }}
+      onMouseDown={function(e) {
+        e.preventDefault();
+        dragRef.current = { x:e.clientX, y:e.clientY, rx:rotRef.current.x, ry:rotRef.current.y };
+      }}
+      onMouseEnter={function() { hovered.current = true; }}
+      onMouseLeave={function() { hovered.current = false; dragRef.current = null; }}
     />
-    </div>
   );
 }
 
-// ─── Chat trigger widget (drop-in replacement for Eve) ────────────────────────
-export default function EveRobot({ onClick, "aria-label": ariaLabel = "Open chat" }) {
-  const [wiggle, setWiggle] = useState(false);
+// ─── Chat Widget ──────────────────────────────────────────────────────────────
+export default function EveRobot({ onClick, "aria-label": ariaLabel }) {
+  ariaLabel = ariaLabel || "Open chat";
+  var state = useState(false);
+  var wiggle = state[0], setWiggle = state[1];
 
-  const handleClick = (e) => {
+  function handleClick(e) {
     setWiggle(true);
-    const t = setTimeout(() => setWiggle(false), 600);
-    onClick?.(e);
-    return () => clearTimeout(t);
-  };
+    setTimeout(function() { setWiggle(false); }, 650);
+    if (onClick) onClick(e);
+  }
 
   return (
     <button
       type="button"
-      className="prism-chat-trigger"
+      className="prism-trigger"
       onClick={handleClick}
       aria-label={ariaLabel}
       style={{
-        position: "fixed",
-        right: "1.5rem",
-        bottom: "1.5rem",
-        zIndex: 50,
-        padding: 0,
-        margin: 0,
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        overflow: "visible",
-        WebkitTapHighlightColor: "transparent",
+        position:"fixed", right:"1.5rem", bottom:"1.5rem", zIndex:50,
+        padding:0, margin:0, background:"none", border:"none",
+        cursor:"pointer", display:"flex", flexDirection:"column",
+        alignItems:"center", overflow:"visible",
+        WebkitTapHighlightColor:"transparent",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          animation: wiggle ? "prism-wiggle 0.6s ease" : "prism-float 4s ease-in-out infinite",
-        }}
-      >
-        <PrismaticCube size={110} />
+      <div style={{
+        display:"flex", flexDirection:"column", alignItems:"center",
+        animation: wiggle ? "prism-wiggle .65s ease" : "prism-float 4s ease-in-out infinite",
+      }}>
+        <IridescentIcosphere size={110} />
       </div>
-      <div
-        style={{
-          width: 56,
-          height: 10,
-          borderRadius: "50%",
-          background: "rgba(140,50,240,0.38)",
-          filter: "blur(8px)",
-          marginTop: -6,
-          animation: "prism-shadow 4s ease-in-out infinite",
-        }}
-      />
-      <style>{`
-        @keyframes prism-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
-        @keyframes prism-shadow { 0%,100%{transform:scaleX(1);opacity:.55} 50%{transform:scaleX(.7);opacity:.28} }
-        @keyframes prism-wiggle { 0%{transform:translateY(0) rotate(0)} 18%{transform:translateY(-5px) rotate(-8deg)} 36%{transform:translateY(-2px) rotate(7deg)} 54%{transform:translateY(-7px) rotate(-4deg)} 72%{transform:translateY(-2px) rotate(3deg)} 100%{transform:translateY(0) rotate(0)} }
-        .prism-chat-trigger:focus { outline: none; }
-        .prism-chat-trigger:focus-visible { outline: 2px solid rgba(168,100,255,0.6); outline-offset: 4px; }
-        @media (max-width: 768px) {
-          .prism-chat-trigger { right: 0.75rem; bottom: 0.75rem; }
-          .prism-chat-trigger > div:first-of-type { transform: scale(0.85); transform-origin: bottom center; }
-        }
-      `}</style>
+      <div style={{
+        width:58, height:11, borderRadius:"50%",
+        background:"rgba(120,60,255,0.28)",
+        filter:"blur(10px)", marginTop:-10,
+        animation:"prism-shadow 4s ease-in-out infinite",
+      }} />
+      <style>{[
+        "@keyframes prism-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}",
+        "@keyframes prism-shadow{0%,100%{transform:scaleX(1);opacity:.45}50%{transform:scaleX(.6);opacity:.18}}",
+        "@keyframes prism-wiggle{",
+          "0%{transform:translateY(0) rotate(0deg)}",
+          "20%{transform:translateY(-6px) rotate(-10deg)}",
+          "40%{transform:translateY(-2px) rotate(8deg)}",
+          "60%{transform:translateY(-8px) rotate(-5deg)}",
+          "80%{transform:translateY(-1px) rotate(3deg)}",
+          "100%{transform:translateY(0) rotate(0deg)}}",
+        ".prism-trigger:focus{outline:none}",
+        ".prism-trigger:focus-visible{outline:2px solid rgba(160,90,255,.65);outline-offset:6px;border-radius:50%}",
+        "@media(max-width:768px){",
+          ".prism-trigger{right:.75rem;bottom:.75rem}",
+          ".prism-trigger>div:first-of-type{transform:scale(.85);transform-origin:bottom center}}",
+      ].join("")}</style>
     </button>
   );
 }
