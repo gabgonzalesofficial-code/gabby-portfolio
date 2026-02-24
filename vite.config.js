@@ -7,4 +7,22 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+            return 'vendor-react'
+          }
+          if (id.includes('node_modules/three')) {
+            return 'vendor-three'
+          }
+          if (id.includes('node_modules/gsap')) {
+            return 'vendor-gsap'
+          }
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+  },
 })

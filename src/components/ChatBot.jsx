@@ -1,61 +1,96 @@
 /**
- * ChatBot.jsx — AI Chat Panel (same organism as EveRobot)
+ * ChatBot.jsx — AI Chat Panel
+ *
+ * Same organism as ThreeEveRobot: #151e2e midnight navy,
+ * soft blue-white accent. Feels like one of your portfolio's
+ * dark cards woke up — not a sci-fi terminal.
  *
  * Props:
  *   isOpen        — boolean
  *   onClose       — fn
- *   onStateChange — fn('idle' | 'listening' | 'thinking' | 'speaking')
+ *   onStateChange — fn('idle'|'listening'|'thinking'|'speaking')
  */
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react';
 
-// ─── Hex Thinking Loader ──────────────────────────────────────────────────────
-function HexLoader() {
+// ── Design tokens ─────────────────────────────────────────────────────────────
+const T = {
+  // Surfaces — all #151e2e family
+  panel:        'rgba(19, 27, 42, 0.98)',
+  header:       'rgba(23, 33, 50, 0.99)',
+  inputArea:    'rgba(14, 20, 34, 0.60)',
+  userBubble:   'rgba(30, 48, 85, 0.55)',
+  aiBubble:     'rgba(255,255,255,0.03)',
+  inputBg:      'rgba(255,255,255,0.04)',
+
+  // Borders
+  borderSub:    'rgba(255,255,255,0.06)',
+  borderAccent: 'rgba(95,162,255,0.18)',
+  borderActive: 'rgba(95,162,255,0.30)',
+
+  // Accent — blue-white, matching the sphere's glow peak
+  accent:       'rgba(95,162,255,1)',
+  accentGlow:   'rgba(95,162,255,0.35)',
+  accentDim:    'rgba(95,162,255,0.40)',
+  accentFaint:  'rgba(95,162,255,0.10)',
+
+  // Text
+  textPrimary:  'rgba(220,232,252,0.92)',
+  textMuted:    'rgba(148,172,210,0.60)',
+  textAI:       'rgba(180,208,255,0.82)',
+
+  // Shadows
+  shadow:       '0 12px 48px rgba(0,0,0,0.60), 0 0 0 1px rgba(95,162,255,0.06)',
+};
+
+// ── Breathing dots — mirrors the sphere's organic breathing ───────────────────
+function BreathLoader() {
   return (
-    <div style={{ display:'flex', gap:5, alignItems:'center', height:18 }}>
+    <div style={{ display:'flex', gap:7, alignItems:'center', height:20 }}>
       {[0,1,2].map(i => (
         <div key={i} style={{
-          width:9, height:9,
-          clipPath:'polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)',
-          background:'rgba(0,200,255,0.8)',
-          animationName:'hexPulse',
-          animationDuration:'1.1s',
-          animationTimingFunction:'ease-in-out',
-          animationDelay:`${i*0.22}s`,
-          animationIterationCount:'infinite',
+          width:6, height:6, borderRadius:'50%',
+          background: T.accent,
+          boxShadow: `0 0 8px ${T.accentGlow}`,
+          animationName: 'breatheDot',
+          animationDuration: '1.6s',
+          animationTimingFunction: 'ease-in-out',
+          animationDelay: `${i * 0.28}s`,
+          animationIterationCount: 'infinite',
         }}/>
       ))}
     </div>
   );
 }
 
-// ─── Status dot ───────────────────────────────────────────────────────────────
-var STATUS = {
-  idle:      { label:'Standby',      color:'rgba(0,200,255,0.45)' },
-  listening: { label:'Listening',    color:'rgba(0,230,160,0.9)'  },
-  thinking:  { label:'Thinking…',    color:'rgba(0,190,255,1.0)'  },
-  speaking:  { label:'Responding',   color:'rgba(0,255,190,0.9)'  },
+// ── Status indicator ──────────────────────────────────────────────────────────
+const STATUS = {
+  idle:      { label:'Available',  color:'rgba(95,162,255,0.40)',  pulse:false },
+  listening: { label:'Listening',  color:'rgba(80,210,160,0.85)',  pulse:true  },
+  thinking:  { label:'Thinking',   color:'rgba(95,162,255,0.95)',  pulse:true  },
+  speaking:  { label:'Responding', color:'rgba(130,195,255,0.90)', pulse:true  },
 };
 
-function StatusRow({ state }) {
-  var s = STATUS[state] || STATUS.idle;
+function StatusPill({ state }) {
+  const s = STATUS[state] || STATUS.idle;
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+    <div style={{ display:'flex', alignItems:'center', gap:5 }}>
       <div style={{
-        width:6, height:6, borderRadius:'50%',
+        width:5, height:5, borderRadius:'50%',
         background: s.color,
-        boxShadow: `0 0 5px ${s.color}`,
+        boxShadow: s.pulse ? `0 0 6px ${s.color}` : 'none',
         transition: 'background 0.4s, box-shadow 0.4s',
-        animationName: state !== 'idle' ? 'statusBlink' : 'none',
-        animationDuration: '1.2s',
+        animationName: s.pulse ? 'statusPulse' : 'none',
+        animationDuration: '1.4s',
         animationTimingFunction: 'ease-in-out',
         animationIterationCount: 'infinite',
       }}/>
       <span style={{
-        fontSize:11,
+        fontSize: 10.5,
         color: s.color,
-        fontFamily:"'SF Mono','Fira Code','Fira Mono','Roboto Mono',monospace",
-        letterSpacing:'0.06em',
-        transition:'color 0.4s',
+        fontFamily: "-apple-system,'Helvetica Neue',sans-serif",
+        letterSpacing: '0.03em',
+        fontWeight: 500,
+        transition: 'color 0.4s',
       }}>
         {s.label}
       </span>
@@ -63,53 +98,52 @@ function StatusRow({ state }) {
   );
 }
 
-// ─── Message bubble ───────────────────────────────────────────────────────────
+// ── Message bubble ────────────────────────────────────────────────────────────
 function Bubble({ role, text, streaming }) {
-  var isUser = role === 'user';
+  const isUser = role === 'user';
   return (
-    <div style={{
-      display:'flex',
+    <div className="chat-bubble-row" style={{
+      display: 'flex',
       justifyContent: isUser ? 'flex-end' : 'flex-start',
-      marginBottom: 2,
+      marginBottom: 1,
     }}>
-      <div style={{
-        maxWidth:'80%',
-        padding:'9px 13px',
+      <div className="chat-bubble" style={{
+        maxWidth: '78%',
+        padding: '10px 14px',
         borderRadius: isUser ? '14px 14px 3px 14px' : '3px 14px 14px 14px',
-        background: isUser
-          ? 'rgba(0,100,180,0.35)'
-          : 'rgba(255,255,255,0.04)',
-        border: isUser
-          ? '1px solid rgba(0,160,240,0.3)'
-          : '1px solid rgba(255,255,255,0.08)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
+        background: isUser ? T.userBubble : T.aiBubble,
+        border: `1px solid ${isUser ? 'rgba(80,130,240,0.22)' : T.borderSub}`,
+        // AI messages: faint accent left edge — the only visual clue they're "alive"
+        borderLeft: !isUser ? `2px solid ${T.borderAccent}` : undefined,
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
       }}>
         <p style={{
-          margin:0,
-          fontSize:13.5,
-          lineHeight:1.6,
-          whiteSpace:'pre-wrap',
-          wordBreak:'break-word',
-          color: isUser ? 'rgba(200,230,255,0.92)' : 'rgba(210,235,255,0.85)',
+          margin: 0,
+          fontSize: 13.5,
+          lineHeight: 1.65,
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+          color: isUser ? T.textPrimary : T.textAI,
           fontFamily: isUser
             ? "-apple-system,'Helvetica Neue',sans-serif"
-            : "'SF Mono','Fira Code','Fira Mono','Roboto Mono',monospace",
-          fontSize: isUser ? 13.5 : 13,
-          letterSpacing: isUser ? 0 : '0.015em',
+            : "'SF Mono','Fira Code','Fira Mono',monospace",
+          letterSpacing: isUser ? 'normal' : '0.014em',
         }}>
           {text}
           {streaming && (
             <span style={{
-              display:'inline-block',
-              width:'0.5em', height:'1em',
-              background:'rgba(0,200,255,0.75)',
-              marginLeft:2,
-              verticalAlign:'text-bottom',
-              animationName:'cursorBlink',
-              animationDuration:'0.75s',
-              animationTimingFunction:'step-end',
-              animationIterationCount:'infinite',
+              display: 'inline-block',
+              width: '0.42em', height: '0.92em',
+              background: T.accent,
+              marginLeft: 2,
+              verticalAlign: 'text-bottom',
+              borderRadius: 1,
+              boxShadow: `0 0 6px ${T.accentGlow}`,
+              animationName: 'cursorBlink',
+              animationDuration: '0.75s',
+              animationTimingFunction: 'step-end',
+              animationIterationCount: 'infinite',
             }}/>
           )}
         </p>
@@ -118,294 +152,265 @@ function Bubble({ role, text, streaming }) {
   );
 }
 
-// ─── ChatBot ──────────────────────────────────────────────────────────────────
+// ── ChatBot ───────────────────────────────────────────────────────────────────
 export default function ChatBot({ isOpen, onClose, onStateChange }) {
-  var [messages, setMessages] = useState([{
-    role:'assistant',
-    content:"Hey there! 👋 I'm Gabriel, and I'm here to chat! Ask me about my work, my tech stack, my love for cooking (and poetry, if you're into that sort of thing 😄), or anything else you're curious about. Fire away!",
+  const [messages, setMessages] = useState([{
+    role: 'assistant',
+    content: "Hey there! 👋 I'm Gabriel. Ask me about my work, my tech stack, my love for cooking (and poetry, if you're into that 😄) — or anything else. Fire away!",
   }]);
-  var [input,         setInput]        = useState('');
-  var [isLoading,     setIsLoading]    = useState(false);
-  var [streamText,    setStreamText]   = useState('');
-  var [isStreaming,   setIsStreaming]  = useState(false);
-  var [panelState,    setPanelState]   = useState('idle');
-  var [error,         setError]        = useState('');
-  var messagesEndRef  = useRef(null);
-  var inputRef        = useRef(null);
-  var isSubmitting    = useRef(false);
-  var streamTimer     = useRef(null);
-  var MAX = 1000;
+  const [input,       setInput]       = useState('');
+  const [isLoading,   setIsLoading]   = useState(false);
+  const [streamText,  setStreamText]  = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [panelState,  setPanelState]  = useState('idle');
+  const [error,       setError]       = useState('');
 
-  function emit(s) { setPanelState(s); onStateChange && onStateChange(s); }
+  const messagesEndRef = useRef(null);
+  const inputRef       = useRef(null);
+  const isSubmitting   = useRef(false);
+  const streamTimer    = useRef(null);
+  const MAX = 1000;
 
-  useEffect(function(){
-    messagesEndRef.current?.scrollIntoView({ behavior:'smooth' });
+  function emit(s) { setPanelState(s); onStateChange?.(s); }
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamText]);
 
-  useEffect(function(){
-    if(isOpen) {
-      var t = setTimeout(function(){ inputRef.current?.focus(); }, 150);
+  useEffect(() => {
+    if (isOpen) {
+      const t = setTimeout(() => inputRef.current?.focus(), 150);
       emit('listening');
-      return function(){ clearTimeout(t); };
+      return () => clearTimeout(t);
     } else {
       emit('idle');
     }
   }, [isOpen]);
 
-  useEffect(function(){
-    return function(){ if(streamTimer.current) clearTimeout(streamTimer.current); };
-  }, []);
+  useEffect(() => () => { if (streamTimer.current) clearTimeout(streamTimer.current); }, []);
 
-  // Variable-speed character streaming
-  var runStream = useCallback(function(fullText, onDone) {
-    if(streamTimer.current) clearTimeout(streamTimer.current);
-    var chars = [...fullText], i = 0;
+  // Variable-speed character streaming — punctuation pauses feel deliberate
+  const runStream = useCallback((fullText, onDone) => {
+    if (streamTimer.current) clearTimeout(streamTimer.current);
+    const chars = [...fullText]; let i = 0;
     function tick() {
-      if(i >= chars.length){ onDone && onDone(); return; }
-      var c = chars[i++];
-      setStreamText(function(p){ return p + c; });
-      var delay = 13 + Math.random()*11;
-      if('.!?'.includes(c))   delay = 85 + Math.random()*65;
-      else if(',;:'.includes(c)) delay = 42 + Math.random()*22;
-      else if(c === ' ')      delay = 6;
-      else if(c === '\n')     delay = 50;
+      if (i >= chars.length) { onDone?.(); return; }
+      const c = chars[i++];
+      setStreamText(p => p + c);
+      let delay = 14 + Math.random() * 10;
+      if ('.!?'.includes(c))    delay = 90 + Math.random() * 60;
+      else if (',;:'.includes(c)) delay = 45 + Math.random() * 20;
+      else if (c === ' ')       delay = 6;
+      else if (c === '\n')      delay = 52;
       streamTimer.current = setTimeout(tick, delay);
     }
     tick();
   }, []);
 
-  var handleSend = useCallback(async function(e) {
+  const handleSend = useCallback(async (e) => {
     e.preventDefault(); e.stopPropagation();
-    if(!input.trim() || isLoading || isSubmitting.current) return;
-    var msg = input.trim();
-    if(msg.length > MAX){ setError('Message too long (max '+MAX+' chars).'); return; }
+    if (!input.trim() || isLoading || isSubmitting.current) return;
+    const msg = input.trim();
+    if (msg.length > MAX) { setError(`Message too long (max ${MAX} chars).`); return; }
     isSubmitting.current = true;
     setInput(''); setError(''); setIsLoading(true); emit('thinking');
-    var next = [...messages, { role:'user', content:msg }];
+    const next = [...messages, { role:'user', content:msg }];
     setMessages(next);
-    var history = messages.filter(m=>m.role!=='system').map(m=>({role:m.role,content:m.content}));
+    const history = messages.filter(m => m.role !== 'system').map(m => ({ role:m.role, content:m.content }));
     try {
-      var res = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,conversationHistory:history})});
-      var txt = await res.text();
-      if(!res.ok){
-        var em='Error '+res.status;
-        try{ var ed=JSON.parse(txt); em=ed.error||em; }catch(e){
-          if(res.status===404) em='API not found. Use "vercel dev" locally.';
-          else if(res.status===500) em='Server error — check GROQ_API_KEY.';
-          else if(res.status===401) em='Unauthorized — check your API key.';
+      const res = await fetch('/api/chat', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ message:msg, conversationHistory:history }),
+      });
+      const txt = await res.text();
+      if (!res.ok) {
+        let em = `Error ${res.status}`;
+        try { const ed = JSON.parse(txt); em = ed.error || em; } catch {
+          if (res.status === 404) em = 'API not found — use "vercel dev" locally.';
+          else if (res.status === 500) em = 'Server error — check GROQ_API_KEY.';
         }
         throw new Error(em);
       }
-      var data; try{ data=JSON.parse(txt); }catch(e){ throw new Error('Bad server response.'); }
-      if(!data.response) throw new Error(data.error||'No response.');
-      // Stream the reply
+      let data; try { data = JSON.parse(txt); } catch { throw new Error('Bad server response.'); }
+      if (!data.response) throw new Error(data.error || 'No response.');
       setIsLoading(false); setIsStreaming(true); setStreamText(''); emit('speaking');
-      runStream(data.response, function(){
-        setMessages(function(prev){ return [...prev,{role:'assistant',content:data.response}]; });
+      runStream(data.response, () => {
+        setMessages(prev => [...prev, { role:'assistant', content:data.response }]);
         setStreamText(''); setIsStreaming(false);
-        isSubmitting.current=false; emit('listening');
-        setTimeout(function(){ inputRef.current?.focus(); }, 100);
+        isSubmitting.current = false; emit('listening');
+        setTimeout(() => inputRef.current?.focus(), 100);
       });
-    } catch(err) {
-      setMessages(function(prev){ return [...prev,{role:'assistant',content:'⚠ '+(err.message||'Something went wrong.')+'  \nPlease try again.'}]; });
+    } catch (err) {
+      setMessages(prev => [...prev, { role:'assistant', content:`⚠ ${err.message || 'Something went wrong.'}\n\nPlease try again.` }]);
       setIsLoading(false); setIsStreaming(false);
-      isSubmitting.current=false; emit('listening');
-      setTimeout(function(){ inputRef.current?.focus(); }, 100);
+      isSubmitting.current = false; emit('listening');
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [messages, input, isLoading, runStream]);
 
-  var handleKeyDown = useCallback(function(e){
-    if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); handleSend(e); }
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(e); }
   }, [handleSend]);
 
-  var handleChange = useCallback(function(e){
+  const handleChange = useCallback((e) => {
     setInput(e.target.value);
-    if(error) setError('');
+    if (error) setError('');
   }, [error]);
 
-  if(!isOpen) return null;
+  if (!isOpen) return null;
 
-  var fraction = input.length / MAX;
-  var charColor = fraction >= 1 ? '#ff4466' : fraction > 0.9 ? '#ffaa00' : 'rgba(0,200,255,0.35)';
+  const fraction  = input.length / MAX;
+  const charColor = fraction >= 1 ? '#ff5566' : fraction > 0.9 ? '#ffaa44' : T.accentDim;
+  const canSend   = input.trim() && !isLoading && !isStreaming && input.length <= MAX;
+
+  // Panel border brightens when active
+  const panelBorderColor = (panelState === 'thinking' || panelState === 'speaking')
+    ? T.borderActive : T.borderAccent;
 
   return (
     <>
-      {/* ── Global keyframes ── */}
       <style>{`
         @keyframes chatSlideUp {
-          from { opacity:0; transform:translateY(16px) scale(0.98); }
+          from { opacity:0; transform:translateY(14px) scale(0.97); }
           to   { opacity:1; transform:translateY(0)    scale(1);    }
         }
-        @keyframes hexPulse {
-          0%,100% { opacity:0.3;  transform:scale(0.8);  }
-          50%     { opacity:1.0;  transform:scale(1.15); }
+        @keyframes breatheDot {
+          0%,100% { transform:scale(0.6);  opacity:0.28; }
+          50%     { transform:scale(1.22); opacity:1.0;  }
         }
-        @keyframes cursorBlink {
-          0%,100% { opacity:1; }
-          50%     { opacity:0; }
-        }
-        @keyframes statusBlink {
-          0%,100% { opacity:1;    }
-          50%     { opacity:0.35; }
-        }
-        @keyframes scanLine {
-          from { top: -2px; }
-          to   { top: 100%; }
-        }
+        @keyframes cursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes statusPulse { 0%,100%{opacity:1} 50%{opacity:0.30} }
       `}</style>
 
-      {/* ── Backdrop ── */}
+      {/* Backdrop */}
       <div
         onClick={onClose}
         style={{
           position:'fixed', inset:0, zIndex:50,
-          background:'rgba(0,4,14,0.65)',
-          backdropFilter:'blur(4px)',
-          WebkitBackdropFilter:'blur(4px)',
+          background:'rgba(6,10,20,0.58)',
+          backdropFilter:'blur(3px)',
+          WebkitBackdropFilter:'blur(3px)',
         }}
       />
 
-      {/* ── Panel ── */}
-      <div style={{
+      {/* Panel */}
+      <div
+        className="chat-panel"
+        style={{
         position:'fixed',
-        right:'calc(1.5rem + 120px)',   // clears the orb
+        right:'calc(1.5rem + 125px)',
         bottom:'1.5rem',
         zIndex:51,
-        width:'min(90vw, 400px)',
-        height:'min(82vh, 580px)',
+        width:'min(90vw, 388px)',
+        height:'min(82vh, 565px)',
         display:'flex',
         flexDirection:'column',
-        background:'rgba(3, 8, 22, 0.96)',
-        border:'1px solid rgba(0,200,255,0.16)',
+        background: T.panel,
+        border:`1px solid ${panelBorderColor}`,
         borderRadius:16,
-        boxShadow:[
-          '0 0 0 1px rgba(0,200,255,0.05)',
-          '0 8px 32px rgba(0,0,0,0.55)',
-          '0 0 60px rgba(0,120,255,0.1)',
-        ].join(', '),
+        boxShadow: T.shadow,
         overflow:'hidden',
         animationName:'chatSlideUp',
-        animationDuration:'0.26s',
+        animationDuration:'0.28s',
         animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)',
         animationFillMode:'both',
+        transition:'border-color 0.5s ease',
       }}>
 
-        {/* Subtle top scan line */}
-        <div style={{
-          position:'absolute', left:0, right:0, height:1,
-          background:'linear-gradient(90deg,transparent,rgba(0,200,255,0.18),transparent)',
-          animationName:'scanLine',
-          animationDuration:'6s',
-          animationTimingFunction:'linear',
-          animationIterationCount:'infinite',
-          pointerEvents:'none',
-          zIndex:1,
-        }}/>
-
-        {/* ── Header ── */}
-        <div style={{
-          padding:'14px 16px 12px',
-          borderBottom:'1px solid rgba(255,255,255,0.06)',
-          display:'flex',
-          alignItems:'center',
-          justifyContent:'space-between',
+        {/* Header */}
+        <div className="chat-header" style={{
+          padding:'14px 16px 13px',
+          background: T.header,
+          borderBottom:`1px solid ${T.borderSub}`,
+          display:'flex', alignItems:'center', justifyContent:'space-between',
           flexShrink:0,
-          background:'rgba(0,200,255,0.03)',
         }}>
           <div style={{ display:'flex', alignItems:'center', gap:11 }}>
-            {/* Clean circle avatar with inner orb glow */}
+
+            {/* Avatar — miniature sphere: navy with blue-white inner glow */}
             <div style={{
               width:36, height:36, borderRadius:'50%',
-              background:'radial-gradient(circle at 38% 38%, rgba(0,200,255,0.25), rgba(0,40,100,0.6))',
-              border:'1px solid rgba(0,200,255,0.35)',
+              background:'radial-gradient(circle at 38% 36%, rgba(95,162,255,0.20) 0%, rgba(28,50,95,0.55) 45%, rgba(19,27,42,0.92) 100%)',
+              border:`1px solid rgba(95,162,255,0.26)`,
               display:'flex', alignItems:'center', justifyContent:'center',
-              boxShadow:'0 0 12px rgba(0,200,255,0.25)',
+              boxShadow:'0 0 14px rgba(70,140,255,0.16)',
               flexShrink:0,
             }}>
               <div style={{
-                width:10, height:10, borderRadius:'50%',
-                background:'rgba(0,220,255,0.85)',
-                boxShadow:'0 0 8px rgba(0,220,255,0.7)',
+                width:9, height:9, borderRadius:'50%',
+                background:'rgba(130,195,255,0.92)',
+                boxShadow:'0 0 10px rgba(95,162,255,0.80), 0 0 22px rgba(70,140,255,0.38)',
               }}/>
             </div>
 
             <div>
               <div style={{
-                fontSize:13,
-                fontWeight:600,
-                color:'rgba(210,240,255,0.95)',
-                letterSpacing:'0.04em',
+                fontSize:13.5, fontWeight:600,
+                color: T.textPrimary,
+                letterSpacing:'0.018em',
                 fontFamily:"-apple-system,'Helvetica Neue',sans-serif",
-                lineHeight:1.2,
-                marginBottom:3,
+                lineHeight:1.2, marginBottom:4,
               }}>
                 Gabriel
               </div>
-              <StatusRow state={panelState}/>
+              <StatusPill state={panelState}/>
             </div>
           </div>
 
+          {/* Close */}
           <button
             onClick={onClose}
             aria-label="Close chat"
             style={{
-              width:30, height:30,
-              borderRadius:8,
-              background:'rgba(255,255,255,0.05)',
-              border:'1px solid rgba(255,255,255,0.09)',
-              cursor:'pointer',
-              color:'rgba(160,200,230,0.6)',
+              width:30, height:30, borderRadius:8,
+              background:'rgba(255,255,255,0.04)',
+              border:`1px solid ${T.borderSub}`,
+              cursor:'pointer', color:T.textMuted,
               display:'flex', alignItems:'center', justifyContent:'center',
-              transition:'all 0.15s',
-              flexShrink:0,
+              transition:'all 0.15s', flexShrink:0,
             }}
-            onMouseEnter={function(e){e.currentTarget.style.background='rgba(255,255,255,0.1)';e.currentTarget.style.color='rgba(200,230,255,0.9)';}}
-            onMouseLeave={function(e){e.currentTarget.style.background='rgba(255,255,255,0.05)';e.currentTarget.style.color='rgba(160,200,230,0.6)';}}
+            onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color=T.textPrimary; }}
+            onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color=T.textMuted; }}
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
           </button>
         </div>
 
-        {/* ── Messages ── */}
-        <div style={{
-          flex:1,
-          overflowY:'auto',
-          padding:'16px 14px 8px',
-          display:'flex',
-          flexDirection:'column',
-          gap:8,
+        {/* Messages */}
+        <div className="chat-messages" style={{
+          flex:1, overflowY:'auto',
+          padding:'16px 14px 10px',
+          display:'flex', flexDirection:'column', gap:9,
           scrollbarWidth:'thin',
-          scrollbarColor:'rgba(0,200,255,0.15) transparent',
+          scrollbarColor:'rgba(95,162,255,0.12) transparent',
         }}>
-          {messages.map(function(m, i) {
-            var isLastAI = m.role==='assistant' && i===messages.length-1 && isStreaming;
+          {messages.map((m, i) => {
+            const isLastAI = m.role === 'assistant' && i === messages.length - 1 && isStreaming;
             return (
-              <Bubble
-                key={i}
-                role={m.role}
+              <Bubble key={i} role={m.role}
                 text={isLastAI ? streamText : m.content}
                 streaming={isLastAI}
               />
             );
           })}
 
-          {/* Streaming bubble after user message */}
-          {isStreaming && messages[messages.length-1]?.role==='user' && (
+          {isStreaming && messages[messages.length-1]?.role === 'user' && (
             <Bubble role="assistant" text={streamText} streaming={true}/>
           )}
 
-          {/* Hex thinking indicator */}
           {isLoading && !isStreaming && (
             <div style={{ display:'flex', justifyContent:'flex-start', paddingLeft:2 }}>
               <div style={{
-                padding:'10px 14px',
+                padding:'11px 16px',
                 borderRadius:'3px 14px 14px 14px',
-                background:'rgba(255,255,255,0.04)',
-                border:'1px solid rgba(255,255,255,0.08)',
+                background: T.aiBubble,
+                border:`1px solid ${T.borderSub}`,
+                borderLeft:`2px solid ${T.borderAccent}`,
               }}>
-                <HexLoader/>
+                <BreathLoader/>
               </div>
             </div>
           )}
@@ -413,23 +418,21 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
           <div ref={messagesEndRef}/>
         </div>
 
-        {/* ── Input ── */}
-        <div style={{
-          padding:'10px 12px 12px',
-          borderTop:'1px solid rgba(255,255,255,0.06)',
-          background:'rgba(0,0,0,0.25)',
+        {/* Input area */}
+        <div className="chat-input-area" style={{
+          padding:'10px 12px 13px',
+          borderTop:`1px solid ${T.borderSub}`,
+          background: T.inputArea,
           flexShrink:0,
         }}>
           {error && (
             <div style={{
-              marginBottom:8,
-              padding:'6px 10px',
-              background:'rgba(255,50,80,0.08)',
-              border:'1px solid rgba(255,50,80,0.25)',
-              borderRadius:7,
-              fontSize:11,
-              color:'rgba(255,130,140,0.9)',
-              fontFamily:"'SF Mono','Fira Code',monospace",
+              marginBottom:8, padding:'7px 11px',
+              background:'rgba(255,50,75,0.07)',
+              border:'1px solid rgba(255,50,75,0.20)',
+              borderRadius:8, fontSize:11,
+              color:'rgba(255,130,140,0.90)',
+              fontFamily:"-apple-system,'Helvetica Neue',sans-serif",
             }}>
               {error}
             </div>
@@ -448,91 +451,128 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
                 maxLength={MAX}
                 style={{
                   width:'100%',
-                  padding:'10px 36px 10px 14px',
-                  background:'rgba(255,255,255,0.05)',
-                  border:'1px solid rgba(255,255,255,0.1)',
+                  padding:'10px 34px 10px 14px',
+                  background: T.inputBg,
+                  border:`1px solid ${T.borderSub}`,
                   borderRadius:10,
-                  color:'rgba(210,235,255,0.9)',
+                  color: T.textPrimary,
                   fontSize:13.5,
                   fontFamily:"-apple-system,'Helvetica Neue',sans-serif",
                   outline:'none',
                   boxSizing:'border-box',
                   transition:'border-color 0.2s, box-shadow 0.2s',
-                  caretColor:'rgba(0,200,255,0.9)',
-                  opacity:(isLoading||isStreaming)?0.5:1,
-                  '::placeholder':{ color:'rgba(120,160,200,0.4)' },
+                  caretColor: T.accent,
+                  opacity:(isLoading||isStreaming) ? 0.5 : 1,
                 }}
-                onFocus={function(e){e.target.style.borderColor='rgba(0,200,255,0.4)';e.target.style.boxShadow='0 0 0 2px rgba(0,200,255,0.08), 0 0 12px rgba(0,150,255,0.1)';}}
-                onBlur={function(e){e.target.style.borderColor='rgba(255,255,255,0.1)';e.target.style.boxShadow='none';}}
+                onFocus={e => {
+                  e.target.style.borderColor = T.borderAccent;
+                  e.target.style.boxShadow   = `0 0 0 2px ${T.accentFaint}`;
+                }}
+                onBlur={e => {
+                  e.target.style.borderColor = T.borderSub;
+                  e.target.style.boxShadow   = 'none';
+                }}
               />
               {/* Char arc */}
-              <div style={{position:'absolute',right:9,top:'50%',transform:'translateY(-50%)',width:16,height:16,pointerEvents:'none'}}>
-                <svg viewBox="0 0 16 16" style={{transform:'rotate(-90deg)'}}>
-                  <circle cx="8" cy="8" r="6" fill="none" stroke="rgba(0,200,255,0.1)" strokeWidth="1.8"/>
-                  <circle cx="8" cy="8" r="6" fill="none" stroke={charColor}
-                    strokeWidth="1.8"
-                    strokeDasharray={`${Math.min(fraction,1)*37.7} 37.7`}
+              <div style={{ position:'absolute', right:9, top:'50%', transform:'translateY(-50%)', width:15, height:15, pointerEvents:'none' }}>
+                <svg viewBox="0 0 15 15" style={{transform:'rotate(-90deg)'}}>
+                  <circle cx="7.5" cy="7.5" r="5.5" fill="none" stroke="rgba(95,162,255,0.09)" strokeWidth="1.5"/>
+                  <circle cx="7.5" cy="7.5" r="5.5" fill="none" stroke={charColor}
+                    strokeWidth="1.5"
+                    strokeDasharray={`${Math.min(fraction,1)*34.6} 34.6`}
                     style={{transition:'stroke-dasharray 0.2s, stroke 0.3s'}}
                   />
                 </svg>
               </div>
             </div>
 
-            {/* Send button — clean circle */}
+            {/* Send button */}
             <button
               onClick={handleSend}
-              disabled={!input.trim()||isLoading||isStreaming||input.length>MAX}
+              disabled={!canSend}
               aria-label="Send"
               style={{
-                width:38, height:38, borderRadius:'50%',
-                background: (!input.trim()||isLoading||isStreaming)
-                  ? 'rgba(0,100,160,0.25)'
-                  : 'rgba(0,200,255,0.85)',
-                border:'none',
-                cursor:(!input.trim()||isLoading||isStreaming)?'not-allowed':'pointer',
+                width:38, height:38, borderRadius:'50%', border:'none',
+                background: canSend ? T.accent : 'rgba(40,65,120,0.28)',
+                cursor: canSend ? 'pointer' : 'not-allowed',
                 display:'flex', alignItems:'center', justifyContent:'center',
-                color:(!input.trim()||isLoading||isStreaming)?'rgba(0,150,200,0.35)':'rgba(0,10,30,0.95)',
-                transition:'all 0.18s',
-                flexShrink:0,
+                color: canSend ? 'rgba(8,16,36,0.95)' : 'rgba(70,120,200,0.35)',
+                transition:'all 0.18s', flexShrink:0,
+                boxShadow: canSend ? `0 0 18px ${T.accentGlow}` : 'none',
               }}
-              onMouseEnter={function(e){if(!e.currentTarget.disabled)e.currentTarget.style.background='rgba(0,225,255,1)';}}
-              onMouseLeave={function(e){if(!e.currentTarget.disabled)e.currentTarget.style.background='rgba(0,200,255,0.85)';}}
+              onMouseEnter={e => {
+                if (canSend) {
+                  e.currentTarget.style.background = 'rgba(140,200,255,1)';
+                  e.currentTarget.style.boxShadow  = '0 0 24px rgba(95,162,255,0.55)';
+                }
+              }}
+              onMouseLeave={e => {
+                if (canSend) {
+                  e.currentTarget.style.background = T.accent;
+                  e.currentTarget.style.boxShadow  = `0 0 18px ${T.accentGlow}`;
+                }
+              }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
               </svg>
             </button>
           </div>
 
-          <div style={{marginTop:7,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-            <span style={{fontSize:10,color:'rgba(0,200,255,0.2)',fontFamily:"'SF Mono','Fira Code',monospace",letterSpacing:'0.12em'}}>
-              GROQ AI
+          {/* Footer */}
+          <div style={{ marginTop:8, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <span style={{
+              fontSize:10, color:'rgba(95,162,255,0.18)',
+              fontFamily:"-apple-system,'Helvetica Neue',sans-serif",
+              letterSpacing:'0.05em',
+            }}>
+              Powered by Groq
             </span>
             {fraction > 0.85 && (
-              <span style={{fontSize:10,color:charColor,fontFamily:"'SF Mono','Fira Code',monospace",transition:'color 0.3s'}}>
-                {MAX-input.length} left
+              <span style={{ fontSize:10, color:charColor, fontFamily:"'SF Mono','Fira Code',monospace", transition:'color 0.3s' }}>
+                {MAX - input.length} left
               </span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Mobile: panel goes full-width at bottom */}
+      {/* Mobile */}
       <style>{`
-        @media (max-width: 640px) {
-          /* target the panel by its bottom position */
-          div[style*="chatSlideUp"] {
-            right: 0 !important;
-            bottom: 0 !important;
-            width: 100vw !important;
-            border-radius: 16px 16px 0 0 !important;
+        @media(max-width:640px){
+          .chat-panel{
+            right:50%!important;
+            left:50%!important;
+            bottom:max(1rem,env(safe-area-inset-bottom))!important;
+            transform:translateX(-50%)!important;
+            width:min(94vw,400px)!important;
+            max-width:94vw!important;
+            height:min(82vh,560px)!important;
+            border-radius:16px!important;
+            padding-bottom:12px;
           }
         }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,200,255,0.15); border-radius:2px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(0,200,255,0.3); }
+        @media(max-width:380px){
+          .chat-panel .chat-header{padding:12px 12px 10px!important}
+          .chat-panel .chat-messages{padding:12px 10px 8px!important}
+          .chat-panel .chat-input-area{padding:8px 10px 12px!important}
+        }
+        @media(max-width:640px){
+          .chat-bubble{max-width:92%!important}
+          .chat-panel button[aria-label="Close chat"]{
+            min-width:44px!important;min-height:44px!important;
+            padding:7px!important;
+          }
+          .chat-panel button[aria-label="Send"]{
+            min-width:44px!important;min-height:44px!important;
+          }
+        }
+        ::-webkit-scrollbar{width:3px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:rgba(95,162,255,0.12);border-radius:2px}
+        ::-webkit-scrollbar-thumb:hover{background:rgba(95,162,255,0.24)}
+        input::placeholder{color:rgba(110,148,200,0.36)!important}
       `}</style>
     </>
   );

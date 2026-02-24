@@ -1,18 +1,19 @@
 // Profile Information
-import profileImage from '../assets/PP.png'
-import gcashQR from '../assets/QRgcash.jpg'
-import TopPerformer from '../assets/certificates/TopPerformer.jpg'
-import TopConversion from '../assets/certificates/TopConversion.jpg'
-import TopConversion2 from '../assets/certificates/TopConversion2.jpg'
-import JavaProgramming from '../assets/certificates/JavaProgramming.png'
-import HackathonChampion from '../assets/certificates/HackathonChampion.jpg'
-import BestOralPresentation from '../assets/certificates/BestOralPresentation.jpg'
-import BestResearchPaper from '../assets/certificates/BestResearchPaper.jpg'
-import PautakanFirstPlace from '../assets/certificates/PautakanFirstPlace.jpg'
-import WordPressFundamentals from '../assets/certificates/WordPressFundamentals.jpg'
-import AIforCommmunitiesWorkshop from '../assets/certificates/AIworkshop.png'
-import GalleryPic1 from '../assets/gallery/Gallery1.jpg'
-import GalleryPic2 from '../assets/gallery/Gallery2.jpg'
+import {
+  profileImage,
+  gcashQR,
+  TopPerformer,
+  TopConversion,
+  JavaProgramming,
+  HackathonChampion,
+  BestOralPresentation,
+  BestResearchPaper,
+  PautakanFirstPlace,
+  WordPressFundamentals,
+  AIforCommmunitiesWorkshop,
+  GalleryPic1,
+  GalleryPic2,
+} from './profileImages'
 
 export const profileInfo = {
   name: 'Gabriel Gonzales',

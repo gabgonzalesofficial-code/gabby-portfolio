@@ -10,7 +10,7 @@ export function AnimatedBackground() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animationFrameId;
+    let animationFrameId = null;
 
     // Set canvas size
     const resizeCanvas = () => {
@@ -20,10 +20,22 @@ export function AnimatedBackground() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Particles
-    const particles = [];
+    // Pause when tab is hidden to save CPU/battery
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+      } else {
+        animate();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    const particleCount = 50;
+    // Particles (reduced from 50 to 28 for better performance)
+    const particles = [];
+    const particleCount = 28;
 
     for (let i = 0; i < particleCount; i++) {
       particles.push({
@@ -78,6 +90,7 @@ export function AnimatedBackground() {
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', resizeCanvas);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 

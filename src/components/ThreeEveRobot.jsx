@@ -228,6 +228,7 @@ export default function ThreeEveRobot({
   onClick,
   chatState,
   onInactivityChange,
+  chatOpen,
   'aria-label': ariaLabel,
 }) {
   chatState = chatState || 'idle';
@@ -446,11 +447,19 @@ export default function ThreeEveRobot({
       onClick={handleClick}
       aria-label={ariaLabel}
       style={{
-        position:'fixed', right:'1.5rem', bottom:'1.5rem', zIndex:9999,
+        position:'fixed',
+        right:'max(1.5rem, env(safe-area-inset-right))',
+        bottom:'max(1.5rem, env(safe-area-inset-bottom))',
+        zIndex:9999,
         padding:0, margin:0, background:'none', border:'none',
         cursor:'pointer', display:'flex', flexDirection:'column',
         alignItems:'center', overflow:'visible',
         WebkitTapHighlightColor:'transparent',
+        minWidth:44, minHeight:44,
+        visibility: chatOpen ? 'hidden' : 'visible',
+        opacity: chatOpen ? 0 : 1,
+        pointerEvents: chatOpen ? 'none' : 'auto',
+        transition: 'opacity 0.25s ease, visibility 0.25s ease',
       }}
     >
       <div style={{
@@ -491,8 +500,14 @@ export default function ThreeEveRobot({
         .eve-orb-btn:focus{outline:none}
         .eve-orb-btn:focus-visible{outline:2px solid rgba(95,162,255,0.55);outline-offset:6px;border-radius:50%}
         @media(max-width:768px){
-          .eve-orb-btn{right:.75rem;bottom:.75rem}
+          .eve-orb-btn{
+            right:max(.75rem,env(safe-area-inset-right))!important;
+            bottom:max(.75rem,env(safe-area-inset-bottom))!important;
+          }
           .eve-orb-btn>div:first-of-type{transform:scale(.85);transform-origin:bottom center}
+        }
+        @media(max-width:380px){
+          .eve-orb-btn>div:first-of-type{transform:scale(.72);transform-origin:bottom center}
         }
       `}</style>
     </button>
