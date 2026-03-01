@@ -6,6 +6,7 @@ import { DonationModalContent, TechStackModalContent, AllProjectsModalContent } 
 import Loader from './components/Loader'
 import { AnimatedBackground } from './components/AnimatedBackground'
 import { PiDownloadLight } from 'react-icons/pi'
+import IsometricRoom from './components/IsometricRoom'
 import { FaAward, FaPalette, FaMusic, FaUtensils } from 'react-icons/fa'
 import resumePDF from './assets/resume/Gabriel_Gonzales_Resume.pdf'
 import {
@@ -399,6 +400,9 @@ function App() {
                 ))}
               </div>
             </section>
+
+            {/* Developer's Workspace */}
+            <IsometricRoom />
           </div>
 
           {/* Right Column */}
