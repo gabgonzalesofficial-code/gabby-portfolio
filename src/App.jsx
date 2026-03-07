@@ -28,6 +28,7 @@ import { useDarkMode, useLoaderSequence, useRecommendationCarousel } from './hoo
 // Lazy load heavy components (Three.js, GSAP, AI chat)
 const EveRobot = lazy(() => import('./components/ThreeEveRobot'))
 const ChatBot = lazy(() => import('./components/ChatBot'))
+const IsometricRoom = lazy(() => import('./components/IsometricRoom'))
 
 function App() {
   const [galleryIndex, setGalleryIndex] = useState(0)
@@ -398,6 +399,22 @@ function App() {
                   />
                 ))}
               </div>
+            </section>
+
+            {/* Dev Space — Isometric Room */}
+            <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="flex items-center gap-3 mb-4">
+                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dev Space</h2>
+                <span className="ml-auto text-xs text-gray-400 dark:text-gray-500 italic">an isometric peek into my workspace</span>
+              </div>
+              <Suspense fallback={
+                <div className="w-full rounded-lg bg-gray-100 dark:bg-gray-700 animate-pulse" style={{ height: '460px' }} />
+              }>
+                <IsometricRoom isDarkMode={isDarkMode} />
+              </Suspense>
             </section>
           </div>
 
