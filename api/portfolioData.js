@@ -51,7 +51,8 @@ export const portfolioData = {
   ],
 
   experience: [
-    { role: 'Senior Web/WordPress Developer', company: 'Proweaver Inc.', year: '2023 - Present' },
+    { role: 'Full Stack Developer', company: 'Launch Smarter Inc.', year: '2026 - present' },
+    { role: 'Senior Web/WordPress Developer', company: 'Proweaver Inc.', year: '2023 - 2026' },
     { role: 'Salesforce Automation Testing Intern', company: 'Accenture', year: '2023 - 2023' },
     { role: 'B.S. in Computer Science', company: 'University of Southern Philippines Foundation (graduate)', year: '2019 - 2023' },
     { role: 'Student Projects Developer', company: 'Freelance', year: '2016 - 2018' },
