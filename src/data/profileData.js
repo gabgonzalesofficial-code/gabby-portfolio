@@ -191,11 +191,12 @@ export const galleryImages = [
 
 // Experience Timeline
 export const experience = [
-  { id: 1, role: 'Senior Web/WordPress Developer', company: 'Proweaver Inc.', year: '2023 - Present' },
-  { id: 2, role: 'Salesforce Automation Testing Intern', company: 'Accenture', year: '2023 - 2023' },
-  { id: 3, role: 'B.S. in Computer Science', company: 'University of Southern Philippines Foundation (graduate)', year: '2019 - 2023' },
-  { id: 4, role: 'Student Projects Developer', company: 'Freelance', year: '2016 - 2018' },
-  { id: 5, role: 'B.S. in Computer Science', company: 'University of Philippines College Cebu (non-graduate)', year: '2012 - 2015' }
+  { id: 1, role: 'Full Stack Developer', company: 'Launch Smarter Inc.', year: '2023 - present' },
+  { id: 2, role: 'Senior Web/WordPress Developer', company: 'Proweaver Inc.', year: '2023 - 2026' },
+  { id: 3, role: 'Salesforce Automation Testing Intern', company: 'Accenture', year: '2023 - 2023' },
+  { id: 4, role: 'B.S. in Computer Science', company: 'University of Southern Philippines Foundation (graduate)', year: '2019 - 2023' },
+  { id: 5, role: 'Student Projects Developer', company: 'Freelance', year: '2016 - 2018' },
+  { id: 6, role: 'B.S. in Computer Science', company: 'University of Philippines College Cebu (non-graduate)', year: '2012 - 2015' }
 ]
 
 // Projects
