@@ -21,9 +21,11 @@ export const portfolioData = {
   techStack: {
     frontend: ['HTML', 'CSS', 'JavaScript', 'jQuery', 'Vue.js', 'React', 'Next.js', 'Tailwind CSS', 'Vite', 'JSON'],
     backend: ['PHP', 'Laravel', 'Java', 'Python', 'C', 'C++', 'C#'],
-    crmCms: ['WordPress', 'Salesforce'],
+    crmCms: ['WordPress', 'Salesforce', 'GoHighLevel', 'HubSpot'],
+    productivity: ['Monday.com'],
     automation: ['Selenium'],
     database: ['MySQL', 'SQL', 'Supabase'],
+    cloud: ['Amazon S3', 'Meta API', 'Google Cloud Console'],
     tools: ['Git', 'GitHub', 'Bitbucket', 'VS Code', 'Cursor', 'Vercel', 'Formspree'],
     gameDev: ['Godot'],
     aiTools: [

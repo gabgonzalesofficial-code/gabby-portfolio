@@ -1,7 +1,7 @@
 import { useState, lazy, Suspense } from 'react'
 import './App.css'
 import Modal from './components/Modal'
-import TechIcon from './components/TechIcon'
+import TechMarquee from './components/TechMarquee'
 import { DonationModalContent, TechStackModalContent, AllProjectsModalContent } from './components/modals'
 import Loader from './components/Loader'
 import { AnimatedBackground } from './components/AnimatedBackground'
@@ -41,9 +41,6 @@ function App() {
   const [selectedCertificate, setSelectedCertificate] = useState(null)
   const [loaderPhase, setLoaderPhase] = useLoaderSequence()
 
-  // Flatten tech stack for compact view
-  const flatTechStack = Object.values(techStack).flat()
-
   // Get recent certifications and projects (first 4 each)
   const recentCertifications = certifications.slice(0, 4)
   const recentProjects = projects.slice(0, 4)
@@ -59,7 +56,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-indigo-100/30 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950/40 portfolio-enter">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-indigo-100/30 dark:bg-gray-950 dark:bg-none portfolio-enter">
       <AnimatedBackground />
       {/* Header Section */}
       <header className="max-w-7xl mx-auto px-4 py-8">
@@ -220,18 +217,7 @@ function App() {
                   View all
                 </button>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {flatTechStack.map((tech, idx) => (
-                  <span
-                    key={idx}
-                    className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-2 rounded-md text-sm transition cursor-default"
-                    title={tech.description ? `${tech.name} - ${tech.description}` : tech.name}
-                  >
-                    <TechIcon name={tech.icon} className="w-4 h-4" />
-                    <span>{tech.name}</span>
-                  </span>
-                ))}
-              </div>
+              <TechMarquee techStack={techStack} />
             </section>
 
             {/* Beyond Coding Section */}

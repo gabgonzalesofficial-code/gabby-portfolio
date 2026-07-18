@@ -121,7 +121,12 @@ export const techStack = {
   ],
   crmCms: [
     { name: 'WordPress', icon: 'wordpress' },
-    { name: 'Salesforce', icon: 'salesforce' }
+    { name: 'Salesforce', icon: 'salesforce' },
+    { name: 'GoHighLevel', icon: 'gohighlevel' },
+    { name: 'HubSpot', icon: 'hubspot' }
+  ],
+  productivity: [
+    { name: 'Monday.com', icon: 'monday' }
   ],
   automation: [
     { name: 'Selenium', icon: 'selenium' }
@@ -131,6 +136,11 @@ export const techStack = {
     { name: 'SQL', icon: 'sql' },
     { name: 'Supabase', icon: 'supabase' },
     { name: 'Prisma', icon: 'prisma' }
+  ],
+  cloud: [
+    { name: 'Amazon S3', icon: 's3' },
+    { name: 'Meta API', icon: 'meta' },
+    { name: 'Google Cloud Console', icon: 'googlecloud' }
   ],
   design: [
     { name: 'Figma', icon: 'figma' },

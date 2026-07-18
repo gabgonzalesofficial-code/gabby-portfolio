@@ -14,6 +14,15 @@ body {
   to { opacity: 1; }
 }
 
+/* ── Tech stack logo rows: swipeable, auto-scrolling ─────────────── */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── Glassmorphism Cards ──────────────────────────────────────────── */
 .glass-card {
   background: rgba(255, 255, 255, 0.72);
