@@ -386,159 +386,6 @@ function App() {
               </div>
             </section>
 
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-8">
-            {/* Experience Section */}
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Experience</h2>
-              </div>
-              <div className="relative">
-                {/* Vertical line */}
-                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-300 dark:bg-gray-600"></div>
-
-                {/* Timeline items */}
-                <div className="space-y-6">
-                  {experience.map((exp) => (
-                    <div key={exp.id} className="relative pl-10">
-                      {/* Node (dot) */}
-                      <div className={`absolute left-3 top-1 w-3 h-3 
-                        ${exp === experience[0] ? 'bg-red-700' : 'bg-gray-900'} 
-                        dark:${exp === experience[0] ? 'bg-red-100' : 'bg-white'}  rounded-full border-2 border-white dark:border-gray-800 shadow-sm`}></div>
-
-                      {/* Content */}
-                      <div className="pb-4 last:pb-0">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">{exp.role}</h3>
-                        <p className="text-gray-600 dark:text-gray-300 text-sm">{exp.company}</p>
-                        <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">{exp.year}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            {/* Recent Projects Section */}
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                  </svg>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recent Projects</h2>
-                </div>
-                <button
-                  onClick={() => {
-                    setModalContent({
-                      title: 'All Projects',
-                      content: <AllProjectsModalContent projects={projects} />
-                    })
-                    setIsModalOpen(true)
-                  }}
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition cursor-pointer"
-                >
-                  View All
-                </button>
-              </div>
-              <div className="space-y-4">
-                {recentProjects.map((project) => (
-                  <div key={project.id} className="glass-inner rounded-lg p-4">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{project.name}</h3>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">{project.description}</p>
-                    <a href={project.url.startsWith('http') ? project.url : `https://${project.url}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 text-sm hover:underline flex items-center gap-1 cursor-pointer">
-                      {project.url}
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Recommendations Section */}
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recommendations</h2>
-              </div>
-              <div className="space-y-4">
-                <div className="relative h-[200px]">
-                  {recommendations.map((rec, idx) => {
-                    const isActive = idx === recommendationIndex
-                    const shouldTruncate = rec.quote.length > 300
-                    const truncatedQuote = shouldTruncate ? rec.quote.substring(0, 300) + '...' : rec.quote
-                    const openFull = () => {
-                      setModalContent({
-                        title: 'Recommendation',
-                        content: (
-                          <div className="space-y-4">
-                            <blockquote className="text-gray-700 dark:text-gray-300 italic border-l-4 border-gray-300 dark:border-gray-600 pl-4 text-lg">
-                              "{rec.quote}"
-                            </blockquote>
-                            <p className="text-gray-600 dark:text-gray-400">
-                              — <span className="font-semibold">{rec.author}</span>, {rec.position}
-                            </p>
-                          </div>
-                        )
-                      })
-                      setIsModalOpen(true)
-                    }
-
-                    return (
-                      <div
-                        key={rec.id}
-                        className={`transition-opacity duration-500 ${isActive ? 'opacity-100 block' : 'opacity-0 pointer-events-none absolute inset-0'
-                          }`}
-                      >
-                        <div className="max-h-[140px] overflow-y-auto pr-2">
-                          <blockquote
-                            className={`text-gray-700 dark:text-gray-300 italic border-l-4 border-gray-300 dark:border-gray-600 pl-4 ${shouldTruncate ? '' : ''}`}
-                          >
-                            "{truncatedQuote}"
-                          </blockquote>
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">
-                          — <span className="font-semibold">{rec.author}</span>, {rec.position}
-                        </p>
-                        {shouldTruncate && (
-                          <button
-                            type="button"
-                            onClick={openFull}
-                            className="mt-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 rounded"
-                          >
-                            Read full recommendation
-                          </button>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Indicator Dots */}
-                {recommendations.length > 1 && (
-                  <div className="flex gap-1 justify-center pt-2">
-                    {recommendations.map((rec, idx) => (
-                      <button
-                        key={rec.id}
-                        onClick={() => setRecommendationIndex(idx)}
-                        className={`w-2 h-2 rounded-full cursor-pointer transition ${idx === recommendationIndex ? 'bg-gray-900 dark:bg-white' : 'bg-gray-300 dark:bg-gray-600'
-                          }`}
-                        aria-label={`Go to recommendation ${idx + 1}`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            </section>
-
             {/* Contact Form Section */}
             <section className="glass-card rounded-lg p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -672,7 +519,171 @@ function App() {
               </form>
             </section>
 
-            {/* Social Links Section 
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-8">
+            {/* Experience Section */}
+            <section className="glass-card rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Experience</h2>
+              </div>
+              <div className="relative">
+                {/* Vertical line */}
+                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-400 dark:bg-gray-500"></div>
+
+                {/* Timeline items */}
+                <div className="space-y-6">
+                  {experience.map((exp) => (
+                    <div key={exp.id} className="relative pl-10">
+                      {/* Node (dot) */}
+                      <div className={
+                        exp === experience[0]
+                          ? 'absolute left-3 top-1 w-3 h-3 bg-red-700 dark:bg-red-400 rounded-full border-2 border-white dark:border-gray-800 shadow-sm'
+                          : 'absolute left-3 top-1 w-3 h-3 bg-gray-900 dark:bg-gray-300 rounded-full border-2 border-white dark:border-gray-800 shadow-sm'
+                      }></div>
+
+                      {/* Content */}
+                      <div className="pb-4 last:pb-0 flex items-start gap-3">
+                        {exp.logo && (
+                          <img
+                            src={exp.logo}
+                            alt={`${exp.company} logo`}
+                            className="w-8 h-8 rounded-md object-contain bg-white border border-gray-200 dark:border-gray-700 shrink-0 mt-0.5"
+                          />
+                        )}
+                        <div>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">{exp.role}</h3>
+                          <p className="text-gray-600 dark:text-gray-300 text-sm">{exp.company}</p>
+                          <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">{exp.year}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* Recent Projects Section */}
+            <section className="glass-card rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recent Projects</h2>
+                </div>
+                <button
+                  onClick={() => {
+                    setModalContent({
+                      title: 'All Projects',
+                      content: <AllProjectsModalContent projects={projects} />
+                    })
+                    setIsModalOpen(true)
+                  }}
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition cursor-pointer"
+                >
+                  View All
+                </button>
+              </div>
+              <div className="space-y-4">
+                {recentProjects.map((project) => (
+                  <div key={project.id} className="glass-inner rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{project.name}</h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">{project.description}</p>
+                    <a href={project.url.startsWith('http') ? project.url : `https://${project.url}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 text-sm hover:underline flex items-center gap-1 cursor-pointer">
+                      {project.url}
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Recommendations Section */}
+            <section className="glass-card rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recommendations</h2>
+              </div>
+              <div className="space-y-4">
+                <div className="relative h-[200px]">
+                  {recommendations.map((rec, idx) => {
+                    const isActive = idx === recommendationIndex
+                    const shouldTruncate = rec.quote.length > 300
+                    const truncatedQuote = shouldTruncate ? rec.quote.substring(0, 300) + '...' : rec.quote
+                    const openFull = () => {
+                      setModalContent({
+                        title: 'Recommendation',
+                        content: (
+                          <div className="space-y-4">
+                            <blockquote className="text-gray-700 dark:text-gray-300 italic border-l-4 border-gray-300 dark:border-gray-600 pl-4 text-lg">
+                              "{rec.quote}"
+                            </blockquote>
+                            <p className="text-gray-600 dark:text-gray-400">
+                              — <span className="font-semibold">{rec.author}</span>, {rec.position}
+                            </p>
+                          </div>
+                        )
+                      })
+                      setIsModalOpen(true)
+                    }
+
+                    return (
+                      <div
+                        key={rec.id}
+                        className={`transition-opacity duration-500 ${isActive ? 'opacity-100 block' : 'opacity-0 pointer-events-none absolute inset-0'
+                          }`}
+                      >
+                        <div className="max-h-[140px] overflow-y-auto pr-2">
+                          <blockquote
+                            className={`text-gray-700 dark:text-gray-300 italic border-l-4 border-gray-300 dark:border-gray-600 pl-4 ${shouldTruncate ? '' : ''}`}
+                          >
+                            "{truncatedQuote}"
+                          </blockquote>
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">
+                          — <span className="font-semibold">{rec.author}</span>, {rec.position}
+                        </p>
+                        {shouldTruncate && (
+                          <button
+                            type="button"
+                            onClick={openFull}
+                            className="mt-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 rounded"
+                          >
+                            Read full recommendation
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Indicator Dots */}
+                {recommendations.length > 1 && (
+                  <div className="flex gap-1 justify-center pt-2">
+                    {recommendations.map((rec, idx) => (
+                      <button
+                        key={rec.id}
+                        onClick={() => setRecommendationIndex(idx)}
+                        className={`w-2 h-2 rounded-full cursor-pointer transition ${idx === recommendationIndex ? 'bg-gray-900 dark:bg-white' : 'bg-gray-300 dark:bg-gray-600'
+                          }`}
+                        aria-label={`Go to recommendation ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Social Links Section
             <section className="glass-card rounded-lg p-6">
               <div className="flex items-center gap-3 mb-4">
                 <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -757,6 +768,16 @@ function App() {
         <p className="text-center text-gray-600 dark:text-gray-400 text-sm">
           {footer.copyright}
         </p>
+        <p className="text-center text-gray-400 dark:text-gray-500 text-xs mt-1">
+          {footer.modelCredit.prefix}
+          <a href={footer.modelCredit.titleUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600 dark:hover:text-gray-300">
+            {footer.modelCredit.title}
+          </a>
+          {footer.modelCredit.middle}
+          <a href={footer.modelCredit.licenseUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600 dark:hover:text-gray-300">
+            {footer.modelCredit.license}
+          </a>
+        </p>
       </footer>
 
       {/* EVE Robot — Chat trigger (hidden when chat open to avoid overlap) */}
@@ -785,7 +806,7 @@ function App() {
             aria-label="Loading chat"
           />
         }>
-          <ChatBot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+          <ChatBot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} isDarkMode={isDarkMode} />
         </Suspense>
       )}
 

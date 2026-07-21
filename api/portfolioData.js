@@ -24,9 +24,9 @@ export const portfolioData = {
     crmCms: ['WordPress', 'Salesforce', 'GoHighLevel', 'HubSpot'],
     productivity: ['Monday.com'],
     automation: ['Selenium'],
-    database: ['MySQL', 'SQL', 'Supabase'],
-    cloud: ['Amazon S3', 'Meta API', 'Google Cloud Console'],
-    tools: ['Git', 'GitHub', 'Bitbucket', 'VS Code', 'Cursor', 'Vercel', 'Formspree'],
+    database: ['MySQL', 'SQL', 'Supabase', 'MongoDB'],
+    cloud: ['Amazon S3', 'Meta API', 'Google Cloud Console', 'Digital Ocean'],
+    tools: ['Git', 'GitHub', 'Bitbucket', 'VS Code', 'Cursor', 'Vercel', 'Formspree', 'Laravel Forge'],
     gameDev: ['Godot'],
     aiTools: [
       { name: 'Gemini AI Studio', description: 'AI Integration' },

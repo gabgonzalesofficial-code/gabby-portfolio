@@ -16,3 +16,10 @@ export { default as WordPressFundamentals } from '../assets/certificates/WordPre
 export { default as AIforCommmunitiesWorkshop } from '../assets/certificates/AIworkshop.png'
 export { default as GalleryPic1 } from '../assets/gallery/Gallery1.jpg'
 export { default as GalleryPic2 } from '../assets/gallery/Gallery2.jpg'
+
+export { default as LaunchSmarterLogo } from '../assets/companies/launchsmarter.png'
+export { default as AccentureLogo } from '../assets/companies/accenture.png'
+export { default as USPFLogo } from '../assets/companies/uspf.png'
+export { default as UPCebuLogo } from '../assets/companies/up-cebu.png'
+export { default as ProweaverLogo } from '../assets/companies/proweaver.jpg'
+export { default as FreelanceLogo } from '../assets/companies/freelance.png'

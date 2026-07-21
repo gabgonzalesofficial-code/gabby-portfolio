@@ -24,7 +24,6 @@ import {
   SiGit,
   SiGithub,
   SiBitbucket,
-  SiVscodium,
   SiVercel,
   SiWordpress,
   SiFormspree,
@@ -37,12 +36,16 @@ import {
   SiSuno,
   SiHubspot,
   SiMeta,
-  SiGooglecloud
+  SiGooglecloud,
+  SiMongodb,
+  SiDigitalocean,
+  SiCursor
 } from '@icons-pack/react-simple-icons'
 import { SiSalesforce, SiAmazons3, SiCanva, SiOpenai } from 'react-icons/si'
 import { DiDatabase, DiJava } from 'react-icons/di'
-import { FaCode, FaBolt } from 'react-icons/fa'
+import { FaBolt } from 'react-icons/fa'
 import { TbBrandMonday } from 'react-icons/tb'
+import { VscVscode } from 'react-icons/vsc'
 
 // GoHighLevel has no published icon anywhere — render a monogram badge in
 // their official "Space Blue" instead.
@@ -58,7 +61,7 @@ function GoHighLevelIcon({ className }) {
 // Brands whose Simple Icons mark is black/near-black — left theme-adaptive
 // (currentColor) instead of forced to brand color, so they stay legible in
 // dark mode against a dark pill background.
-const MONOCHROME_KEYS = new Set(['nextjs', 'json', 'prisma', 'github', 'vercel'])
+const MONOCHROME_KEYS = new Set(['nextjs', 'json', 'prisma', 'github', 'vercel', 'cursor'])
 
 const RSI_ICONS = {
   html: SiHtml5,
@@ -82,7 +85,6 @@ const RSI_ICONS = {
   git: SiGit,
   github: SiGithub,
   bitbucket: SiBitbucket,
-  vscode: SiVscodium,
   vercel: SiVercel,
   wordpress: SiWordpress,
   formspree: SiFormspree,
@@ -95,7 +97,10 @@ const RSI_ICONS = {
   suno: SiSuno,
   hubspot: SiHubspot,
   meta: SiMeta,
-  googlecloud: SiGooglecloud
+  googlecloud: SiGooglecloud,
+  mongodb: SiMongodb,
+  digitalocean: SiDigitalocean,
+  cursor: SiCursor
 }
 
 // Brands removed from upstream Simple Icons (trademark takedowns), or not a
@@ -107,9 +112,9 @@ const RI_ICONS = {
   chatgpt: SiOpenai,
   java: DiJava,
   sql: DiDatabase,
-  cursor: FaCode,
   groq: FaBolt,
-  monday: TbBrandMonday
+  monday: TbBrandMonday,
+  vscode: VscVscode
 }
 const RI_COLORS = {
   salesforce: '#00A1E0',
@@ -117,8 +122,9 @@ const RI_COLORS = {
   canva: '#00C4CC',
   chatgpt: '#412991',
   java: '#ED8B00',
-  monday: '#FF3D57'
-  // sql, cursor, groq have no distinct brand identity — left theme-adaptive
+  monday: '#FF3D57',
+  vscode: '#007ACC'
+  // sql, groq have no distinct brand identity — left theme-adaptive
 }
 
 function TechIcon({ name, className = "w-5 h-5" }) {

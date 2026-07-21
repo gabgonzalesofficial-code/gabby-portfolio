@@ -13,6 +13,12 @@ import {
   AIforCommmunitiesWorkshop,
   GalleryPic1,
   GalleryPic2,
+  LaunchSmarterLogo,
+  AccentureLogo,
+  USPFLogo,
+  UPCebuLogo,
+  ProweaverLogo,
+  FreelanceLogo,
 } from './profileImages'
 
 export const profileInfo = {
@@ -135,12 +141,14 @@ export const techStack = {
     { name: 'MySQL', icon: 'mysql' },
     { name: 'SQL', icon: 'sql' },
     { name: 'Supabase', icon: 'supabase' },
-    { name: 'Prisma', icon: 'prisma' }
+    { name: 'Prisma', icon: 'prisma' },
+    { name: 'MongoDB', icon: 'mongodb' }
   ],
   cloud: [
     { name: 'Amazon S3', icon: 's3' },
     { name: 'Meta API', icon: 'meta' },
-    { name: 'Google Cloud Console', icon: 'googlecloud' }
+    { name: 'Google Cloud Console', icon: 'googlecloud' },
+    { name: 'Digital Ocean', icon: 'digitalocean' }
   ],
   design: [
     { name: 'Figma', icon: 'figma' },
@@ -153,7 +161,8 @@ export const techStack = {
     { name: 'VS Code', icon: 'vscode' },
     { name: 'Cursor', icon: 'cursor' },
     { name: 'Vercel', icon: 'vercel' },
-    { name: 'Formspree', icon: 'formspree' }
+    { name: 'Formspree', icon: 'formspree' },
+    { name: 'Laravel Forge', icon: 'laravel' }
   ],
   gameDev: [
     { name: 'Godot', icon: 'godot' }
@@ -201,12 +210,12 @@ export const galleryImages = [
 
 // Experience Timeline
 export const experience = [
-  { id: 1, role: 'Full Stack Developer', company: 'Launch Smarter Inc.', year: '2026 - present' },
-  { id: 2, role: 'Senior Web/WordPress Developer', company: 'Proweaver Inc.', year: '2023 - 2026' },
-  { id: 3, role: 'Salesforce Automation Testing Intern', company: 'Accenture', year: '2023 - 2023' },
-  { id: 4, role: 'B.S. in Computer Science', company: 'University of Southern Philippines Foundation (graduate)', year: '2019 - 2023' },
-  { id: 5, role: 'Student Projects Developer', company: 'Freelance', year: '2016 - 2018' },
-  { id: 6, role: 'B.S. in Computer Science', company: 'University of Philippines College Cebu (non-graduate)', year: '2012 - 2015' }
+  { id: 1, role: 'Full Stack Developer', company: 'Launch Smarter Inc.', year: '2026 - present', logo: LaunchSmarterLogo },
+  { id: 2, role: 'Senior Web/WordPress Developer', company: 'Proweaver Inc.', year: '2023 - 2026', logo: ProweaverLogo },
+  { id: 3, role: 'Salesforce Automation Testing Intern', company: 'Accenture', year: '2023 - 2023', logo: AccentureLogo },
+  { id: 4, role: 'B.S. in Computer Science', company: 'University of Southern Philippines Foundation (graduate)', year: '2019 - 2023', logo: USPFLogo },
+  { id: 5, role: 'Student Projects Developer', company: 'Freelance', year: '2016 - 2018', logo: FreelanceLogo },
+  { id: 6, role: 'B.S. in Computer Science', company: 'University of Philippines College Cebu (non-graduate)', year: '2012 - 2015', logo: UPCebuLogo }
 ]
 
 // Projects
@@ -279,5 +288,13 @@ export const contactInfo = {
 
 // Footer
 export const footer = {
-  copyright: '© 2026 Gabriel Gonzales. All rights reserved.'
+  copyright: '© 2026 Gabriel Gonzales. All rights reserved.',
+  modelCredit: {
+    prefix: '3D model: "',
+    title: 'robot_playground',
+    titleUrl: 'https://skfb.ly/pGtzK',
+    middle: '" by sirichaan, licensed under ',
+    license: 'CC BY 4.0',
+    licenseUrl: 'http://creativecommons.org/licenses/by/4.0/'
+  }
 }

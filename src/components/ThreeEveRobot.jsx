@@ -1,9 +1,9 @@
 /**
- * ThreeEveRobot.jsx — Sentient Chat Widget
+ * ThreeEveRobot.jsx — Chat Widget Avatar (GLB model)
  *
- * Color story: #151e2e (portfolio midnight navy) glowing with
- * soft blue-white bioluminescence from within. Same organism
- * as the chat panel.
+ * Renders src/assets/blender/gabby.glb as the floating chat-trigger
+ * avatar, replacing the old procedural shader sphere. Framing/lighting
+ * auto-normalizes to whatever scale the model was exported at from Blender.
  *
  * Requirements: npm install three gsap
  *
@@ -15,203 +15,19 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import gsap from 'gsap';
+import gabbyModelUrl from '../assets/blender/roboto.glb?url';
 
-// ─── Sphere vertex shader ─────────────────────────────────────────────────────
-// Simplex noise displacement + #151e2e → ocean blue → blue-white palette
-const SPHERE_VERT = /* glsl */`
-  varying vec3 v_color;
-  varying vec3 v_normal;
-  uniform float u_time;
-  uniform float u_progress;
-
-  vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x,289.0);}
-  vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
-  float snoise(vec3 v){
-    const vec2 C=vec2(1.0/6.0,1.0/3.0);
-    const vec4 D=vec4(0.0,0.5,1.0,2.0);
-    vec3 i=floor(v+dot(v,C.yyy));
-    vec3 x0=v-i+dot(i,C.xxx);
-    vec3 g=step(x0.yzx,x0.xyz);
-    vec3 l=1.0-g;
-    vec3 i1=min(g.xyz,l.zxy);
-    vec3 i2=max(g.xyz,l.zxy);
-    vec3 x1=x0-i1+C.xxx;
-    vec3 x2=x0-i2+2.0*C.xxx;
-    vec3 x3=x0-1.0+3.0*C.xxx;
-    i=mod(i,289.0);
-    vec4 p=permute(permute(permute(
-      i.z+vec4(0.0,i1.z,i2.z,1.0))
-      +i.y+vec4(0.0,i1.y,i2.y,1.0))
-      +i.x+vec4(0.0,i1.x,i2.x,1.0));
-    float n_=1.0/7.0;
-    vec3 ns=n_*D.wyz-D.xzx;
-    vec4 j=p-49.0*floor(p*ns.z*ns.z);
-    vec4 x_=floor(j*ns.z);
-    vec4 y_=floor(j-7.0*x_);
-    vec4 x=x_*ns.x+ns.yyyy;
-    vec4 y=y_*ns.x+ns.yyyy;
-    vec4 h=1.0-abs(x)-abs(y);
-    vec4 b0=vec4(x.xy,y.xy);
-    vec4 b1=vec4(x.zw,y.zw);
-    vec4 s0=floor(b0)*2.0+1.0;
-    vec4 s1=floor(b1)*2.0+1.0;
-    vec4 sh=-step(h,vec4(0.0));
-    vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;
-    vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
-    vec3 p0=vec3(a0.xy,h.x);
-    vec3 p1=vec3(a0.zw,h.y);
-    vec3 p2=vec3(a1.xy,h.z);
-    vec3 p3=vec3(a1.zw,h.w);
-    vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
-    p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;
-    vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);
-    m=m*m;
-    return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
-  }
-
-  void main() {
-    float noise  = snoise(position * u_progress + u_time / 10.0);
-    vec3  newPos = position * (noise + 0.7);
-
-    // ── Three-stop palette: #151e2e navy → ocean blue → blue-white ──
-    // noise ≈ -0.8..0.8 → remap to 0..1
-    float n01 = clamp(noise * 0.62 + 0.5, 0.0, 1.0);
-    vec3 navyDeep  = vec3(0.082, 0.118, 0.180); // #151e2e — portfolio navy
-    vec3 oceanMid  = vec3(0.145, 0.290, 0.620); // deep-sea blue
-    vec3 glowPeak  = vec3(0.650, 0.820, 1.000); // bioluminescent crest
-
-    vec3 col = n01 < 0.5
-      ? mix(navyDeep, oceanMid, n01 * 2.0)
-      : mix(oceanMid, glowPeak, (n01 - 0.5) * 2.0);
-
-    v_color  = col;
-    v_normal = normal;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
-  }
-`;
-
-// ─── Sphere fragment shader ───────────────────────────────────────────────────
-// Fresnel rim corona + state modulation + inactivity sleep
-const SPHERE_FRAG = /* glsl */`
-  varying vec3 v_color;
-  varying vec3 v_normal;
-  uniform float u_time;
-  uniform float u_state;
-  uniform float u_inactivity;
-
-  void main() {
-    // Fresnel rim — atmosphere glow like a deep-sea creature
-    vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));
-    float rim    = pow(1.0 - abs(dot(normalize(v_normal), viewDir)), 2.2);
-    vec3 rimCol  = vec3(0.52, 0.76, 1.0);
-
-    vec3 col = v_color;
-    col += rimCol * rim * 0.70;
-
-    // State masks
-    float sListen = step(0.5,u_state)*(1.0-step(1.5,u_state));
-    float sThink  = step(1.5,u_state)*(1.0-step(2.5,u_state));
-    float sSpeak  = step(2.5,u_state);
-
-    // Listening: gentle brightness lift + enhanced rim
-    col += sListen * vec3(0.03, 0.06, 0.14);
-    col += sListen * rimCol * rim * 0.50;
-
-    // Thinking: fast electrical shimmer across surface
-    float sh1 = sin(u_time * 11.0) * 0.5 + 0.5;
-    float sh2 = sin(u_time * 7.0 + 1.6) * 0.5 + 0.5;
-    col += sThink * (vec3(0.04, 0.10, 0.28) + vec3(0.05, 0.12, 0.26) * sh1 * sh2);
-    col += sThink * rimCol * rim * 0.95;
-
-    // Speaking: rhythmic luminance pulse — organism transmitting
-    float pulse = sin(u_time * 5.0) * 0.5 + 0.5;
-    col += sSpeak * col * pulse * 0.32;
-    col += sSpeak * rimCol * rim * pulse * 0.52;
-
-    // Inactivity: dims toward dormant deep navy — the creature sleeping
-    vec3 dormant = vec3(0.046, 0.065, 0.102);
-    col = mix(col, dormant, u_inactivity * 0.80);
-
-    gl_FragColor = vec4(clamp(col, 0.0, 1.5), 1.0);
-  }
-`;
-
-// ─── Particle vertex ──────────────────────────────────────────────────────────
-// Particles hug the sphere surface and breathe with it
-const PARTICLE_VERT = /* glsl */`
-  uniform float u_time;
-  uniform float u_state;
-
-  float h3(vec3 p){
-    p=fract(p*vec3(127.1,311.7,74.7));
-    p+=dot(p,p.yxz+19.19);
-    return fract(p.x*p.y*p.z);
-  }
-
-  void main() {
-    vec3 p = position;
-
-    // Organic surface displacement — follows sphere noise loosely
-    float n1 = h3(p * 2.1 + u_time * 0.09) * 2.0 - 1.0;
-    float n2 = h3(p * 4.3 - u_time * 0.06) * 2.0 - 1.0;
-    p += normalize(p) * (n1 * 0.10 + n2 * 0.06);
-
-    // State-driven agitation
-    float speed = 1.0 + u_state * 0.55;
-    p.y += 0.06 * sin(p.y * 5.5 + u_time * speed);
-    p.x += 0.03 * cos(p.z * 4.2 + u_time * speed * 0.7);
-
-    // Thinking: chaotic orbital agitation
-    float sThink = step(1.5,u_state)*(1.0-step(2.5,u_state));
-    p += normalize(p) * sin(u_time*4.6 + length(p)*3.5)*0.07*sThink;
-
-    // Speaking: outward rhythmic pulse
-    float sSpeak = step(2.5,u_state);
-    float pulse  = sin(u_time*5.0)*0.5+0.5;
-    p += normalize(p) * pulse * 0.055 * sSpeak;
-
-    vec4 mv = modelViewMatrix * vec4(p, 1.0);
-    gl_PointSize = 5.0 * (1.0 / -mv.z);
-    gl_Position  = projectionMatrix * mv;
-  }
-`;
-
-// ─── Particle fragment ────────────────────────────────────────────────────────
-const PARTICLE_FRAG = /* glsl */`
-  uniform float u_progress;
-  uniform float u_state;
-  uniform float u_time;
-  uniform float u_inactivity;
-
-  void main() {
-    vec2  uv   = gl_PointCoord - 0.5;
-    float dist = length(uv);
-    if (dist > 0.5) discard;
-    float soft = 1.0 - smoothstep(0.22, 0.5, dist);
-
-    vec3 col = vec3(0.60, 0.78, 1.0); // blue-white base
-
-    float sThink  = step(1.5,u_state)*(1.0-step(2.5,u_state));
-    float sSpeak  = step(2.5,u_state);
-    float sListen = step(0.5,u_state)*(1.0-step(1.5,u_state));
-
-    col = mix(col, vec3(0.78, 0.90, 1.0), sThink * 0.65);
-    float pulse = sin(u_time*5.0)*0.5+0.5;
-    col = mix(col, vec3(0.70, 0.86, 1.0), sSpeak * pulse * 0.50);
-    col = mix(col, vec3(0.52, 0.74, 1.0), sListen * 0.30);
-
-    float opacity = u_progress * soft * (1.0 - u_inactivity * 0.88);
-    gl_FragColor = vec4(col, opacity);
-  }
-`;
-
-// ─── State config ─────────────────────────────────────────────────────────────
+// ─── State config — rim-light color/intensity per state ──────────────────────
+// No continuous auto-rotation: the character's own gesture animations
+// (see CLIP_MAP below) provide the motion now, spinning a gesturing
+// humanoid would just look broken.
 const STATE_CFG = {
-  idle:      { pMin:0.3, pMax:1.8, pDur:5.5, partOpacity:0.10, rotSpeed:0.0022 },
-  listening: { pMin:0.8, pMax:2.8, pDur:3.5, partOpacity:0.22, rotSpeed:0.0042 },
-  thinking:  { pMin:2.2, pMax:5.2, pDur:1.6, partOpacity:0.48, rotSpeed:0.0125 },
-  speaking:  { pMin:0.9, pMax:3.5, pDur:2.4, partOpacity:0.30, rotSpeed:0.0062 },
+  idle:      { lMin:0.35, lMax:0.75, lDur:5.5, rim:0x5fa2ff },
+  listening: { lMin:0.55, lMax:1.05, lDur:3.5, rim:0x50d2a0 },
+  thinking:  { lMin:0.60, lMax:1.60, lDur:1.6, rim:0x5fa2ff },
+  speaking:  { lMin:0.55, lMax:1.30, lDur:2.4, rim:0x82c3ff },
 };
 
 // ─── Glow helpers — stays in blue family, just dims on inactivity ─────────────
@@ -239,19 +55,24 @@ export default function ThreeEveRobot({
   const rafRef    = useRef(null);
   const tlRef     = useRef(null);
   const chatRef   = useRef(chatState);
-  const rotRef    = useRef(STATE_CFG.idle.rotSpeed);
 
-  const cursorRef     = useRef({ x: 0, y: 0 });
   const inactivityRef = useRef(0);
   const lastActiveRef = useRef(Date.now());
   const lastEmitRef   = useRef(-1);
-  const twitchRef     = useRef({ vx: 0, vy: 0 });
-  const lastTwitchRef = useRef(Date.now());
-  const nextTwitchRef = useRef(10000 + Math.random() * 5000);
   const onInactRef    = useRef(onInactivityChange);
+  const cursorXRef    = useRef(null); // null = cursor not near, no turn
 
   const [wiggle,     setWiggle]     = useState(false);
   const [inactivity, setInactivity] = useState(0);
+  const [modelReady, setModelReady] = useState(false);
+  const [showBubble, setShowBubble] = useState(true);
+
+  // Speech bubble hints at clickability until the user either clicks or
+  // ignores it for a while — it shouldn't linger forever.
+  useEffect(() => {
+    const t = setTimeout(() => setShowBubble(false), 9000);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => { chatRef.current     = chatState;          }, [chatState]);
   useEffect(() => { onInactRef.current  = onInactivityChange; }, [onInactivityChange]);
@@ -265,7 +86,8 @@ export default function ThreeEveRobot({
 
   // ── Three.js setup — runs once ─────────────────────────────────────────────
   useEffect(() => {
-    const SIZE = 110;
+    let disposed = false;
+    const SIZE = 300;
     const DPR  = Math.min(window.devicePixelRatio || 1, 2);
 
     const canvas   = mountRef.current;
@@ -273,101 +95,120 @@ export default function ThreeEveRobot({
     renderer.setSize(SIZE * DPR, SIZE * DPR, false);
     renderer.setPixelRatio(DPR);
     renderer.setClearColor(0x000000, 0);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
 
     const scene  = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(38, 1.0, 0.1, 1000);
-    camera.position.set(0, 0, 4.8);
+    const camera = new THREE.PerspectiveCamera(32, 1.0, 0.1, 1000);
+    camera.position.set(0, 0, 4.2);
     const clock  = new THREE.Clock();
 
-    // Sphere
-    const sphereGeo = new THREE.SphereGeometry(1, 128, 128);
-    const sphereMat = new THREE.ShaderMaterial({
-      vertexShader: SPHERE_VERT, fragmentShader: SPHERE_FRAG,
-      uniforms: {
-        u_time:       { value: 0 }, u_progress:   { value: 0 },
-        u_state:      { value: 0 }, u_inactivity: { value: 0 },
-      },
-    });
-    const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
-    scene.add(sphereMesh);
+    // Model group — the loaded GLB is normalized/recentered into this
+    const modelGroup = new THREE.Group();
+    scene.add(modelGroup);
 
-    // Particles — sit just outside sphere surface
-    const N   = 5500;
-    const pos = new Float32Array(N * 3);
-    const inc = Math.PI * (3 - Math.sqrt(5));
-    const off = 2 / N;
-    for (let i = 0; i < N; i++) {
-      const y   = i * off - 1 + off / 2;
-      const r   = Math.sqrt(1 - y * y) * 1.06;
-      const phi = i * inc;
-      pos[i*3] = Math.cos(phi)*r; pos[i*3+1] = y*1.06; pos[i*3+2] = Math.sin(phi)*r;
-    }
-    const partGeo = new THREE.BufferGeometry();
-    partGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const partMat = new THREE.ShaderMaterial({
-      vertexShader: PARTICLE_VERT, fragmentShader: PARTICLE_FRAG,
-      transparent: true, depthWrite: false,
-      uniforms: {
-        u_time:       { value: 0 }, u_progress:   { value: 0 },
-        u_state:      { value: 0 }, u_inactivity: { value: 0 },
-      },
-    });
-    const particles = new THREE.Points(partGeo, partMat);
-    scene.add(particles);
+    // Lighting
+    const hemi = new THREE.HemisphereLight(0xbbccff, 0x0d1420, 1.15);
+    scene.add(hemi);
+    const key = new THREE.DirectionalLight(0xffffff, 1.0);
+    key.position.set(1.5, 2.4, 3);
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0xaecbff, 0.35);
+    fill.position.set(-2, -0.5, 1.5);
+    scene.add(fill);
+    const rim = new THREE.PointLight(0x5fa2ff, 0.5, 12);
+    rim.position.set(-1.4, 0.6, 1.6);
+    scene.add(rim);
 
-    threeRef.current = { renderer, scene, camera, clock, sphereMesh, sphereMat, particles, partMat };
+    threeRef.current = { renderer, scene, camera, clock, modelGroup, rim };
     startStateAnim('idle');
 
+    // Load the GLB avatar
+    const loader = new GLTFLoader();
+    loader.load(
+      gabbyModelUrl,
+      (gltf) => {
+        if (disposed) return;
+        const model = gltf.scene;
+
+        // No skeleton on this asset — rigid parts (hands, ears, eyes, mouth,
+        // pulse rings) animate directly via keyframed node transforms, so a
+        // plain bounding box is trustworthy here. Still empirically tuned
+        // rather than auto-fit, since the "Robot Origin" node's own animated
+        // translation (the idle bob, tracked below) shifts the box anyway.
+        const BASE_Y = -0.08;
+        model.scale.setScalar(1.25);
+        model.position.set(0, BASE_Y, 0);
+
+        modelGroup.add(model);
+        threeRef.current.model = model;
+
+        // Single idle clip — plays continuously (loops) regardless of chat
+        // state; rim-light color/intensity (startStateAnim) carries the
+        // state feedback.
+        if (gltf.animations[0]) {
+          const mixer = new THREE.AnimationMixer(model);
+          const action = mixer.clipAction(gltf.animations[0]);
+          action.setLoop(THREE.LoopRepeat, Infinity);
+          action.play();
+          threeRef.current.mixer = mixer;
+        }
+
+        // The clip animates "Robot Origin" up/down (the idle bob) which would
+        // otherwise carry the character in and out of frame — track it each
+        // frame and cancel the vertical travel so the character stays centered.
+        const rootBone = model.getObjectByName('Robot Origin_4');
+        if (rootBone) {
+          threeRef.current.rootBone  = rootBone;
+          threeRef.current.rootBaseY = rootBone.getWorldPosition(new THREE.Vector3()).y;
+          threeRef.current.baseModelY = BASE_Y;
+        }
+
+        setModelReady(true);
+      },
+      undefined,
+      (err) => console.error('Failed to load avatar model:', err)
+    );
+
     // Render loop
+    const tmpVec3 = new THREE.Vector3();
     function loop() {
       rafRef.current = requestAnimationFrame(loop);
-      const t     = clock.getElapsedTime();
+      const delta = clock.getDelta();
+      const t     = clock.elapsedTime;
       const now   = performance.now();
       const state = chatRef.current;
-      const sv    = { idle:0, listening:1, thinking:2, speaking:3 }[state] || 0;
 
-      sphereMat.uniforms.u_time.value  = t;
-      partMat.uniforms.u_time.value    = t;
-      sphereMat.uniforms.u_state.value = sv;
-      partMat.uniforms.u_state.value   = sv;
+      threeRef.current.mixer?.update(delta);
+
+      const { rootBone, model } = threeRef.current;
+      if (rootBone) {
+        const curY = rootBone.getWorldPosition(tmpVec3).y;
+        model.position.y = threeRef.current.baseModelY - (curY - threeRef.current.rootBaseY);
+      }
 
       // Breathing — two non-syncing sines, never mechanical
       const breathe = 1.0
         + Math.sin(t * 1.07) * 0.013
         + Math.sin(t * 1.73) * 0.009
         + (state === 'thinking' ? Math.sin(t * 3.1) * 0.007 : 0);
-      sphereMesh.scale.setScalar(breathe);
+      modelGroup.scale.setScalar(breathe);
 
-      // Particle rotation
-      particles.rotation.y += rotRef.current;
-      if (state === 'thinking') particles.rotation.x += rotRef.current * 0.28;
+      // Turn left/right toward the cursor when it's near; ease back to
+      // facing forward otherwise. Horizontal only — no up/down tilt.
+      const cx = cursorXRef.current;
+      const turnTarget = cx === null ? 0 : Math.max(-0.5, Math.min(0.5, cx / 260));
+      modelGroup.rotation.y += (turnTarget - modelGroup.rotation.y) * 0.045;
 
-      // Eye tracking — sphere tilts lazily toward cursor
-      const r  = canvas.getBoundingClientRect();
-      const tx =  (cursorRef.current.x - (r.left + r.width  / 2)) / (r.width  * 2.8);
-      const ty = -(cursorRef.current.y - (r.top  + r.height / 2)) / (r.height * 2.8);
-      sphereMesh.rotation.y += (tx * 0.7 - sphereMesh.rotation.y) * 0.035;
-      sphereMesh.rotation.x += (ty * 0.5 - sphereMesh.rotation.x) * 0.035;
-
-      // Micro-twitches in idle
-      if (state === 'idle' && now - lastTwitchRef.current > nextTwitchRef.current) {
-        twitchRef.current = { vx: (Math.random()-0.5)*0.20, vy: (Math.random()-0.5)*0.30 };
-        lastTwitchRef.current = now;
-        nextTwitchRef.current = (8 + Math.random()*7) * 1000;
-      }
-      if (Math.abs(twitchRef.current.vx) > 0.0001) {
-        sphereMesh.rotation.x += twitchRef.current.vx;
-        sphereMesh.rotation.y += twitchRef.current.vy;
-        twitchRef.current.vx  *= 0.78;
-        twitchRef.current.vy  *= 0.78;
-      }
-
-      // Inactivity drift — dims and sleeps after 20s
+      // Inactivity drift — dims lights after 20s, like the creature dozing off
       const idleSec  = (Date.now() - lastActiveRef.current) / 1000;
       const tgtInact = Math.min(Math.max((idleSec - 20) / 15, 0), 1);
       inactivityRef.current += (tgtInact - inactivityRef.current) * 0.008;
-      sphereMat.uniforms.u_inactivity.value = inactivityRef.current;
-      partMat.uniforms.u_inactivity.value   = inactivityRef.current;
+      const dim = 1 - inactivityRef.current * 0.75;
+      hemi.intensity = 1.15 * dim;
+      key.intensity  = 1.0  * dim;
+      fill.intensity = 0.35 * dim;
 
       const rounded = Math.round(inactivityRef.current * 100) / 100;
       if (Math.abs(rounded - lastEmitRef.current) >= 0.01) {
@@ -382,39 +223,49 @@ export default function ThreeEveRobot({
     loop();
 
     return () => {
+      disposed = true;
       cancelAnimationFrame(rafRef.current);
       tlRef.current?.kill();
       renderer.dispose();
-      sphereGeo.dispose(); sphereMat.dispose();
-      partGeo.dispose();   partMat.dispose();
+      modelGroup.traverse((obj) => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+          mats.forEach((m) => {
+            Object.values(m).forEach((v) => v?.isTexture && v.dispose());
+            m.dispose();
+          });
+        }
+      });
     };
   }, []);
 
-  // ── State → GSAP morph animation ──────────────────────────────────────────
+  // ── State → GSAP rim-light breathing animation ────────────────────────────
   function startStateAnim(state) {
     if (!threeRef.current) return;
-    const { sphereMat, partMat } = threeRef.current;
+    const { rim } = threeRef.current;
     const cfg = STATE_CFG[state] || STATE_CFG.idle;
     tlRef.current?.kill();
-    rotRef.current = cfg.rotSpeed;
-    gsap.to(partMat.uniforms.u_progress, { value: cfg.partOpacity, duration: 1.0, ease: 'power2.inOut' });
+    rim.color.setHex(cfg.rim);
     tlRef.current = gsap.timeline({ repeat: -1, yoyo: true })
-      .to(sphereMat.uniforms.u_progress, { value: cfg.pMax, duration: cfg.pDur, ease: 'power3.inOut' })
-      .to(sphereMat.uniforms.u_progress, { value: cfg.pMin, duration: cfg.pDur, ease: 'power3.inOut' });
+      .to(rim, { intensity: cfg.lMax, duration: cfg.lDur, ease: 'power3.inOut' })
+      .to(rim, { intensity: cfg.lMin, duration: cfg.lDur, ease: 'power3.inOut' });
   }
 
   useEffect(() => { startStateAnim(chatState); }, [chatState]);
 
-  // ── Cursor tracking ────────────────────────────────────────────────────────
+  // ── Wakes the widget when the cursor is near, and tracks how far left/right
+  //    of center it is so the robot can turn toward it (render loop below) ──
   useEffect(() => {
     function mv(e) {
-      cursorRef.current = { x: e.clientX, y: e.clientY };
       const el = mountRef.current;
       if (el) {
         const r  = el.getBoundingClientRect();
         const dx = e.clientX - (r.left + r.width/2);
         const dy = e.clientY - (r.top  + r.height/2);
-        if (Math.sqrt(dx*dx + dy*dy) < 200) lastActiveRef.current = Date.now();
+        const near = Math.sqrt(dx*dx + dy*dy) < 200;
+        if (near) lastActiveRef.current = Date.now();
+        cursorXRef.current = near ? dx : null;
       }
     }
     window.addEventListener('mousemove', mv, { passive: true });
@@ -423,6 +274,7 @@ export default function ThreeEveRobot({
 
   function handleClick(e) {
     setWiggle(true);
+    setShowBubble(false);
     setInactivity(0);
     inactivityRef.current = 0;
     lastActiveRef.current = Date.now();
@@ -438,7 +290,6 @@ export default function ThreeEveRobot({
     speaking:  `drop-shadow(0 0 11px ${glowColor(inactivity,0.85)}) drop-shadow(0 0 30px ${glowColor(inactivity,0.42)})`,
   };
   const shadowAlpha = (0.15 * (1 - inactivity * 0.80)).toFixed(2);
-  const floatDur = chatState === 'thinking' ? '2.6s' : chatState === 'speaking' ? '3.2s' : '5.5s';
 
   return (
     <button
@@ -448,30 +299,83 @@ export default function ThreeEveRobot({
       aria-label={ariaLabel}
       style={{
         position:'fixed',
-        right:'max(1.5rem, env(safe-area-inset-right))',
-        bottom:'max(1.5rem, env(safe-area-inset-bottom))',
+        right:'max(0.25rem, env(safe-area-inset-right))',
+        bottom:'max(0.75rem, env(safe-area-inset-bottom))',
         zIndex:9999,
         padding:0, margin:0, background:'none', border:'none',
         cursor:'pointer', display:'flex', flexDirection:'column',
         alignItems:'center', overflow:'visible',
         WebkitTapHighlightColor:'transparent',
         minWidth:44, minHeight:44,
-        visibility: chatOpen ? 'hidden' : 'visible',
-        opacity: chatOpen ? 0 : 1,
-        pointerEvents: chatOpen ? 'none' : 'auto',
-        transition: 'opacity 0.25s ease, visibility 0.25s ease',
       }}
     >
+      {/* Speech bubble — hints this is clickable, fades after a while or on first click */}
+      <div
+        role="presentation"
+        style={{
+          position:'absolute',
+          bottom:'calc(100% + 6px)',
+          right:'50%',
+          transform: showBubble ? 'translateX(50%) translateY(0)' : 'translateX(50%) translateY(6px)',
+          opacity: showBubble && !chatOpen ? 1 : 0,
+          pointerEvents:'none',
+          transition:'opacity 0.4s ease, transform 0.4s ease',
+          animation: showBubble ? 'eveBubbleFloat 2.6s ease-in-out infinite' : 'none',
+        }}
+      >
+        <div style={{
+          background:'rgba(19,27,42,0.96)',
+          border:'1px solid rgba(95,162,255,0.28)',
+          borderRadius:12,
+          padding:'8px 13px',
+          whiteSpace:'nowrap',
+          fontSize:13,
+          fontWeight:500,
+          color:'rgba(220,232,252,0.94)',
+          fontFamily:"-apple-system,'Helvetica Neue',sans-serif",
+          boxShadow:'0 8px 24px rgba(0,0,0,0.28), 0 0 0 1px rgba(95,162,255,0.05)',
+        }}>
+          Ask me anything! 👋
+        </div>
+        {/* Tail */}
+        <div style={{
+          position:'absolute', left:'50%', top:'100%',
+          transform:'translateX(-50%)',
+          width:0, height:0,
+          borderLeft:'6px solid transparent',
+          borderRight:'6px solid transparent',
+          borderTop:'6px solid rgba(19,27,42,0.96)',
+        }}/>
+      </div>
+
       <div style={{
         display:'flex', flexDirection:'column', alignItems:'center',
-        animation: wiggle ? 'eveWiggle 0.7s ease' : `eveFloat ${floatDur} ease-in-out infinite`,
+        animation: wiggle ? 'eveWiggle 0.7s ease' : 'none',
         filter: glow[chatState] || glow.idle,
         transition: 'filter 1.4s ease',
         pointerEvents: 'none',
+        position: 'relative',
+        width: 150, height: 150,
       }}>
+        {/* Placeholder — visible until the GLB finishes loading */}
+        <div style={{
+          position:'absolute', inset:0, borderRadius:'50%',
+          background:'radial-gradient(circle at 38% 36%, rgba(95,162,255,0.20) 0%, rgba(28,50,95,0.55) 45%, rgba(19,27,42,0.92) 100%)',
+          opacity: modelReady ? 0 : 1,
+          transition: 'opacity 0.5s ease',
+          animationName: modelReady ? 'none' : 'evePlaceholderPulse',
+          animationDuration: '1.8s',
+          animationTimingFunction: 'ease-in-out',
+          animationIterationCount: 'infinite',
+        }}/>
         <canvas
           ref={mountRef}
-          style={{ display:'block', width:'110px', height:'110px', background:'transparent', pointerEvents:'none' }}
+          style={{
+            display:'block', width:'300px', height:'300px',
+            background:'transparent', pointerEvents:'none',
+            opacity: modelReady ? 1 : 0,
+            transition: 'opacity 0.5s ease',
+          }}
         />
       </div>
 
@@ -481,14 +385,17 @@ export default function ThreeEveRobot({
         background: `rgba(95,162,255,${shadowAlpha})`,
         filter: 'blur(9px)',
         marginTop: -8,
-        animation: `eveShadow ${floatDur} ease-in-out infinite`,
+        opacity: 0.30,
         transition: 'background 1.4s ease',
         pointerEvents: 'none',
       }}/>
 
       <style>{`
-        @keyframes eveFloat  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
-        @keyframes eveShadow { 0%,100%{transform:scaleX(1);opacity:.30} 50%{transform:scaleX(.54);opacity:.09} }
+        @keyframes evePlaceholderPulse { 0%,100%{opacity:.75} 50%{opacity:1} }
+        @keyframes eveBubbleFloat {
+          0%,100% { transform:translateX(50%) translateY(0); }
+          50%     { transform:translateX(50%) translateY(-4px); }
+        }
         @keyframes eveWiggle {
           0%  {transform:translateY(0) rotate(0deg)}
           18% {transform:translateY(-7px) rotate(-11deg)}

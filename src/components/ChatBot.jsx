@@ -1,49 +1,125 @@
 /**
  * ChatBot.jsx — AI Chat Panel
  *
- * Same organism as ThreeEveRobot: #151e2e midnight navy,
- * soft blue-white accent. Feels like one of your portfolio's
- * dark cards woke up — not a sci-fi terminal.
+ * Same organism as ThreeEveRobot: glossy white housing, blue LED
+ * accent glow, matte-dark text. Feels like the robot's own screen
+ * lit up. Follows the site's light/dark toggle (isDarkMode prop).
  *
  * Props:
  *   isOpen        — boolean
  *   onClose       — fn
  *   onStateChange — fn('idle'|'listening'|'thinking'|'speaking')
+ *   isDarkMode    — boolean
  */
 import { useState, useRef, useEffect, useCallback } from 'react';
 
-// ── Design tokens ─────────────────────────────────────────────────────────────
-const T = {
-  // Surfaces — all #151e2e family
+// ── Design tokens — one set per site theme ─────────────────────────────────────
+const LIGHT = {
+  panel:        'rgba(255, 255, 255, 0.98)',
+  header:       'rgba(247, 250, 253, 0.99)',
+  inputArea:    'rgba(247, 250, 253, 0.85)',
+  userBubble:   'rgba(37, 99, 235, 0.12)',
+  userBubbleBorder: 'rgba(37,99,235,0.24)',
+  aiBubble:     'rgba(15, 23, 42, 0.035)',
+  inputBg:      '#ffffff',
+
+  borderSub:    'rgba(15, 23, 42, 0.08)',
+  borderAccent: 'rgba(37, 99, 235, 0.30)',
+  borderActive: 'rgba(37, 99, 235, 0.50)',
+
+  accent:       'rgba(37, 99, 235, 1)',
+  accentGlow:   'rgba(37, 99, 235, 0.32)',
+  accentDim:    'rgba(37, 99, 235, 0.55)',
+  accentFaint:  'rgba(37, 99, 235, 0.12)',
+
+  textPrimary:  'rgba(17, 24, 39, 0.92)',
+  textMuted:    'rgba(90, 100, 122, 0.70)',
+  textAI:       'rgba(30, 58, 100, 0.88)',
+
+  shadow:       '0 20px 50px rgba(15,23,42,0.16), 0 0 0 1px rgba(37,99,235,0.06)',
+
+  avatarGradient: 'radial-gradient(circle at 38% 36%, rgba(255,255,255,1) 0%, rgba(224,235,252,0.95) 45%, rgba(198,216,246,0.85) 100%)',
+  avatarBorder:   'rgba(37,99,235,0.30)',
+  avatarGlow:     '0 0 14px rgba(37,99,235,0.16)',
+  avatarDot:      'rgba(37,99,235,0.95)',
+  avatarDotGlow:  '0 0 10px rgba(37,99,235,0.85), 0 0 22px rgba(37,99,235,0.40)',
+
+  closeBg:      'rgba(15,23,42,0.05)',
+  closeBgHover: 'rgba(15,23,42,0.09)',
+
+  sendDisabledBg:   'rgba(15,23,42,0.10)',
+  sendDisabledIcon: 'rgba(15,23,42,0.28)',
+  sendIcon:         '#ffffff',
+  sendHoverBg:      'rgba(59,130,246,1)',
+  sendHoverGlow:    '0 0 24px rgba(37,99,235,0.45)',
+
+  errorBg:     'rgba(220,38,38,0.06)',
+  errorBorder: 'rgba(220,38,38,0.22)',
+  errorText:   'rgba(185,28,28,0.95)',
+
+  charArcTrack: 'rgba(15,23,42,0.10)',
+  footerText:   'rgba(37,99,235,0.32)',
+
+  scrollThumb:      'rgba(37,99,235,0.22)',
+  scrollThumbHover: 'rgba(37,99,235,0.38)',
+  placeholder:      'rgba(100,116,145,0.55)',
+  backdrop:         'rgba(15,23,42,0.42)',
+};
+
+const DARK = {
   panel:        'rgba(19, 27, 42, 0.98)',
   header:       'rgba(23, 33, 50, 0.99)',
   inputArea:    'rgba(14, 20, 34, 0.60)',
   userBubble:   'rgba(30, 48, 85, 0.55)',
+  userBubbleBorder: 'rgba(80,130,240,0.22)',
   aiBubble:     'rgba(255,255,255,0.03)',
   inputBg:      'rgba(255,255,255,0.04)',
 
-  // Borders
   borderSub:    'rgba(255,255,255,0.06)',
   borderAccent: 'rgba(95,162,255,0.18)',
   borderActive: 'rgba(95,162,255,0.30)',
 
-  // Accent — blue-white, matching the sphere's glow peak
   accent:       'rgba(95,162,255,1)',
   accentGlow:   'rgba(95,162,255,0.35)',
   accentDim:    'rgba(95,162,255,0.40)',
   accentFaint:  'rgba(95,162,255,0.10)',
 
-  // Text
   textPrimary:  'rgba(220,232,252,0.92)',
   textMuted:    'rgba(148,172,210,0.60)',
   textAI:       'rgba(180,208,255,0.82)',
 
-  // Shadows
   shadow:       '0 12px 48px rgba(0,0,0,0.60), 0 0 0 1px rgba(95,162,255,0.06)',
+
+  avatarGradient: 'radial-gradient(circle at 38% 36%, rgba(95,162,255,0.20) 0%, rgba(28,50,95,0.55) 45%, rgba(19,27,42,0.92) 100%)',
+  avatarBorder:   'rgba(95,162,255,0.26)',
+  avatarGlow:     '0 0 14px rgba(70,140,255,0.16)',
+  avatarDot:      'rgba(130,195,255,0.92)',
+  avatarDotGlow:  '0 0 10px rgba(95,162,255,0.80), 0 0 22px rgba(70,140,255,0.38)',
+
+  closeBg:      'rgba(255,255,255,0.04)',
+  closeBgHover: 'rgba(255,255,255,0.08)',
+
+  sendDisabledBg:   'rgba(40,65,120,0.28)',
+  sendDisabledIcon: 'rgba(70,120,200,0.35)',
+  sendIcon:         'rgba(8,16,36,0.95)',
+  sendHoverBg:      'rgba(140,200,255,1)',
+  sendHoverGlow:    '0 0 24px rgba(95,162,255,0.55)',
+
+  errorBg:     'rgba(255,50,75,0.07)',
+  errorBorder: 'rgba(255,50,75,0.20)',
+  errorText:   'rgba(255,130,140,0.90)',
+
+  charArcTrack: 'rgba(95,162,255,0.09)',
+  footerText:   'rgba(95,162,255,0.18)',
+
+  scrollThumb:      'rgba(95,162,255,0.12)',
+  scrollThumbHover: 'rgba(95,162,255,0.24)',
+  placeholder:      'rgba(110,148,200,0.36)',
+  backdrop:         'rgba(6,10,20,0.58)',
 };
 
 // ── Breathing dots — mirrors the sphere's organic breathing ───────────────────
-function BreathLoader() {
+function BreathLoader({ T }) {
   return (
     <div style={{ display:'flex', gap:7, alignItems:'center', height:20 }}>
       {[0,1,2].map(i => (
@@ -64,10 +140,10 @@ function BreathLoader() {
 
 // ── Status indicator ──────────────────────────────────────────────────────────
 const STATUS = {
-  idle:      { label:'Available',  color:'rgba(95,162,255,0.40)',  pulse:false },
-  listening: { label:'Listening',  color:'rgba(80,210,160,0.85)',  pulse:true  },
-  thinking:  { label:'Thinking',   color:'rgba(95,162,255,0.95)',  pulse:true  },
-  speaking:  { label:'Responding', color:'rgba(130,195,255,0.90)', pulse:true  },
+  idle:      { label:'Available',  color:'rgba(59,130,246,0.55)',  pulse:false },
+  listening: { label:'Listening',  color:'rgba(16,163,127,0.85)',  pulse:true  },
+  thinking:  { label:'Thinking',   color:'rgba(37,99,235,0.95)',   pulse:true  },
+  speaking:  { label:'Responding', color:'rgba(59,130,246,0.90)',  pulse:true  },
 };
 
 function StatusPill({ state }) {
@@ -99,7 +175,7 @@ function StatusPill({ state }) {
 }
 
 // ── Message bubble ────────────────────────────────────────────────────────────
-function Bubble({ role, text, streaming }) {
+function Bubble({ role, text, streaming, T }) {
   const isUser = role === 'user';
   return (
     <div className="chat-bubble-row" style={{
@@ -112,7 +188,7 @@ function Bubble({ role, text, streaming }) {
         padding: '10px 14px',
         borderRadius: isUser ? '14px 14px 3px 14px' : '3px 14px 14px 14px',
         background: isUser ? T.userBubble : T.aiBubble,
-        border: `1px solid ${isUser ? 'rgba(80,130,240,0.22)' : T.borderSub}`,
+        border: `1px solid ${isUser ? T.userBubbleBorder : T.borderSub}`,
         // AI messages: faint accent left edge — the only visual clue they're "alive"
         borderLeft: !isUser ? `2px solid ${T.borderAccent}` : undefined,
         backdropFilter: 'blur(6px)',
@@ -153,7 +229,9 @@ function Bubble({ role, text, streaming }) {
 }
 
 // ── ChatBot ───────────────────────────────────────────────────────────────────
-export default function ChatBot({ isOpen, onClose, onStateChange }) {
+export default function ChatBot({ isOpen, onClose, onStateChange, isDarkMode }) {
+  const T = isDarkMode ? DARK : LIGHT;
+
   const [messages, setMessages] = useState([{
     role: 'assistant',
     content: "Hey there! 👋 I'm Gabriel. Ask me about my work, my tech stack, my love for cooking (and poetry, if you're into that 😄) — or anything else. Fire away!",
@@ -261,7 +339,7 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
   if (!isOpen) return null;
 
   const fraction  = input.length / MAX;
-  const charColor = fraction >= 1 ? '#ff5566' : fraction > 0.9 ? '#ffaa44' : T.accentDim;
+  const charColor = fraction >= 1 ? '#ff5566' : fraction > 0.9 ? '#e08a2b' : T.accentDim;
   const canSend   = input.trim() && !isLoading && !isStreaming && input.length <= MAX;
 
   // Panel border brightens when active
@@ -288,7 +366,7 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
         onClick={onClose}
         style={{
           position:'fixed', inset:0, zIndex:50,
-          background:'rgba(6,10,20,0.58)',
+          background: T.backdrop,
           backdropFilter:'blur(3px)',
           WebkitBackdropFilter:'blur(3px)',
         }}
@@ -299,8 +377,8 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
         className="chat-panel"
         style={{
         position:'fixed',
-        right:'calc(1.5rem + 125px)',
-        bottom:'1.5rem',
+        right:'calc(0.25rem + 150px)',
+        bottom:'0.75rem',
         zIndex:51,
         width:'min(90vw, 388px)',
         height:'min(82vh, 565px)',
@@ -315,7 +393,7 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
         animationDuration:'0.28s',
         animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)',
         animationFillMode:'both',
-        transition:'border-color 0.5s ease',
+        transition:'border-color 0.5s ease, background 0.3s ease',
       }}>
 
         {/* Header */}
@@ -328,19 +406,19 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
         }}>
           <div style={{ display:'flex', alignItems:'center', gap:11 }}>
 
-            {/* Avatar — miniature sphere: navy with blue-white inner glow */}
+            {/* Avatar — miniature robot head: glossy housing with blue LED eye */}
             <div style={{
               width:36, height:36, borderRadius:'50%',
-              background:'radial-gradient(circle at 38% 36%, rgba(95,162,255,0.20) 0%, rgba(28,50,95,0.55) 45%, rgba(19,27,42,0.92) 100%)',
-              border:`1px solid rgba(95,162,255,0.26)`,
+              background: T.avatarGradient,
+              border:`1px solid ${T.avatarBorder}`,
               display:'flex', alignItems:'center', justifyContent:'center',
-              boxShadow:'0 0 14px rgba(70,140,255,0.16)',
+              boxShadow: T.avatarGlow,
               flexShrink:0,
             }}>
               <div style={{
                 width:9, height:9, borderRadius:'50%',
-                background:'rgba(130,195,255,0.92)',
-                boxShadow:'0 0 10px rgba(95,162,255,0.80), 0 0 22px rgba(70,140,255,0.38)',
+                background: T.avatarDot,
+                boxShadow: T.avatarDotGlow,
               }}/>
             </div>
 
@@ -364,14 +442,14 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
             aria-label="Close chat"
             style={{
               width:30, height:30, borderRadius:8,
-              background:'rgba(255,255,255,0.04)',
+              background: T.closeBg,
               border:`1px solid ${T.borderSub}`,
               cursor:'pointer', color:T.textMuted,
               display:'flex', alignItems:'center', justifyContent:'center',
               transition:'all 0.15s', flexShrink:0,
             }}
-            onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color=T.textPrimary; }}
-            onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color=T.textMuted; }}
+            onMouseEnter={e => { e.currentTarget.style.background=T.closeBgHover; e.currentTarget.style.color=T.textPrimary; }}
+            onMouseLeave={e => { e.currentTarget.style.background=T.closeBg; e.currentTarget.style.color=T.textMuted; }}
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M18 6L6 18M6 6l12 12"/>
@@ -385,12 +463,12 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
           padding:'16px 14px 10px',
           display:'flex', flexDirection:'column', gap:9,
           scrollbarWidth:'thin',
-          scrollbarColor:'rgba(95,162,255,0.12) transparent',
+          scrollbarColor:`${T.scrollThumb} transparent`,
         }}>
           {messages.map((m, i) => {
             const isLastAI = m.role === 'assistant' && i === messages.length - 1 && isStreaming;
             return (
-              <Bubble key={i} role={m.role}
+              <Bubble key={i} role={m.role} T={T}
                 text={isLastAI ? streamText : m.content}
                 streaming={isLastAI}
               />
@@ -398,7 +476,7 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
           })}
 
           {isStreaming && messages[messages.length-1]?.role === 'user' && (
-            <Bubble role="assistant" text={streamText} streaming={true}/>
+            <Bubble role="assistant" text={streamText} streaming={true} T={T}/>
           )}
 
           {isLoading && !isStreaming && (
@@ -410,7 +488,7 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
                 border:`1px solid ${T.borderSub}`,
                 borderLeft:`2px solid ${T.borderAccent}`,
               }}>
-                <BreathLoader/>
+                <BreathLoader T={T}/>
               </div>
             </div>
           )}
@@ -428,10 +506,10 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
           {error && (
             <div style={{
               marginBottom:8, padding:'7px 11px',
-              background:'rgba(255,50,75,0.07)',
-              border:'1px solid rgba(255,50,75,0.20)',
+              background: T.errorBg,
+              border:`1px solid ${T.errorBorder}`,
               borderRadius:8, fontSize:11,
-              color:'rgba(255,130,140,0.90)',
+              color: T.errorText,
               fontFamily:"-apple-system,'Helvetica Neue',sans-serif",
             }}>
               {error}
@@ -476,7 +554,7 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
               {/* Char arc */}
               <div style={{ position:'absolute', right:9, top:'50%', transform:'translateY(-50%)', width:15, height:15, pointerEvents:'none' }}>
                 <svg viewBox="0 0 15 15" style={{transform:'rotate(-90deg)'}}>
-                  <circle cx="7.5" cy="7.5" r="5.5" fill="none" stroke="rgba(95,162,255,0.09)" strokeWidth="1.5"/>
+                  <circle cx="7.5" cy="7.5" r="5.5" fill="none" stroke={T.charArcTrack} strokeWidth="1.5"/>
                   <circle cx="7.5" cy="7.5" r="5.5" fill="none" stroke={charColor}
                     strokeWidth="1.5"
                     strokeDasharray={`${Math.min(fraction,1)*34.6} 34.6`}
@@ -493,17 +571,17 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
               aria-label="Send"
               style={{
                 width:38, height:38, borderRadius:'50%', border:'none',
-                background: canSend ? T.accent : 'rgba(40,65,120,0.28)',
+                background: canSend ? T.accent : T.sendDisabledBg,
                 cursor: canSend ? 'pointer' : 'not-allowed',
                 display:'flex', alignItems:'center', justifyContent:'center',
-                color: canSend ? 'rgba(8,16,36,0.95)' : 'rgba(70,120,200,0.35)',
+                color: canSend ? T.sendIcon : T.sendDisabledIcon,
                 transition:'all 0.18s', flexShrink:0,
                 boxShadow: canSend ? `0 0 18px ${T.accentGlow}` : 'none',
               }}
               onMouseEnter={e => {
                 if (canSend) {
-                  e.currentTarget.style.background = 'rgba(140,200,255,1)';
-                  e.currentTarget.style.boxShadow  = '0 0 24px rgba(95,162,255,0.55)';
+                  e.currentTarget.style.background = T.sendHoverBg;
+                  e.currentTarget.style.boxShadow  = T.sendHoverGlow;
                 }
               }}
               onMouseLeave={e => {
@@ -523,7 +601,7 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
           {/* Footer */}
           <div style={{ marginTop:8, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <span style={{
-              fontSize:10, color:'rgba(95,162,255,0.18)',
+              fontSize:10, color: T.footerText,
               fontFamily:"-apple-system,'Helvetica Neue',sans-serif",
               letterSpacing:'0.05em',
             }}>
@@ -570,9 +648,9 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
         }
         ::-webkit-scrollbar{width:3px}
         ::-webkit-scrollbar-track{background:transparent}
-        ::-webkit-scrollbar-thumb{background:rgba(95,162,255,0.12);border-radius:2px}
-        ::-webkit-scrollbar-thumb:hover{background:rgba(95,162,255,0.24)}
-        input::placeholder{color:rgba(110,148,200,0.36)!important}
+        ::-webkit-scrollbar-thumb{background:${T.scrollThumb};border-radius:2px}
+        ::-webkit-scrollbar-thumb:hover{background:${T.scrollThumbHover}}
+        input::placeholder{color:${T.placeholder}!important}
       `}</style>
     </>
   );
