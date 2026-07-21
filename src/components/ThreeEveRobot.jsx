@@ -67,11 +67,23 @@ export default function ThreeEveRobot({
   const [modelReady, setModelReady] = useState(false);
   const [showBubble, setShowBubble] = useState(true);
 
-  // Speech bubble hints at clickability until the user either clicks or
-  // ignores it for a while — it shouldn't linger forever.
+  // Speech bubble hints at clickability — shows on mount, then keeps
+  // recurring every so often (not just once) as a periodic nudge. Visibility
+  // is also gated by !chatOpen in the JSX below, so this loop doesn't need
+  // to pause/resume around chat state — it just keeps ticking underneath.
   useEffect(() => {
-    const t = setTimeout(() => setShowBubble(false), 9000);
-    return () => clearTimeout(t);
+    const VISIBLE_MS = 8000;
+    const GAP_MS = 45000;
+    let timer;
+    function loop() {
+      setShowBubble(true);
+      timer = setTimeout(() => {
+        setShowBubble(false);
+        timer = setTimeout(loop, GAP_MS);
+      }, VISIBLE_MS);
+    }
+    loop();
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => { chatRef.current     = chatState;          }, [chatState]);
@@ -294,7 +306,7 @@ export default function ThreeEveRobot({
   return (
     <button
       type="button"
-      className="eve-orb-btn"
+      className={`eve-orb-btn${chatOpen ? ' chat-open' : ''}`}
       onClick={handleClick}
       aria-label={ariaLabel}
       style={{
@@ -412,6 +424,17 @@ export default function ThreeEveRobot({
             bottom:max(.75rem,env(safe-area-inset-bottom))!important;
           }
           .eve-orb-btn>div:first-of-type{transform:scale(.85);transform-origin:bottom center}
+        }
+        /* Mobile only — the chat panel goes full-width/centered here, so the
+           robot would sit on top of it. Desktop keeps him visible (there's
+           room beside the panel there), only mobile hides him while chatting. */
+        @media(max-width:640px){
+          .eve-orb-btn.chat-open{
+            opacity:0!important;
+            visibility:hidden!important;
+            pointer-events:none!important;
+            transition:opacity 0.2s ease, visibility 0.2s ease;
+          }
         }
         @media(max-width:380px){
           .eve-orb-btn>div:first-of-type{transform:scale(.72);transform-origin:bottom center}

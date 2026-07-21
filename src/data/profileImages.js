@@ -3,7 +3,7 @@
  * Separates asset loading from profile data structure.
  */
 
-export { default as profileImage } from '../assets/PP.png'
+export { default as profileImage } from '../assets/PP.jpg'
 export { default as gcashQR } from '../assets/QRgcash.jpg'
 export { default as TopPerformer } from '../assets/certificates/TopPerformer.jpg'
 export { default as TopConversion } from '../assets/certificates/TopConversion.jpg'
@@ -23,3 +23,13 @@ export { default as USPFLogo } from '../assets/companies/uspf.png'
 export { default as UPCebuLogo } from '../assets/companies/up-cebu.png'
 export { default as ProweaverLogo } from '../assets/companies/proweaver.jpg'
 export { default as FreelanceLogo } from '../assets/companies/freelance.png'
+
+// Project screenshots — Budgjet, Smart POS, and Knowledge Base App are
+// behind auth, so their shots are the sign-in screen rather than the
+// logged-in product.
+export { default as BudgjetShot } from '../assets/projects/budgjet.jpg'
+export { default as SmartPOSShot } from '../assets/projects/smart-pos.jpg'
+export { default as KBAppShot } from '../assets/projects/kb-app.jpg'
+export { default as RoseatteShot } from '../assets/projects/roseatte.jpg'
+export { default as FormConversionToolShot } from '../assets/projects/form-conversion-tool.jpg'
+export { default as LizbethGalarzaShot } from '../assets/projects/lizbeth-galarza.jpg'

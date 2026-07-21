@@ -39,7 +39,10 @@ import {
   SiGooglecloud,
   SiMongodb,
   SiDigitalocean,
-  SiCursor
+  SiCursor,
+  SiNestjs,
+  SiPostgresql,
+  SiTypescript
 } from '@icons-pack/react-simple-icons'
 import { SiSalesforce, SiAmazons3, SiCanva, SiOpenai } from 'react-icons/si'
 import { DiDatabase, DiJava } from 'react-icons/di'
@@ -54,6 +57,16 @@ function GoHighLevelIcon({ className }) {
     <svg viewBox="0 0 24 24" className={className} style={{ display: 'inline-block', flexShrink: 0 }}>
       <rect width="24" height="24" rx="6" fill="#0B223F" />
       <text x="12" y="17" textAnchor="middle" fontSize="13" fontWeight="700" fill="#FFFFFF" fontFamily="Arial, sans-serif">G</text>
+    </svg>
+  )
+}
+
+// Telnyx isn't in Simple Icons either — monogram badge in their brand black.
+function TelnyxIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} style={{ display: 'inline-block', flexShrink: 0 }}>
+      <rect width="24" height="24" rx="6" fill="#000000" />
+      <text x="12" y="17" textAnchor="middle" fontSize="13" fontWeight="700" fill="#FFFFFF" fontFamily="Arial, sans-serif">T</text>
     </svg>
   )
 }
@@ -100,7 +113,10 @@ const RSI_ICONS = {
   googlecloud: SiGooglecloud,
   mongodb: SiMongodb,
   digitalocean: SiDigitalocean,
-  cursor: SiCursor
+  cursor: SiCursor,
+  nestjs: SiNestjs,
+  postgresql: SiPostgresql,
+  typescript: SiTypescript
 }
 
 // Brands removed from upstream Simple Icons (trademark takedowns), or not a
@@ -132,6 +148,9 @@ function TechIcon({ name, className = "w-5 h-5" }) {
 
   if (key === 'gohighlevel') {
     return <GoHighLevelIcon className={className} />
+  }
+  if (key === 'telnyx') {
+    return <TelnyxIcon className={className} />
   }
 
   const RsiComponent = RSI_ICONS[key]

@@ -5,7 +5,7 @@ export const portfolioData = {
   profileInfo: {
     name: 'Gabriel Gonzales',
     location: 'Cebu City, Philippines',
-    title: 'Web/WordPress Developer',
+    title: 'Full Stack Web/WordPress Developer',
     contact: {
       email: 'gabgonzalesofficial@gmail.com',
       mobile: '+63 945 804 7946',
