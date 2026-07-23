@@ -198,8 +198,11 @@ export default async function handler(req, res) {
     const techStackSection = 'Frontend: ' + data.techStack.frontend.map(escapeForTemplate).join(', ') + '\n' +
       'Backend: ' + data.techStack.backend.map(escapeForTemplate).join(', ') + '\n' +
       'CRM/CMS: ' + data.techStack.crmCms.map(escapeForTemplate).join(', ') + '\n' +
+      'Productivity: ' + data.techStack.productivity.map(escapeForTemplate).join(', ') + '\n' +
       'Automation: ' + data.techStack.automation.map(escapeForTemplate).join(', ') + '\n' +
       'Database: ' + data.techStack.database.map(escapeForTemplate).join(', ') + '\n' +
+      'Cloud: ' + data.techStack.cloud.map(escapeForTemplate).join(', ') + '\n' +
+      'Design: ' + data.techStack.design.map(escapeForTemplate).join(', ') + '\n' +
       'Tools: ' + data.techStack.tools.map(escapeForTemplate).join(', ') + '\n' +
       'Game Development: ' + data.techStack.gameDev.map(escapeForTemplate).join(', ') + '\n' +
       'AI Tools: ' + aiToolsList;
@@ -208,9 +211,12 @@ export default async function handler(req, res) {
       '- ' + escapeForTemplate(exp.role) + ' at ' + escapeForTemplate(exp.company) + ' (' + escapeForTemplate(exp.year) + ')'
     ).join('\n');
     
-    const projectsSection = data.projects.map(proj => 
-      '- ' + escapeForTemplate(proj.name) + ': ' + escapeForTemplate(proj.description) + ' - ' + escapeForTemplate(proj.url)
-    ).join('\n');
+    const projectsSection = data.projects.map(proj => {
+      const link = proj.url
+        ? escapeForTemplate(proj.url)
+        : '(private/NDA project — no public link or code to share)';
+      return '- ' + escapeForTemplate(proj.name) + ': ' + escapeForTemplate(proj.description) + ' - ' + link;
+    }).join('\n');
     
     const certificationsSection = data.certifications.slice(0, 4).map(cert => 
       '- ' + escapeForTemplate(cert.name) + ' from ' + escapeForTemplate(cert.issuer) + ' (' + escapeForTemplate(cert.year) + ')'

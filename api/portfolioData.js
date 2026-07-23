@@ -1,4 +1,4 @@
-// Portfolio data for AI chatbot - extracted from src/data/profileData.js
+// Portfolio data for AI chatbot - kept in sync with src/data/profileData.js
 // This ensures the AI has access to accurate information
 
 export const portfolioData = {
@@ -24,14 +24,18 @@ export const portfolioData = {
     crmCms: ['WordPress', 'Salesforce', 'GoHighLevel', 'HubSpot'],
     productivity: ['Monday.com'],
     automation: ['Selenium'],
-    database: ['MySQL', 'SQL', 'Supabase', 'MongoDB'],
+    database: ['MySQL', 'SQL', 'Supabase', 'Prisma', 'MongoDB'],
     cloud: ['Amazon S3', 'Meta API', 'Google Cloud Console', 'Digital Ocean'],
+    design: ['Figma', 'Canva'],
     tools: ['Git', 'GitHub', 'Bitbucket', 'VS Code', 'Cursor', 'Vercel', 'Formspree', 'Laravel Forge'],
     gameDev: ['Godot'],
     aiTools: [
       { name: 'Gemini AI Studio', description: 'AI Integration' },
       { name: 'ChatGPT', description: 'Content Generation' },
-      { name: 'Gemini', description: 'Content Generation' }
+      { name: 'Gemini', description: 'Content Generation' },
+      { name: 'Claude', description: 'AI Assistant' },
+      { name: 'Groq', description: 'AI Inference API' },
+      { name: 'Suno', description: 'AI Music Generation' }
     ]
   },
 
@@ -62,11 +66,53 @@ export const portfolioData = {
   ],
 
   projects: [
-    { name: 'Budgjet', description: 'A budget tracking app with AI insights', url: 'https://budgjet.vercel.app/' },
-    { name: 'Smart POS', description: 'A Smart Point of Sale System for a small business. Deployed in Vercel for Front end and Render for Back end through GitHub. Uses technologies like NextJS, NestJS, Prisma ORM', url: 'https://smart-pos-web-xi.vercel.app/' },
-    { name: 'Roseatte', description: 'A WordPress website I made for my girlfriend using a custom theme, I deployed this on Free hosting platform, InfinityFree. This is also still a work in progress. It needs polishing and more features to be added as well as content.', url: 'https://roseatte.lovestoblog.com' },
-    { name: 'Form Conversion Tool', description: 'A tool I developed using react to for form conversion using reactJS and Vite. Deployed in Vercel through GitHub', url: 'https://formconversiontool.vercel.app/' },
-    { name: 'Knowledge Base App', description: 'An app I developed to be used by my friends to share knowledge and resourece. Made using Next.js and Supabase. Deployed in Vercel through GitHub', url: 'https://kb-app-five.vercel.app/' }
+    {
+      name: 'Budgjet',
+      description: 'A personal budget tracking app with AI-powered spending insights — built with Next.js and Supabase, using Groq to analyze spending patterns and surface recommendations in real time.',
+      url: 'https://budgjet.vercel.app/'
+    },
+    {
+      name: 'Smart POS',
+      description: 'A full-stack Point of Sale system for a small business, built as a monorepo with a Next.js frontend and a NestJS API, backed by PostgreSQL via Prisma — with offline-first support so it keeps working through spotty connections.',
+      url: 'https://smart-sari-pos.vercel.app/'
+    },
+    {
+      name: 'Roseatte',
+      description: 'A WordPress website I designed and built for my girlfriend to showcase her artwork and creative portfolio.',
+      url: 'https://roseatte.lovestoblog.com'
+    },
+    {
+      name: 'Knowledge Base App',
+      description: 'A knowledge-sharing app for my friend group to upload, organize, and share resources — built with Next.js and Supabase, with file storage on AWS S3.',
+      url: 'https://knwrepo.vercel.app/'
+    },
+    {
+      name: 'Form Conversion Tool',
+      description: 'A tool that streamlines my form-conversion work by using AI to generate the source code for online forms — built with React and Vite.',
+      url: 'https://formconversiontool.vercel.app/'
+    },
+    {
+      name: 'PPL Admin Dashboard',
+      description: 'An in-house tool I built for the company to manage ad campaigns and distribute leads across multiple channels — built in Laravel/Blade, integrating OpenAI, Meta Graph API, Google Cloud APIs, HubSpot, Telnyx, and GoHighLevel, deployed via Laravel Forge on DigitalOcean.',
+      url: null,
+      private: true
+    },
+    {
+      name: 'Lizbeth Galarza Website',
+      description: 'A real estate website that dynamically syncs and displays property listings pulled live from Smart MLS.',
+      url: 'https://homeswithliz.com/'
+    },
+    {
+      name: 'Social Media Content Generator',
+      description: 'Another in-house tool I built for the company, generating a structured social media content calendar and post copy — built in Laravel and powered by OpenAI.',
+      url: null,
+      private: true
+    },
+    {
+      name: 'Uni-verse',
+      description: "A 2D RPG-style Learning Management System — lessons and quizzes reward the player's character, making studying feel like playing a game. Built in Godot with GDScript.",
+      url: null
+    }
   ],
 
   recommendations: [
