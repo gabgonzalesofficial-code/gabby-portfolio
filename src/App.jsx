@@ -1,51 +1,66 @@
-import { useState, lazy, Suspense } from 'react'
+import { useState, lazy, Suspense, useEffect } from 'react'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import './App.css'
 import Modal from './components/Modal'
-import TechMarquee from './components/TechMarquee'
-import TechIcon from './components/TechIcon'
-import { DonationModalContent, TechStackModalContent, AllProjectsModalContent } from './components/modals'
 import Loader from './components/Loader'
 import { AnimatedBackground } from './components/AnimatedBackground'
-import { PiDownloadLight } from 'react-icons/pi'
-import { FaAward, FaPalette, FaMusic, FaUtensils } from 'react-icons/fa'
-import resumePDF from './assets/resume/Gabriel_Gonzales_Resume.pdf'
+import { DonationModalContent, TechStackModalContent, AllProjectsModalContent, AllCertificationsModalContent } from './components/modals'
+import {
+  Navbar,
+  Hero,
+  TechStack,
+  Projects,
+  ExperienceAwards,
+  GalleryReviews,
+  Contact,
+  Footer,
+} from './components/sections'
 import {
   profileInfo,
-  aboutContent,
   techStack,
+  services,
   certifications,
-  memberships,
   galleryImages,
   experience,
-  projects,
   recommendations,
-  socialLinks,
-  speaking,
-  contactInfo,
-  footer
+  footer,
 } from './data/profileData'
-import { useDarkMode, useLoaderSequence, useRecommendationCarousel } from './hooks'
+import { projects } from './data/projects'
+import { useLoaderSequence } from './hooks'
 
 // Lazy load heavy components (Three.js, GSAP, AI chat)
 const EveRobot = lazy(() => import('./components/ThreeEveRobot'))
 const ChatBot = lazy(() => import('./components/ChatBot'))
 
 function App() {
-  const [galleryIndex, setGalleryIndex] = useState(0)
-  const [recommendationIndex, setRecommendationIndex] = useRecommendationCarousel(recommendations)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [modalContent, setModalContent] = useState({ title: '', content: null })
-  const [isDarkMode, toggleDarkMode] = useDarkMode()
-  const [formStatus, setFormStatus] = useState({ type: '', message: '' })
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [modalContent, setModalContent] = useState({ title: '', content: null, size: 'lg', bodyScroll: true })
   const [isChatOpen, setIsChatOpen] = useState(false)
-  const [selectedCertificate, setSelectedCertificate] = useState(null)
   const [loaderPhase, setLoaderPhase] = useLoaderSequence()
 
-  // Get recent certifications and projects (first 4 each)
-  const recentCertifications = certifications.slice(0, 4)
-  const recentProjects = projects.slice(0, 4)
+  const openModal = (title, content, options = {}) => {
+    setModalContent({ title, content, size: options.size ?? 'lg', bodyScroll: options.bodyScroll ?? true })
+    setIsModalOpen(true)
+  }
 
+  // Every section computes its ScrollTrigger positions as soon as it mounts,
+  // but async content below the fold (the hero's video, DomeGallery's
+  // ResizeObserver-driven sizing, images) can still shift page layout after
+  // that. Recalculate once everything has actually finished loading so
+  // trigger points match the real, final layout instead of a stale one.
+  useEffect(() => {
+    if (loaderPhase !== 'done') return
+
+    const refresh = () => ScrollTrigger.refresh()
+
+    if (document.readyState === 'complete') {
+      const id = requestAnimationFrame(refresh)
+      return () => cancelAnimationFrame(id)
+    }
+
+    window.addEventListener('load', refresh)
+    return () => window.removeEventListener('load', refresh)
+  }, [loaderPhase])
 
   if (loaderPhase !== 'done') {
     return (
@@ -57,763 +72,64 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-indigo-100/30 dark:bg-gray-950 dark:bg-none portfolio-enter">
+    <div className="min-h-screen bg-black portfolio-enter" style={{ overflowX: 'clip' }}>
       <AnimatedBackground />
-      {/* Header Section */}
-      <header className="max-w-7xl mx-auto px-4 py-8">
-        {/* Dark Mode Toggle - Top Right */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={toggleDarkMode}
-            className="flex items-center justify-center w-10 h-10 rounded-full glass-card cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-            aria-label="Toggle dark mode"
-            title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {isDarkMode ? (
-              // Sun Icon (for light mode)
-              <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            ) : (
-              // Moon Icon (for dark mode)
-              <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            )}
-          </button>
-        </div>
 
-        <div className="flex flex-col lg:flex-row items-start gap-6">
-          {/* Profile Picture */}
-          <div className="flex-shrink-0">
-            <img
-              src={profileInfo.profileImage}
-              alt="Profile"
-              className="w-28 h-28 lg:w-32 lg:h-32 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
-            />
-          </div>
+      <Navbar />
 
-          {/* Name and Title */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1.5">
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">{profileInfo.name}</h1>
-              {profileInfo.verified && (
-                <svg className="w-5 h-5 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              )}
-            </div>
-            <p className="text-gray-600 dark:text-gray-400 text-sm mb-1.5">{profileInfo.location}</p>
-            <p className="text-lg text-gray-800 dark:text-gray-200 font-medium mb-3">{profileInfo.title}</p>
-            <a
-              href={resumePDF}
-              download="Gabriel_Gonzales_Resume.pdf"
-              className="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors cursor-pointer"
-            >
-              <PiDownloadLight className="w-4 h-4" />
-              <span>Download Resume</span>
-            </a>
-          </div>
+      <Hero
+        profileInfo={profileInfo}
+        onOpenDonation={() => openModal('Support My Work', <DonationModalContent profileInfo={profileInfo} />)}
+      />
 
-          {/* Contact Details */}
-          <div className="flex-shrink-0 lg:ml-auto">
-            <div className="space-y-3">
-              {/* Email */}
-              <a
-                href={`mailto:${profileInfo.contact.email}`}
-                className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition cursor-pointer"
-              >
-                <svg className="w-5 h-5 text-yellow-500 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <span className="text-sm">{profileInfo.contact.email}</span>
-              </a>
+      <TechStack
+        techStack={techStack}
+        services={services}
+        onOpenAll={() => openModal('Tech Stack', <TechStackModalContent techStack={techStack} />, { size: 'xl' })}
+      />
 
-              {/* Mobile */}
-              <a
-                href={`tel:${profileInfo.contact.mobile.replace(/\s/g, '')}`}
-                className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition cursor-pointer"
-              >
-                <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="white" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                <span className="text-sm">{profileInfo.contact.mobile}</span>
-              </a>
+      <Projects
+        projects={projects}
+        onOpenAll={() => openModal('All Projects', <AllProjectsModalContent projects={projects} />, { size: 'xl' })}
+      />
 
-              {/* LinkedIn */}
-              <a
-                href={profileInfo.contact.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer"
-              >
-                <svg className="w-5 h-5 text-blue-500 dark:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-                </svg>
-                <span className="text-sm">LinkedIn Profile</span>
-              </a>
+      <ExperienceAwards
+        experience={experience}
+        certifications={certifications}
+        onOpenAllCertifications={() =>
+          openModal('All Certifications', <AllCertificationsModalContent certifications={certifications} />, {
+            size: 'xl',
+            bodyScroll: false,
+          })
+        }
+      />
 
-              {/* Donation Button */}
-              <button
-                onClick={() => {
-                  setModalContent({
-                    title: 'Support My Work',
-                    content: <DonationModalContent profileInfo={profileInfo} />
-                  })
-                  setIsModalOpen(true)
-                }}
-                className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition cursor-pointer mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
-              >
-                <svg className="w-5 h-5 text-red-500 dark:text-red-400" fill="red" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-                <span className="text-sm font-medium">Support My Work</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content - Two Column Layout */}
-      <main className="max-w-7xl mx-auto px-4 pb-28 sm:pb-24 md:pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column */}
-          <div className="space-y-8">
-            {/* About Section */}
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">About</h2>
-              </div>
-              <div className="space-y-3 text-gray-700 dark:text-gray-300 leading-relaxed text-justify">
-                {aboutContent.map((paragraph, idx) => (
-                  <p key={idx}>{paragraph}</p>
-                ))}
-              </div>
-            </section>
-
-            {/* Tech Stack Section */}
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center justify-between gap-3 mb-4">
-                <div className="flex items-center gap-3">
-                  <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
-                  </svg>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Tech Stack</h2>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedCertificate(null)
-                    setModalContent({
-                      title: 'Tech Stack',
-                      content: <TechStackModalContent techStack={techStack} />
-                    })
-                    setIsModalOpen(true)
-                  }}
-                  className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-                >
-                  View all
-                </button>
-              </div>
-              <TechMarquee techStack={techStack} />
-            </section>
-
-            {/* Beyond Coding Section */}
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Beyond Coding</h2>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedCertificate(null)
-                    setModalContent({
-                      title: 'Art',
-                      content: <div className="text-gray-600 dark:text-gray-300">Add your art content here.</div>
-                    })
-                    setIsModalOpen(true)
-                  }}
-                  className="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg font-medium transition-colors"
-                >
-                  <FaPalette className="w-5 h-5" />
-                  Art
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedCertificate(null)
-                    setModalContent({
-                      title: 'Music',
-                      content: <div className="text-gray-600 dark:text-gray-300">Add your music content here.</div>
-                    })
-                    setIsModalOpen(true)
-                  }}
-                  className="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg font-medium transition-colors"
-                >
-                  <FaMusic className="w-5 h-5" />
-                  Music
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedCertificate(null)
-                    setModalContent({
-                      title: 'Cooking',
-                      content: <div className="text-gray-600 dark:text-gray-300">Add your cooking content here.</div>
-                    })
-                    setIsModalOpen(true)
-                  }}
-                  className="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg font-medium transition-colors"
-                >
-                  <FaUtensils className="w-5 h-5" />
-                  Cooking
-                </button>
-              </div>
-            </section>
-
-            {/* Recent Certifications Section */}
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                  </svg>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Certifications and Awards</h2>
-                </div>
-                <button
-                  onClick={() => {
-                    setSelectedCertificate(null)
-                    setModalContent({
-                      title: 'All Certifications',
-                      content: null
-                    })
-                    setIsModalOpen(true)
-                  }}
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition cursor-pointer"
-                >
-                  View All
-                </button>
-              </div>
-              <ul className="space-y-2">
-                {recentCertifications.map((cert) => (
-                  <li key={cert.id} className="flex items-center gap-2 text-[#555] dark:text-gray-400">
-                    <FaAward className="w-5 h-5 text-gray-500 dark:text-gray-500 flex-shrink-0" aria-hidden />
-                    {cert.name}
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            {/* A member of Section
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">A member of</h2>
-              </div>
-              <ul className="space-y-3">
-                {memberships.map((org) => (
-                  <li key={org.id} className="flex items-center justify-between text-gray-700 dark:text-gray-300">
-                    <span>{org.name}</span>
-                    <a href={org.url} target="_blank" rel="noopener noreferrer" className="cursor-pointer">
-                      <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </section>
- */}
-            {/* Gallery Section */}
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Gallery</h2>
-              </div>
-              <div className="relative">
-                <div className="flex overflow-hidden rounded-lg">
-                  {galleryImages.map((img, idx) => (
-                    <div
-                      key={img.id}
-                      className={`flex-shrink-0 w-full transition-transform duration-300 ${idx === galleryIndex ? 'block' : 'hidden'
-                        }`}
-                    >
-                      <img
-                        src={img.src}
-                        alt={img.alt}
-                        className="w-full h-64 object-cover rounded-lg"
-                        loading={idx === galleryIndex ? 'eager' : 'lazy'}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <button
-                  onClick={() => setGalleryIndex((prev) => (prev > 0 ? prev - 1 : galleryImages.length - 1))}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg cursor-pointer"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => setGalleryIndex((prev) => (prev < galleryImages.length - 1 ? prev + 1 : 0))}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg cursor-pointer"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-              <div className="flex justify-center gap-2 mt-4">
-                {galleryImages.map((img, idx) => (
-                  <button
-                    key={img.id}
-                    onClick={() => setGalleryIndex(idx)}
-                    className={`w-2 h-2 rounded-full cursor-pointer ${idx === galleryIndex ? 'bg-gray-900 dark:bg-white' : 'bg-gray-300 dark:bg-gray-600'
-                      }`}
-                  />
-                ))}
-              </div>
-            </section>
-
-            {/* Contact Form Section */}
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Get In Touch</h2>
-              </div>
-
-              <form
-                action="https://formspree.io/f/mreenkwq"
-                method="POST"
-                onSubmit={async (e) => {
-                  e.preventDefault()
-                  setIsSubmitting(true)
-                  setFormStatus({ type: '', message: '' })
-
-                  const formData = new FormData(e.target)
-
-                  try {
-                    const response = await fetch('https://formspree.io/f/mreenkwq', {
-                      method: 'POST',
-                      body: formData,
-                      headers: {
-                        'Accept': 'application/json'
-                      }
-                    })
-
-                    if (response.ok) {
-                      setFormStatus({
-                        type: 'success',
-                        message: 'Thank you! Your message has been sent successfully.'
-                      })
-                      e.target.reset()
-                    } else {
-                      const data = await response.json()
-                      throw new Error(data.error || 'Something went wrong')
-                    }
-                  } catch (error) {
-                    setFormStatus({
-                      type: 'error',
-                      message: error.message || 'Failed to send message. Please try again.'
-                    })
-                  } finally {
-                    setIsSubmitting(false)
-                  }
-                }}
-                className="space-y-4"
-              >
-                {/* Name Field */}
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="Your name"
-                  />
-                </div>
-
-                {/* Email Field */}
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Email <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="your.email@example.com"
-                  />
-                </div>
-
-                {/* Subject Field */}
-                <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Subject <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="subject"
-                    name="subject"
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="What's this about?"
-                  />
-                </div>
-
-                {/* Message Field */}
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Message <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={5}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-                    placeholder="Your message here..."
-                  ></textarea>
-                </div>
-
-                {/* Status Message */}
-                {formStatus.message && (
-                  <div className={`p-3 rounded-lg ${formStatus.type === 'success'
-                    ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800'
-                    : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800'
-                    }`}>
-                    <p className="text-sm">{formStatus.message}</p>
-                  </div>
-                )}
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`w-full py-3 px-4 rounded-lg font-medium transition cursor-pointer ${isSubmitting
-                    ? 'bg-gray-400 dark:bg-blue-600 text-gray-200 cursor-not-allowed'
-                    : 'bg-gray-900 dark:bg-blue-700 hover:bg-gray-800 dark:hover:bg-gray-600 text-white'
-                    }`}
-                >
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
-                </button>
-              </form>
-            </section>
-
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-8">
-            {/* Experience Section */}
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Experience</h2>
-              </div>
-              <div className="relative">
-                {/* Vertical line */}
-                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-400 dark:bg-gray-500"></div>
-
-                {/* Timeline items */}
-                <div className="space-y-6">
-                  {experience.map((exp) => (
-                    <div key={exp.id} className="relative pl-10">
-                      {/* Node (dot) */}
-                      <div className={
-                        exp === experience[0]
-                          ? 'absolute left-3 top-1 w-3 h-3 bg-red-700 dark:bg-red-400 rounded-full border-2 border-white dark:border-gray-800 shadow-sm'
-                          : 'absolute left-3 top-1 w-3 h-3 bg-gray-900 dark:bg-gray-300 rounded-full border-2 border-white dark:border-gray-800 shadow-sm'
-                      }></div>
-
-                      {/* Content */}
-                      <div className="pb-4 last:pb-0 flex items-start gap-3">
-                        {exp.logo && (
-                          <img
-                            src={exp.logo}
-                            alt={`${exp.company} logo`}
-                            className="w-8 h-8 rounded-md object-contain bg-white border border-gray-200 dark:border-gray-700 shrink-0 mt-0.5"
-                          />
-                        )}
-                        <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">{exp.role}</h3>
-                          <p className="text-gray-600 dark:text-gray-300 text-sm">{exp.company}</p>
-                          <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">{exp.year}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            {/* Recent Projects Section */}
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                  </svg>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recent Projects</h2>
-                </div>
-                <button
-                  onClick={() => {
-                    setModalContent({
-                      title: 'All Projects',
-                      content: <AllProjectsModalContent projects={projects} />
-                    })
-                    setIsModalOpen(true)
-                  }}
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition cursor-pointer"
-                >
-                  View All
-                </button>
-              </div>
-              <div className="space-y-4">
-                {recentProjects.map((project) => (
-                  <div key={project.id} className="glass-inner rounded-lg overflow-hidden">
-                    {project.image && (
-                      <img
-                        src={project.image}
-                        alt={`${project.name} screenshot`}
-                        className="w-full h-32 object-cover object-top"
-                        loading="lazy"
-                      />
-                    )}
-                    <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{project.name}</h3>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">{project.description}</p>
-
-                    {project.stack?.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {project.stack.map((key) => (
-                          <span
-                            key={key}
-                            title={key}
-                            className="flex items-center justify-center w-7 h-7 rounded-md bg-white/60 dark:bg-gray-700 cursor-default"
-                          >
-                            <TechIcon name={key} className="w-4 h-4" />
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {project.url ? (
-                      <a href={project.url.startsWith('http') ? project.url : `https://${project.url}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 text-sm hover:underline flex items-center gap-1 cursor-pointer">
-                        {project.url}
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </a>
-                    ) : project.private ? (
-                      <span className="text-gray-400 dark:text-gray-500 text-xs italic">NDA · Private project</span>
-                    ) : null}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Recommendations Section */}
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recommendations</h2>
-              </div>
-              <div className="space-y-4">
-                <div className="relative h-[200px]">
-                  {recommendations.map((rec, idx) => {
-                    const isActive = idx === recommendationIndex
-                    const shouldTruncate = rec.quote.length > 300
-                    const truncatedQuote = shouldTruncate ? rec.quote.substring(0, 300) + '...' : rec.quote
-                    const openFull = () => {
-                      setModalContent({
-                        title: 'Recommendation',
-                        content: (
-                          <div className="space-y-4">
-                            <blockquote className="text-gray-700 dark:text-gray-300 italic border-l-4 border-gray-300 dark:border-gray-600 pl-4 text-lg">
-                              "{rec.quote}"
-                            </blockquote>
-                            <p className="text-gray-600 dark:text-gray-400">
-                              — <span className="font-semibold">{rec.author}</span>, {rec.position}
-                            </p>
-                          </div>
-                        )
-                      })
-                      setIsModalOpen(true)
-                    }
-
-                    return (
-                      <div
-                        key={rec.id}
-                        className={`transition-opacity duration-500 ${isActive ? 'opacity-100 block' : 'opacity-0 pointer-events-none absolute inset-0'
-                          }`}
-                      >
-                        <div className="max-h-[140px] overflow-y-auto pr-2">
-                          <blockquote
-                            className={`text-gray-700 dark:text-gray-300 italic border-l-4 border-gray-300 dark:border-gray-600 pl-4 ${shouldTruncate ? '' : ''}`}
-                          >
-                            "{truncatedQuote}"
-                          </blockquote>
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">
-                          — <span className="font-semibold">{rec.author}</span>, {rec.position}
-                        </p>
-                        {shouldTruncate && (
-                          <button
-                            type="button"
-                            onClick={openFull}
-                            className="mt-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 rounded"
-                          >
-                            Read full recommendation
-                          </button>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Indicator Dots */}
-                {recommendations.length > 1 && (
-                  <div className="flex gap-1 justify-center pt-2">
-                    {recommendations.map((rec, idx) => (
-                      <button
-                        key={rec.id}
-                        onClick={() => setRecommendationIndex(idx)}
-                        className={`w-2 h-2 rounded-full cursor-pointer transition ${idx === recommendationIndex ? 'bg-gray-900 dark:bg-white' : 'bg-gray-300 dark:bg-gray-600'
-                          }`}
-                        aria-label={`Go to recommendation ${idx + 1}`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {/* Social Links Section
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
-                <h2 className="text-2xl font-bold text-gray-900">Social Links</h2>
-              </div>
-              <div className="space-y-3">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.id}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-gray-700 hover:text-gray-900 transition p-2 rounded-lg hover:bg-gray-50"
-                  >
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z" />
-                    </svg>
-                    <span className="font-medium">{social.name}</span>
-                  </a>
-                ))}
-              </div>
-            </section>
-*/}
-            {/* Speaking Section 
-            <section className="glass-card rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
-                <h2 className="text-2xl font-bold text-gray-900">Speaking</h2>
-              </div>
-              <p className="text-gray-700 mb-4">
-                {speaking.description}
+      <GalleryReviews
+        galleryImages={galleryImages}
+        recommendations={recommendations}
+        onOpenFull={(rec) =>
+          openModal(
+            'Recommendation',
+            <div className="space-y-4">
+              <blockquote className="text-cream/80 italic border-l-4 border-tan/30 pl-4 text-lg">
+                &ldquo;{rec.quote}&rdquo;
+              </blockquote>
+              <p className="text-tan/70">
+                — <span className="font-semibold text-cream/90">{rec.author}</span>, {rec.position}
               </p>
-              <button className="flex items-center gap-2 text-gray-900 font-medium hover:text-gray-700 transition">
-                {speaking.ctaText}
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-        </button>
-            </section>*/}
+            </div>
+          )
+        }
+      />
 
-            {/* Contact Section 
-            <section className="glass-card rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Contact</h2>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 text-gray-700">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  <span>{contactInfo.email}</span>
-                </div>
-                <a href={contactInfo.scheduleCall} className="flex items-center gap-2 text-gray-900 font-medium hover:text-gray-700 transition w-full">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Schedule a Call
-                  <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </a>
-                <a href={contactInfo.joinDiscussion} className="flex items-center gap-2 text-gray-900 font-medium hover:text-gray-700 transition w-full">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  Join Discussion
-                  <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </a>
-              </div>
-            </section>
-            */}
-          </div>
-        </div>
-      </main>
+      <Contact />
 
-      {/* Footer */}
-      <footer className="max-w-7xl mx-auto px-4 py-6 border-t border-white/50 dark:border-white/10">
-        <p className="text-center text-gray-600 dark:text-gray-400 text-sm">
-          {footer.copyright}
-        </p>
-        <p className="text-center text-gray-400 dark:text-gray-500 text-xs mt-1">
-          {footer.modelCredit.prefix}
-          <a href={footer.modelCredit.titleUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600 dark:hover:text-gray-300">
-            {footer.modelCredit.title}
-          </a>
-          {footer.modelCredit.middle}
-          <a href={footer.modelCredit.licenseUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600 dark:hover:text-gray-300">
-            {footer.modelCredit.license}
-          </a>
-        </p>
-      </footer>
+      <Footer footer={footer} />
 
       {/* EVE Robot — Chat trigger (hidden when chat open to avoid overlap) */}
       <Suspense fallback={
         <div
-          className="fixed bottom-4 right-4 w-[110px] h-[110px] rounded-full bg-gray-200/50 dark:bg-gray-700/50 animate-pulse"
+          className="fixed bottom-4 right-4 w-[110px] h-[110px] rounded-full bg-tan/10 animate-pulse"
           style={{ zIndex: 9999 }}
           aria-hidden
         />
@@ -836,85 +152,19 @@ function App() {
             aria-label="Loading chat"
           />
         }>
-          <ChatBot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} isDarkMode={isDarkMode} />
+          <ChatBot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
         </Suspense>
       )}
 
       {/* Modal */}
       <Modal
         isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false)
-          setSelectedCertificate(null)
-        }}
+        onClose={() => setIsModalOpen(false)}
         title={modalContent.title}
-        size={selectedCertificate ? "xl" : "lg"}
-        bodyScroll={modalContent.title !== 'All Certifications'}
+        size={modalContent.size}
+        bodyScroll={modalContent.bodyScroll}
       >
-        {modalContent.title === 'All Certifications' ? (
-          <div className="flex gap-6 flex-1 min-h-0" style={{ minHeight: '400px' }}>
-            {/* Left side - Certificate List */}
-            <div className={`${selectedCertificate ? 'w-1/2' : 'w-full'} min-h-0 overflow-y-auto pr-2 flex-shrink-0`}>
-              <div className="space-y-3 pb-4">
-                {certifications.map((cert) => (
-                  <div
-                    key={cert.id}
-                    onClick={() => setSelectedCertificate(cert)}
-                    className={`flex items-start gap-3 p-4 rounded transition cursor-pointer ${selectedCertificate?.id === cert.id
-                      ? 'ring-2 ring-accent bg-accent/5 dark:bg-accent/10'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                      }`}
-                  >
-                    <FaAward className="w-6 h-6 text-gray-500 dark:text-gray-500 flex-shrink-0 mt-0.5" aria-hidden />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{cert.name}</h3>
-                      <p className="text-gray-600 dark:text-gray-300 text-sm">{cert.issuer}</p>
-                      <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">{cert.year}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Right side - Certificate Preview */}
-            {selectedCertificate && (
-              <div className="w-1/2 border-l border-gray-200 dark:border-gray-700 pl-6 pr-6 flex flex-col flex-shrink-0 min-h-0">
-                <div className="flex flex-col min-h-0 flex-1">
-                  <div className="flex-shrink-0 mb-4">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      {selectedCertificate.name}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-1">
-                      {selectedCertificate.issuer}
-                    </p>
-                    <p className="text-gray-500 dark:text-gray-400 text-xs mb-4">
-                      {selectedCertificate.year}
-                    </p>
-                  </div>
-                  {selectedCertificate.image ? (
-                    <div className="flex-1 overflow-y-auto pr-2">
-                      <img
-                        src={selectedCertificate.image}
-                        alt={selectedCertificate.name}
-                        className="w-full h-auto rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
-                        style={{ maxWidth: '100%', objectFit: 'contain' }}
-                        loading="lazy"
-                      />
-                    </div>
-                  ) : (
-                    <div className="mt-4 p-8 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-center">
-                      <p className="text-gray-500 dark:text-gray-400">
-                        Certificate preview not available
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          modalContent.content
-        )}
+        {modalContent.content}
       </Modal>
     </div>
   )

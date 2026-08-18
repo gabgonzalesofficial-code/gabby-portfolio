@@ -1,10 +1,11 @@
 import TechIcon from '../TechIcon'
+import ProjectStatStrip from '../ProjectStatStrip'
 
 export default function AllProjectsModalContent({ projects }) {
   return (
     <div className="space-y-4">
       {projects.map((project) => (
-        <div key={project.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 transition">
+        <div key={project.id} className="border border-tan/15 rounded-lg overflow-hidden hover:border-tan/40 transition">
           {project.image && (
             <img
               src={project.image}
@@ -15,8 +16,40 @@ export default function AllProjectsModalContent({ projects }) {
           )}
 
           <div className="p-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{project.name}</h3>
-            <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">{project.description}</p>
+            <h3 className="font-semibold text-cream mb-1">{project.name}</h3>
+            {project.description ? (
+              <div className="space-y-2 mb-3">
+                {String(project.description).split(/\n\n+/).map((para, i) => (
+                  <p key={i} className="text-cream/70 text-sm leading-relaxed">{para}</p>
+                ))}
+              </div>
+            ) : (
+              <p className="text-cream/70 text-sm mb-2">{project.tagline || project.description}</p>
+            )}
+
+            <ProjectStatStrip metrics={project.metrics} />
+
+            {(project.problem || project.solution || project.impact) && (
+              <div className="space-y-2 mb-3 text-sm">
+                {project.problem && (
+                  <p className="text-cream/70">
+                    <span className="font-semibold text-cream">Problem: </span>
+                    {project.problem}
+                  </p>
+                )}
+                {project.solution && (
+                  <p className="text-cream/70">
+                    <span className="font-semibold text-cream">Solution: </span>
+                    {project.solution}
+                  </p>
+                )}
+                {project.impact && (
+                  <p className="border-l-4 border-accent/60 pl-3 text-tan/90 italic">
+                    {project.impact}
+                  </p>
+                )}
+              </div>
+            )}
 
             {project.stack?.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
@@ -24,7 +57,7 @@ export default function AllProjectsModalContent({ projects }) {
                   <span
                     key={key}
                     title={key}
-                    className="flex items-center justify-center w-7 h-7 rounded-md bg-gray-100 dark:bg-gray-700 cursor-default"
+                    className="flex items-center justify-center w-7 h-7 rounded-md bg-cream/10 cursor-default"
                   >
                     <TechIcon name={key} className="w-4 h-4" />
                   </span>
@@ -37,7 +70,7 @@ export default function AllProjectsModalContent({ projects }) {
                 href={project.url.startsWith('http') ? project.url : `https://${project.url}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 dark:text-blue-400 text-sm hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-tan hover:text-cream text-sm hover:underline flex items-center gap-1 cursor-pointer"
               >
                 {project.url}
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,7 +78,7 @@ export default function AllProjectsModalContent({ projects }) {
                 </svg>
               </a>
             ) : project.private ? (
-              <span className="text-gray-400 dark:text-gray-500 text-xs italic">NDA · Private project</span>
+              <span className="text-tan/50 text-xs italic">NDA · Private project</span>
             ) : null}
           </div>
         </div>

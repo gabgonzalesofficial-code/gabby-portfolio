@@ -1,0 +1,60 @@
+.card-swap-container {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  transform: translate(5%, 20%);
+  transform-origin: bottom right;
+
+  perspective: 900px;
+  overflow: visible;
+}
+
+.card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 12px;
+  border: 1px solid rgba(232, 201, 153, 0.35);
+  background: #000;
+
+  transform-style: preserve-3d;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+@media (max-width: 768px) {
+  .card-swap-container {
+    transform: scale(0.75) translate(25%, 25%);
+  }
+}
+
+@media (max-width: 480px) {
+  .card-swap-container {
+    transform: scale(0.55) translate(25%, 25%);
+  }
+}
+
+/* Centered variant — the default bottom-right anchor is meant for a hero
+   corner decoration and collides with fixed bottom-right UI (this site's
+   chat widget). Two classes beats one in specificity, so this wins over
+   the base rule (and its breakpoints) without touching the vendor default. */
+.card-swap-container.card-swap-centered {
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 768px) {
+  .card-swap-container.card-swap-centered {
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+}
+
+@media (max-width: 480px) {
+  .card-swap-container.card-swap-centered {
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+}

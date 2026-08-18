@@ -24,17 +24,17 @@ import gabbyModelUrl from '../assets/blender/roboto.glb?url';
 // (see CLIP_MAP below) provide the motion now, spinning a gesturing
 // humanoid would just look broken.
 const STATE_CFG = {
-  idle:      { lMin:0.35, lMax:0.75, lDur:5.5, rim:0x5fa2ff },
-  listening: { lMin:0.55, lMax:1.05, lDur:3.5, rim:0x50d2a0 },
-  thinking:  { lMin:0.60, lMax:1.60, lDur:1.6, rim:0x5fa2ff },
-  speaking:  { lMin:0.55, lMax:1.30, lDur:2.4, rim:0x82c3ff },
+  idle:      { lMin:0.35, lMax:0.75, lDur:5.5, rim:0x8e1616 },
+  listening: { lMin:0.55, lMax:1.05, lDur:3.5, rim:0xe8c999 },
+  thinking:  { lMin:0.60, lMax:1.60, lDur:1.6, rim:0x8e1616 },
+  speaking:  { lMin:0.55, lMax:1.30, lDur:2.4, rim:0xf8eedf },
 };
 
-// ─── Glow helpers — stays in blue family, just dims on inactivity ─────────────
+// ─── Glow helpers — tan at full attention, fades toward the brand red ─────────
 function glowColor(inactivity, alpha) {
-  const r = Math.round(95  - 45 * inactivity);
-  const g = Math.round(162 - 72 * inactivity);
-  const b = Math.round(255 - 70 * inactivity);
+  const r = Math.round(232 - 90 * inactivity);
+  const g = Math.round(201 - 179 * inactivity);
+  const b = Math.round(153 - 131 * inactivity);
   const a = (alpha * (1 - inactivity * 0.78)).toFixed(2);
   return `rgba(${r},${g},${b},${a})`;
 }
@@ -61,8 +61,10 @@ export default function ThreeEveRobot({
   const lastEmitRef   = useRef(-1);
   const onInactRef    = useRef(onInactivityChange);
   const cursorXRef    = useRef(null); // null = cursor not near, no turn
+  const scanTurnRef   = useRef(null); // non-null while scanning → forced turn toward the ID card
 
   const [wiggle,     setWiggle]     = useState(false);
+  const [scanning,   setScanning]   = useState(false);
   const [inactivity, setInactivity] = useState(0);
   const [modelReady, setModelReady] = useState(false);
   const [showBubble, setShowBubble] = useState(true);
@@ -121,15 +123,15 @@ export default function ThreeEveRobot({
     scene.add(modelGroup);
 
     // Lighting
-    const hemi = new THREE.HemisphereLight(0xbbccff, 0x0d1420, 1.15);
+    const hemi = new THREE.HemisphereLight(0xe8c999, 0x0a0a0a, 1.15);
     scene.add(hemi);
     const key = new THREE.DirectionalLight(0xffffff, 1.0);
     key.position.set(1.5, 2.4, 3);
     scene.add(key);
-    const fill = new THREE.DirectionalLight(0xaecbff, 0.35);
+    const fill = new THREE.DirectionalLight(0xe8c999, 0.35);
     fill.position.set(-2, -0.5, 1.5);
     scene.add(fill);
-    const rim = new THREE.PointLight(0x5fa2ff, 0.5, 12);
+    const rim = new THREE.PointLight(0xe8c999, 0.5, 12);
     rim.position.set(-1.4, 0.6, 1.6);
     scene.add(rim);
 
@@ -209,8 +211,11 @@ export default function ThreeEveRobot({
 
       // Turn left/right toward the cursor when it's near; ease back to
       // facing forward otherwise. Horizontal only — no up/down tilt.
+      // While the hero card is being scanned, the forced turn to the card wins.
       const cx = cursorXRef.current;
-      const turnTarget = cx === null ? 0 : Math.max(-0.5, Math.min(0.5, cx / 260));
+      const turnTarget = scanTurnRef.current !== null
+        ? scanTurnRef.current
+        : (cx === null ? 0 : Math.max(-0.5, Math.min(0.5, cx / 260)));
       modelGroup.rotation.y += (turnTarget - modelGroup.rotation.y) * 0.045;
 
       // Inactivity drift — dims lights after 20s, like the creature dozing off
@@ -266,6 +271,38 @@ export default function ThreeEveRobot({
 
   useEffect(() => { startStateAnim(chatState); }, [chatState]);
 
+  // ── Reacts to the hero ID card's scan sequence (ReflectiveCard) ────────────
+  // Turns to face the card, kicks the rim light into a fast bright scan pulse,
+  // and rings a sonar ping — then returns to normal once verification lands.
+  useEffect(() => {
+    const onScan = () => {
+      scanTurnRef.current = -0.6; // card sits up-left of the robot
+      lastActiveRef.current = Date.now();
+      setScanning(true);
+      const { rim } = threeRef.current ?? {};
+      if (rim) {
+        tlRef.current?.kill();
+        rim.color.setHex(0xe8c999);
+        tlRef.current = gsap.timeline({ repeat: -1, yoyo: true })
+          .to(rim, { intensity: 2.1, duration: 0.5, ease: 'power1.inOut' })
+          .to(rim, { intensity: 0.8, duration: 0.5, ease: 'power1.inOut' });
+      }
+    };
+    const onVerified = () => {
+      scanTurnRef.current = null;
+      setScanning(false);
+      startStateAnim(chatRef.current);
+      setWiggle(true);
+      setTimeout(() => setWiggle(false), 700);
+    };
+    window.addEventListener('eve-card-scan', onScan);
+    window.addEventListener('eve-card-verified', onVerified);
+    return () => {
+      window.removeEventListener('eve-card-scan', onScan);
+      window.removeEventListener('eve-card-verified', onVerified);
+    };
+  }, []);
+
   // ── Wakes the widget when the cursor is near, and tracks how far left/right
   //    of center it is so the robot can turn toward it (render loop below) ──
   useEffect(() => {
@@ -294,12 +331,14 @@ export default function ThreeEveRobot({
     onClick?.(e);
   }
 
-  // Glow stays in the blue family — just dims on inactivity
+  // Glow stays in the tan family — just dims on inactivity; the scan
+  // overrides it with a bright focused beam while the ID card is being scanned.
   const glow = {
     idle:      `drop-shadow(0 0 7px ${glowColor(inactivity,0.60)}) drop-shadow(0 0 20px ${glowColor(inactivity,0.25)})`,
     listening: `drop-shadow(0 0 10px ${glowColor(inactivity,0.80)}) drop-shadow(0 0 28px ${glowColor(inactivity,0.38)})`,
     thinking:  `drop-shadow(0 0 14px ${glowColor(inactivity,0.95)}) drop-shadow(0 0 38px ${glowColor(inactivity,0.50)})`,
     speaking:  `drop-shadow(0 0 11px ${glowColor(inactivity,0.85)}) drop-shadow(0 0 30px ${glowColor(inactivity,0.42)})`,
+    scanning:  'drop-shadow(0 0 12px rgba(232,201,153,0.95)) drop-shadow(0 0 34px rgba(232,201,153,0.50))',
   };
   const shadowAlpha = (0.15 * (1 - inactivity * 0.80)).toFixed(2);
 
@@ -336,16 +375,16 @@ export default function ThreeEveRobot({
         }}
       >
         <div style={{
-          background:'rgba(19,27,42,0.96)',
-          border:'1px solid rgba(95,162,255,0.28)',
+          background:'rgba(10,10,10,0.96)',
+          border:'1px solid rgba(232,201,153,0.35)',
           borderRadius:12,
           padding:'8px 13px',
           whiteSpace:'nowrap',
           fontSize:13,
           fontWeight:500,
-          color:'rgba(220,232,252,0.94)',
+          color:'rgba(248,238,223,0.94)',
           fontFamily:"-apple-system,'Helvetica Neue',sans-serif",
-          boxShadow:'0 8px 24px rgba(0,0,0,0.28), 0 0 0 1px rgba(95,162,255,0.05)',
+          boxShadow:'0 8px 24px rgba(0,0,0,0.28), 0 0 0 1px rgba(232,201,153,0.08)',
         }}>
           Ask me anything! 👋
         </div>
@@ -356,14 +395,14 @@ export default function ThreeEveRobot({
           width:0, height:0,
           borderLeft:'6px solid transparent',
           borderRight:'6px solid transparent',
-          borderTop:'6px solid rgba(19,27,42,0.96)',
+          borderTop:'6px solid rgba(10,10,10,0.96)',
         }}/>
       </div>
 
       <div style={{
         display:'flex', flexDirection:'column', alignItems:'center',
         animation: wiggle ? 'eveWiggle 0.7s ease' : 'none',
-        filter: glow[chatState] || glow.idle,
+        filter: scanning ? glow.scanning : (glow[chatState] || glow.idle),
         transition: 'filter 1.4s ease',
         pointerEvents: 'none',
         position: 'relative',
@@ -372,7 +411,7 @@ export default function ThreeEveRobot({
         {/* Placeholder — visible until the GLB finishes loading */}
         <div style={{
           position:'absolute', inset:0, borderRadius:'50%',
-          background:'radial-gradient(circle at 38% 36%, rgba(95,162,255,0.20) 0%, rgba(28,50,95,0.55) 45%, rgba(19,27,42,0.92) 100%)',
+          background:'radial-gradient(circle at 38% 36%, rgba(232,201,153,0.18) 0%, rgba(142,22,22,0.5) 45%, rgba(10,10,10,0.95) 100%)',
           opacity: modelReady ? 0 : 1,
           transition: 'opacity 0.5s ease',
           animationName: modelReady ? 'none' : 'evePlaceholderPulse',
@@ -389,12 +428,24 @@ export default function ThreeEveRobot({
             transition: 'opacity 0.5s ease',
           }}
         />
+        {/* Sonar ping — rings outward while the ID card is being scanned */}
+        {scanning && (
+          <div
+            aria-hidden
+            style={{
+              position:'absolute', inset:0,
+              borderRadius:'50%',
+              border:'2px solid rgba(232,201,153,0.75)',
+              animation:'eveScanPing 1.4s ease-out infinite',
+            }}
+          />
+        )}
       </div>
 
       {/* Ground shadow */}
       <div style={{
         width:54, height:9, borderRadius:'50%',
-        background: `rgba(95,162,255,${shadowAlpha})`,
+        background: `rgba(232,201,153,${shadowAlpha})`,
         filter: 'blur(9px)',
         marginTop: -8,
         opacity: 0.30,
@@ -408,6 +459,10 @@ export default function ThreeEveRobot({
           0%,100% { transform:translateX(50%) translateY(0); }
           50%     { transform:translateX(50%) translateY(-4px); }
         }
+        @keyframes eveScanPing {
+          0%   { transform: scale(0.35); opacity: 0.9; }
+          100% { transform: scale(1.7); opacity: 0; }
+        }
         @keyframes eveWiggle {
           0%  {transform:translateY(0) rotate(0deg)}
           18% {transform:translateY(-7px) rotate(-11deg)}
@@ -417,7 +472,7 @@ export default function ThreeEveRobot({
           100%{transform:translateY(0) rotate(0deg)}
         }
         .eve-orb-btn:focus{outline:none}
-        .eve-orb-btn:focus-visible{outline:2px solid rgba(95,162,255,0.55);outline-offset:6px;border-radius:50%}
+        .eve-orb-btn:focus-visible{outline:2px solid rgba(232,201,153,0.6);outline-offset:6px;border-radius:50%}
         @media(max-width:768px){
           .eve-orb-btn{
             right:max(.75rem,env(safe-area-inset-right))!important;

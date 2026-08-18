@@ -1,0 +1,230 @@
+.reflective-card-container {
+  position: relative;
+  width: 320px;
+  height: 500px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #000000;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(232, 201, 153, 0.25) inset;
+  isolation: isolate;
+}
+
+.reflective-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Slight overscan only — the old 1.2 zoom + SVG displacement map blurred
+     and pixelated the photo (the source is a small landscape image shown in
+     a portrait card), so the filter chain stays clean and sharp now. */
+  transform: scale(1.05);
+
+  filter: saturate(var(--saturation, 0)) contrast(110%) brightness(108%) blur(var(--blur-strength, 12px));
+
+  z-index: 0;
+  opacity: 0.92;
+  transition: filter 0.3s ease;
+}
+
+.reflective-noise {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: var(--roughness, 0.4);
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+.reflective-sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.1) 40%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(255, 255, 255, 0.1) 60%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: var(--metalness, 1);
+}
+
+.reflective-border {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.6) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.reflective-content {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 32px;
+  color: var(--text-color, white);
+  background: var(--overlay-color, rgba(255, 255, 255, 0.05));
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 16px;
+}
+
+.security-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status-icon {
+  opacity: 0.8;
+  transition: color 0.5s ease, filter 0.5s ease, transform 0.5s ease;
+}
+
+/* Unverified — steady red until the scan starts */
+.status-icon--unverified {
+  color: #ef4444;
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6));
+}
+
+/* Scanning — red, pulsing while the scan line sweeps */
+.status-icon--scanning {
+  color: #ef4444;
+  opacity: 1;
+  filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.75));
+  animation: statusLedPulse 0.8s ease-in-out infinite;
+}
+
+/* Verified — green with a pop, then a soft glow */
+.status-icon--active {
+  color: #22c55e;
+  opacity: 1;
+  filter: drop-shadow(0 0 5px rgba(34, 197, 94, 0.75));
+  animation: statusLedVerified 0.55s ease-out;
+}
+
+@keyframes statusLedPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+@keyframes statusLedVerified {
+  0%   { transform: scale(0.5); }
+  60%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* ── ID scan sequence ─────────────────────────────────────────────────────── */
+.card-scan-line {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  height: 3px;
+  z-index: 5;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(232, 201, 153, 0.95) 50%, transparent);
+  box-shadow:
+    0 0 14px 2px rgba(232, 201, 153, 0.55),
+    0 0 34px 8px rgba(232, 201, 153, 0.22);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.card-scan-line--active {
+  opacity: 1;
+  animation: cardScan 1.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+@keyframes cardScan {
+  0%   { top: -4%; opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { top: 103%; opacity: 0; }
+}
+
+/* Green wash that flashes over the card the moment verification lands */
+.card-verified-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background: radial-gradient(circle at 50% 18%, rgba(34, 197, 94, 0.28), transparent 65%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.card-verified-flash--active {
+  animation: cardVerifiedFlash 0.8s ease-out forwards;
+}
+
+@keyframes cardVerifiedFlash {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 24px;
+}
+
+.id-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+}
+
+.value {
+  font-family: monospace;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+}
+
+.fingerprint-icon {
+  opacity: 0.4;
+}

@@ -3,119 +3,69 @@
  *
  * Same organism as ThreeEveRobot: glossy white housing, blue LED
  * accent glow, matte-dark text. Feels like the robot's own screen
- * lit up. Follows the site's light/dark toggle (isDarkMode prop).
+ * lit up. Site is fixed-dark-theme, so this always uses THEME.
  *
  * Props:
  *   isOpen        — boolean
  *   onClose       — fn
  *   onStateChange — fn('idle'|'listening'|'thinking'|'speaking')
- *   isDarkMode    — boolean
  */
 import { useState, useRef, useEffect, useCallback } from 'react';
 
-// ── Design tokens — one set per site theme ─────────────────────────────────────
-const LIGHT = {
-  panel:        'rgba(255, 255, 255, 0.98)',
-  header:       'rgba(247, 250, 253, 0.99)',
-  inputArea:    'rgba(247, 250, 253, 0.85)',
-  userBubble:   'rgba(37, 99, 235, 0.12)',
-  userBubbleBorder: 'rgba(37,99,235,0.24)',
-  aiBubble:     'rgba(15, 23, 42, 0.035)',
-  inputBg:      '#ffffff',
+// ── Design tokens — black surfaces, tan/cream lights, brand-red CTA ──────────
+const THEME = {
+  panel:        'rgba(10, 10, 10, 0.98)',
+  header:       'rgba(14, 12, 10, 0.99)',
+  inputArea:    'rgba(0, 0, 0, 0.60)',
+  userBubble:   'rgba(142, 22, 22, 0.55)',
+  userBubbleBorder: 'rgba(232,201,153,0.25)',
+  aiBubble:     'rgba(248,238,223,0.04)',
+  inputBg:      'rgba(248,238,223,0.05)',
 
-  borderSub:    'rgba(15, 23, 42, 0.08)',
-  borderAccent: 'rgba(37, 99, 235, 0.30)',
-  borderActive: 'rgba(37, 99, 235, 0.50)',
+  borderSub:    'rgba(248,238,223,0.08)',
+  borderAccent: 'rgba(232,201,153,0.22)',
+  borderActive: 'rgba(232,201,153,0.40)',
 
-  accent:       'rgba(37, 99, 235, 1)',
-  accentGlow:   'rgba(37, 99, 235, 0.32)',
-  accentDim:    'rgba(37, 99, 235, 0.55)',
-  accentFaint:  'rgba(37, 99, 235, 0.12)',
+  accent:       'rgba(232,201,153,1)',
+  accentGlow:   'rgba(232,201,153,0.35)',
+  accentDim:    'rgba(232,201,153,0.40)',
+  accentFaint:  'rgba(232,201,153,0.10)',
 
-  textPrimary:  'rgba(17, 24, 39, 0.92)',
-  textMuted:    'rgba(90, 100, 122, 0.70)',
-  textAI:       'rgba(30, 58, 100, 0.88)',
+  brand:        'rgba(142,22,22,1)',
+  brandGlow:    'rgba(142,22,22,0.45)',
 
-  shadow:       '0 20px 50px rgba(15,23,42,0.16), 0 0 0 1px rgba(37,99,235,0.06)',
+  textPrimary:  'rgba(248,238,223,0.92)',
+  textMuted:    'rgba(232,201,153,0.60)',
+  textAI:       'rgba(248,238,223,0.82)',
 
-  avatarGradient: 'radial-gradient(circle at 38% 36%, rgba(255,255,255,1) 0%, rgba(224,235,252,0.95) 45%, rgba(198,216,246,0.85) 100%)',
-  avatarBorder:   'rgba(37,99,235,0.30)',
-  avatarGlow:     '0 0 14px rgba(37,99,235,0.16)',
-  avatarDot:      'rgba(37,99,235,0.95)',
-  avatarDotGlow:  '0 0 10px rgba(37,99,235,0.85), 0 0 22px rgba(37,99,235,0.40)',
+  shadow:       '0 12px 48px rgba(0,0,0,0.60), 0 0 0 1px rgba(232,201,153,0.08)',
 
-  closeBg:      'rgba(15,23,42,0.05)',
-  closeBgHover: 'rgba(15,23,42,0.09)',
+  avatarGradient: 'radial-gradient(circle at 38% 36%, rgba(232,201,153,0.20) 0%, rgba(142,22,22,0.55) 45%, rgba(10,10,10,0.95) 100%)',
+  avatarBorder:   'rgba(232,201,153,0.30)',
+  avatarGlow:     '0 0 14px rgba(232,201,153,0.16)',
+  avatarDot:      'rgba(248,238,223,0.92)',
+  avatarDotGlow:  '0 0 10px rgba(232,201,153,0.80), 0 0 22px rgba(142,22,22,0.38)',
 
-  sendDisabledBg:   'rgba(15,23,42,0.10)',
-  sendDisabledIcon: 'rgba(15,23,42,0.28)',
-  sendIcon:         '#ffffff',
-  sendHoverBg:      'rgba(59,130,246,1)',
-  sendHoverGlow:    '0 0 24px rgba(37,99,235,0.45)',
+  closeBg:      'rgba(248,238,223,0.05)',
+  closeBgHover: 'rgba(248,238,223,0.10)',
 
-  errorBg:     'rgba(220,38,38,0.06)',
-  errorBorder: 'rgba(220,38,38,0.22)',
-  errorText:   'rgba(185,28,28,0.95)',
-
-  charArcTrack: 'rgba(15,23,42,0.10)',
-  footerText:   'rgba(37,99,235,0.32)',
-
-  scrollThumb:      'rgba(37,99,235,0.22)',
-  scrollThumbHover: 'rgba(37,99,235,0.38)',
-  placeholder:      'rgba(100,116,145,0.55)',
-  backdrop:         'rgba(15,23,42,0.42)',
-};
-
-const DARK = {
-  panel:        'rgba(19, 27, 42, 0.98)',
-  header:       'rgba(23, 33, 50, 0.99)',
-  inputArea:    'rgba(14, 20, 34, 0.60)',
-  userBubble:   'rgba(30, 48, 85, 0.55)',
-  userBubbleBorder: 'rgba(80,130,240,0.22)',
-  aiBubble:     'rgba(255,255,255,0.03)',
-  inputBg:      'rgba(255,255,255,0.04)',
-
-  borderSub:    'rgba(255,255,255,0.06)',
-  borderAccent: 'rgba(95,162,255,0.18)',
-  borderActive: 'rgba(95,162,255,0.30)',
-
-  accent:       'rgba(95,162,255,1)',
-  accentGlow:   'rgba(95,162,255,0.35)',
-  accentDim:    'rgba(95,162,255,0.40)',
-  accentFaint:  'rgba(95,162,255,0.10)',
-
-  textPrimary:  'rgba(220,232,252,0.92)',
-  textMuted:    'rgba(148,172,210,0.60)',
-  textAI:       'rgba(180,208,255,0.82)',
-
-  shadow:       '0 12px 48px rgba(0,0,0,0.60), 0 0 0 1px rgba(95,162,255,0.06)',
-
-  avatarGradient: 'radial-gradient(circle at 38% 36%, rgba(95,162,255,0.20) 0%, rgba(28,50,95,0.55) 45%, rgba(19,27,42,0.92) 100%)',
-  avatarBorder:   'rgba(95,162,255,0.26)',
-  avatarGlow:     '0 0 14px rgba(70,140,255,0.16)',
-  avatarDot:      'rgba(130,195,255,0.92)',
-  avatarDotGlow:  '0 0 10px rgba(95,162,255,0.80), 0 0 22px rgba(70,140,255,0.38)',
-
-  closeBg:      'rgba(255,255,255,0.04)',
-  closeBgHover: 'rgba(255,255,255,0.08)',
-
-  sendDisabledBg:   'rgba(40,65,120,0.28)',
-  sendDisabledIcon: 'rgba(70,120,200,0.35)',
-  sendIcon:         'rgba(8,16,36,0.95)',
-  sendHoverBg:      'rgba(140,200,255,1)',
-  sendHoverGlow:    '0 0 24px rgba(95,162,255,0.55)',
+  sendDisabledBg:   'rgba(232,201,153,0.10)',
+  sendDisabledIcon: 'rgba(232,201,153,0.35)',
+  sendIcon:         'rgba(248,238,223,0.95)',
+  sendHoverBg:      'rgba(176,38,38,1)',
+  sendHoverGlow:    '0 0 24px rgba(142,22,22,0.55)',
 
   errorBg:     'rgba(255,50,75,0.07)',
   errorBorder: 'rgba(255,50,75,0.20)',
   errorText:   'rgba(255,130,140,0.90)',
 
-  charArcTrack: 'rgba(95,162,255,0.09)',
-  footerText:   'rgba(95,162,255,0.18)',
+  charArcTrack: 'rgba(232,201,153,0.12)',
+  footerText:   'rgba(232,201,153,0.25)',
 
-  scrollThumb:      'rgba(95,162,255,0.12)',
-  scrollThumbHover: 'rgba(95,162,255,0.24)',
-  placeholder:      'rgba(110,148,200,0.36)',
-  backdrop:         'rgba(6,10,20,0.58)',
+  scrollThumb:      'rgba(232,201,153,0.15)',
+  scrollThumbHover: 'rgba(232,201,153,0.30)',
+  placeholder:      'rgba(232,201,153,0.40)',
+  backdrop:         'rgba(0,0,0,0.65)',
 };
 
 // ── Breathing dots — mirrors the sphere's organic breathing ───────────────────
@@ -140,10 +90,10 @@ function BreathLoader({ T }) {
 
 // ── Status indicator ──────────────────────────────────────────────────────────
 const STATUS = {
-  idle:      { label:'Available',  color:'rgba(59,130,246,0.55)',  pulse:false },
-  listening: { label:'Listening',  color:'rgba(16,163,127,0.85)',  pulse:true  },
-  thinking:  { label:'Thinking',   color:'rgba(37,99,235,0.95)',   pulse:true  },
-  speaking:  { label:'Responding', color:'rgba(59,130,246,0.90)',  pulse:true  },
+  idle:      { label:'Available',  color:'rgba(232,201,153,0.60)',  pulse:false },
+  listening: { label:'Listening',  color:'rgba(248,238,223,0.85)',  pulse:true  },
+  thinking:  { label:'Thinking',   color:'rgba(142,22,22,0.95)',    pulse:true  },
+  speaking:  { label:'Responding', color:'rgba(232,201,153,0.95)',  pulse:true  },
 };
 
 function StatusPill({ state }) {
@@ -229,8 +179,8 @@ function Bubble({ role, text, streaming, T }) {
 }
 
 // ── ChatBot ───────────────────────────────────────────────────────────────────
-export default function ChatBot({ isOpen, onClose, onStateChange, isDarkMode }) {
-  const T = isDarkMode ? DARK : LIGHT;
+export default function ChatBot({ isOpen, onClose, onStateChange }) {
+  const T = THEME;
 
   const [messages, setMessages] = useState([{
     role: 'assistant',
@@ -571,12 +521,12 @@ export default function ChatBot({ isOpen, onClose, onStateChange, isDarkMode }) 
               aria-label="Send"
               style={{
                 width:38, height:38, borderRadius:'50%', border:'none',
-                background: canSend ? T.accent : T.sendDisabledBg,
+                background: canSend ? T.brand : T.sendDisabledBg,
                 cursor: canSend ? 'pointer' : 'not-allowed',
                 display:'flex', alignItems:'center', justifyContent:'center',
                 color: canSend ? T.sendIcon : T.sendDisabledIcon,
                 transition:'all 0.18s', flexShrink:0,
-                boxShadow: canSend ? `0 0 18px ${T.accentGlow}` : 'none',
+                boxShadow: canSend ? `0 0 18px ${T.brandGlow}` : 'none',
               }}
               onMouseEnter={e => {
                 if (canSend) {
@@ -586,8 +536,8 @@ export default function ChatBot({ isOpen, onClose, onStateChange, isDarkMode }) 
               }}
               onMouseLeave={e => {
                 if (canSend) {
-                  e.currentTarget.style.background = T.accent;
-                  e.currentTarget.style.boxShadow  = `0 0 18px ${T.accentGlow}`;
+                  e.currentTarget.style.background = T.brand;
+                  e.currentTarget.style.boxShadow  = `0 0 18px ${T.brandGlow}`;
                 }
               }}
             >

@@ -19,18 +19,13 @@ import {
   UPCebuLogo,
   ProweaverLogo,
   FreelanceLogo,
-  BudgjetShot,
-  SmartPOSShot,
-  KBAppShot,
-  RoseatteShot,
-  FormConversionToolShot,
-  LizbethGalarzaShot,
 } from './profileImages'
 
 export const profileInfo = {
   name: 'Gabriel Gonzales',
   location: 'Cebu City, Philippines',
   title: 'Full Stack Web/WordPress Developer',
+  tagline: 'Building tools that boost team efficiency and cut manual work — from AI-driven admin dashboards to offline-first POS systems.',
   profileImage: profileImage,
   verified: true,
   contact: {
@@ -106,6 +101,35 @@ export const ctaButtons = [
 export const aboutContent = [
   'A proactive and fast-learning professional who consistently strives for excellence in every task.',
   'Recently, I have been exploring and integrating AI into application development, with hands-on experience using AI tools such as Cursor, ChatGPT, and Gemini to improve productivity, streamline workflows, and enhance overall efficiency in the workplace.'
+]
+
+// Expertise Section
+export const services = [
+  {
+    id: 1,
+    name: 'WordPress Development',
+    description: 'Custom themes and plugins, complex form flows, and ongoing maintenance — from marketing sites to builds that sync live listings straight from a real estate MLS.'
+  },
+  {
+    id: 2,
+    name: 'Internal Tools & Automation',
+    description: 'In-house platforms that replace costly third-party SaaS and cut repetitive manual work — one boosted a team’s efficiency by 50% and let the company cancel its CRM subscriptions.'
+  },
+  {
+    id: 3,
+    name: 'API & Platform Integrations',
+    description: 'Connecting CRMs, telephony, ad platforms, and internal systems so data flows automatically instead of being copied by hand.'
+  },
+  {
+    id: 4,
+    name: 'AI Integration',
+    description: 'Weaving LLMs and AI workflows into real products — AI-driven admin dashboards, content generation, and automation built on tools like Cursor, ChatGPT, and Groq.'
+  },
+  {
+    id: 5,
+    name: 'Debugging & Troubleshooting',
+    description: 'Finding root causes in unfamiliar codebases and fixing them properly — not just patching over the symptoms.'
+  }
 ]
 
 // Tech Stack
@@ -222,81 +246,6 @@ export const experience = [
   { id: 4, role: 'B.S. in Computer Science', company: 'University of Southern Philippines Foundation (graduate)', year: '2019 - 2023', logo: USPFLogo },
   { id: 5, role: 'Student Projects Developer', company: 'Freelance', year: '2016 - 2018', logo: FreelanceLogo },
   { id: 6, role: 'B.S. in Computer Science', company: 'University of Philippines College Cebu (non-graduate)', year: '2012 - 2015', logo: UPCebuLogo }
-]
-
-// Projects
-export const projects = [
-  {
-    id: 1,
-    name: 'Budgjet',
-    description: 'A personal budget tracking app with AI-powered spending insights — built with Next.js and Supabase, using Groq to analyze spending patterns and surface recommendations in real time.',
-    url: 'https://budgjet.vercel.app/',
-    image: BudgjetShot,
-    stack: ['nextjs', 'react', 'typescript', 'supabase', 'tailwind', 'groq']
-  },
-  {
-    id: 2,
-    name: 'Smart POS',
-    description: 'A full-stack Point of Sale system for a small business, built as a monorepo with a Next.js frontend and a NestJS API, backed by PostgreSQL via Prisma — with offline-first support so it keeps working through spotty connections.',
-    url: 'https://smart-sari-pos.vercel.app/',
-    image: SmartPOSShot,
-    stack: ['nextjs', 'react', 'nestjs', 'prisma', 'postgresql', 'typescript', 'tailwind']
-  },
-  {
-    id: 3,
-    name: 'Roseatte',
-    description: 'A WordPress website I designed and built for my girlfriend to showcase her artwork and creative portfolio.',
-    url: 'https://roseatte.lovestoblog.com',
-    image: RoseatteShot,
-    stack: ['wordpress']
-  },
-  {
-    id: 4,
-    name: 'Knowledge Base App',
-    description: 'A knowledge-sharing app for my friend group to upload, organize, and share resources — built with Next.js and Supabase, with file storage on AWS S3.',
-    url: 'https://knwrepo.vercel.app/',
-    image: KBAppShot,
-    stack: ['nextjs', 'react', 'typescript', 'supabase', 's3', 'tailwind']
-  },
-  {
-    id: 5,
-    name: 'Form Conversion Tool',
-    description: 'A tool that streamlines my form-conversion work by using AI to generate the source code for online forms — built with React and Vite.',
-    url: 'https://formconversiontool.vercel.app/',
-    image: FormConversionToolShot,
-    stack: ['react', 'vite']
-  },
-  {
-    id: 6,
-    name: 'PPL Admin Dashboard',
-    description: 'An in-house tool I built for the company to manage ad campaigns and distribute leads across multiple channels — built in Laravel/Blade, integrating OpenAI, Meta Graph API, Google Cloud APIs, HubSpot, Telnyx, and GoHighLevel, deployed via Laravel Forge on DigitalOcean.',
-    url: null,
-    private: true,
-    stack: ['laravel', 'php', 'chatgpt', 'meta', 'googlecloud', 'hubspot', 'telnyx', 'gohighlevel', 'sql', 'digitalocean']
-  },
-  {
-    id: 7,
-    name: 'Lizbeth Galarza Website',
-    description: 'A real estate website that dynamically syncs and displays property listings pulled live from Smart MLS.',
-    url: 'https://homeswithliz.com/',
-    image: LizbethGalarzaShot,
-    stack: ['wordpress']
-  },
-  {
-    id: 8,
-    name: 'Social Media Content Generator',
-    description: 'Another in-house tool I built for the company, generating a structured social media content calendar and post copy — built in Laravel and powered by OpenAI.',
-    url: null,
-    private: true,
-    stack: ['laravel', 'php', 'chatgpt']
-  },
-  {
-    id: 9,
-    name: 'Uni-verse',
-    description: "A 2D RPG-style Learning Management System — lessons and quizzes reward the player's character, making studying feel like playing a game. Built in Godot with GDScript.",
-    url: null,
-    stack: ['godot']
-  }
 ]
 
 // Recommendations

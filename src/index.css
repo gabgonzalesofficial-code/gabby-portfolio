@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
-@variant dark (&:is(.dark *));
+@theme {
+  --color-accent: #8E1616; /* brand red accent */
+  --color-tan: #E8C999;    /* warm secondary accent — borders, glows, muted text */
+  --color-cream: #F8EEDF;  /* warm white — primary text on black */
+}
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -10,6 +14,29 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Glassmorphism surface tokens — see src/App.css .glass-inner (Hero's stat panel) */
+  --glass-inner-bg: rgba(0, 0, 0, 0.45);
+  --glass-inner-border: rgba(232, 201, 153, 0.2);
+  --glass-inner-bg-hover: rgba(0, 0, 0, 0.65);
+  --glass-inner-border-hover: rgba(248, 238, 223, 0.4);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Pulls scroll position to rest at a section's top edge once it's close,
+   instead of settling in a straddling position between two sections —
+   both for the wheel nav's landing point and ordinary scrolling. */
+html {
+  scroll-snap-type: y proximity;
+}
+
+section {
+  scroll-snap-align: start;
 }
 
 * {
@@ -21,6 +48,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background: #000000;
   cursor: url('./assets/cursor.png') 0 0, auto;
 }
 
@@ -56,4 +84,29 @@ button:disabled,
 input:disabled,
 [aria-disabled="true"] {
   cursor: not-allowed !important;
+}
+
+/* Modal open/close animations */
+@keyframes modalBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-backdrop {
+  animation: modalBackdropIn 0.25s ease-out forwards;
+}
+
+.modal-panel {
+  animation: modalPanelIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }

@@ -164,7 +164,7 @@ function TechIcon({ name, className = "w-5 h-5" }) {
     return <RiComponent className={className} style={{ display: 'inline-block', flexShrink: 0, color: RI_COLORS[key] }} />
   }
 
-  return <div className={`${className} rounded bg-gray-300`} style={{ minWidth: '1rem', minHeight: '1rem' }}></div>
+  return <div className={`${className} rounded bg-tan/50`} style={{ minWidth: '1rem', minHeight: '1rem' }}></div>
 }
 
 export default TechIcon

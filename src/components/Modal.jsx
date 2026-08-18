@@ -37,20 +37,20 @@ function Modal({ isOpen, onClose, title, children, size = 'md', bodyScroll = tru
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+      <div className="modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
       
       {/* Modal Content */}
       <div 
-        className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-hidden flex flex-col`}
+        className={`modal-panel relative bg-[#0A0A0A] border border-tan/20 rounded-lg shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-hidden flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{title}</h2>
+          <div className="flex items-center justify-between p-6 border-b border-tan/15">
+            <h2 className="text-2xl font-bold text-cream">{title}</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+              className="text-tan/50 hover:text-cream transition p-1 rounded-lg hover:bg-cream/10 cursor-pointer"
               aria-label="Close modal"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

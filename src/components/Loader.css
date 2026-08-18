@@ -6,7 +6,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0d1117;
+  background: #000000;
   transition: opacity 0.8s ease-out;
 }
 .loader-wrapper[role="button"] {
@@ -20,13 +20,13 @@
   margin-top: 12px;
   font-size: 11px;
   letter-spacing: 0.2em;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(248, 238, 223, 0.45);
   font-family: Menlo, Monaco, Consolas, monospace;
 }
 
 .ui-abstergo {
-  --primary: #fff;
-  --secondary: rgba(255, 255, 255, 0.3);
+  --primary: #F8EEDF;
+  --secondary: rgba(232, 201, 153, 0.35);
   --shadow-blur: 3px;
   --text-shadow-blur: 3px;
   --animation-duration: 2s;

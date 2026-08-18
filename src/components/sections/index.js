@@ -1,0 +1,8 @@
+export { default as Navbar } from './Navbar'
+export { default as Hero } from './Hero'
+export { default as TechStack } from './TechStack'
+export { default as Projects } from './Projects'
+export { default as ExperienceAwards } from './ExperienceAwards'
+export { default as GalleryReviews } from './GalleryReviews'
+export { default as Contact } from './Contact'
+export { default as Footer } from './Footer'
