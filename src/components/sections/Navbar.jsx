@@ -96,7 +96,7 @@ export default function Navbar({ profileInfo }) {
         aria-label={menuOpen ? 'Close menu' : 'Open menu'}
         aria-expanded={menuOpen}
         aria-controls="mobile-menu"
-        className="lg:hidden fixed top-4 left-4 z-[10001] w-11 h-11 rounded-full bg-black/70 backdrop-blur border border-tan/30 flex items-center justify-center cursor-pointer transition-colors duration-300 hover:border-cream/50"
+        className="lg:hidden fixed top-4 right-4 z-[10001] w-11 h-11 rounded-full bg-black/70 backdrop-blur border border-tan/30 flex items-center justify-center cursor-pointer transition-colors duration-300 hover:border-cream/50"
       >
         <span className="relative block w-5 h-4" aria-hidden>
           <span

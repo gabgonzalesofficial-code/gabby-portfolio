@@ -45,7 +45,7 @@ export default function ExperienceAwards({ experience, certifications, onOpenAll
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-8 pr-16 lg:pr-0">
             <h3 className="font-medium uppercase tracking-widest text-xs text-tan/50">Certifications &amp; Awards</h3>
             <button
               onClick={onOpenAllCertifications}

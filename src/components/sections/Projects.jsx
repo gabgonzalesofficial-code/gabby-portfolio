@@ -92,7 +92,7 @@ export default function Projects({ projects, onOpenAll }) {
 
   return (
     <section id="projects" ref={sectionRef} className="min-h-screen bg-black text-cream pt-16 sm:pt-20 md:pt-24 pb-16">
-      <div className="px-6 sm:px-12 md:px-16 lg:px-24 flex items-end justify-between gap-4 mb-12 sm:mb-16">
+      <div className="px-6 sm:px-12 md:px-16 lg:px-24 pr-16 lg:pr-24 flex items-end justify-between gap-4 mb-12 sm:mb-16">
         <h2 className="gradient-text font-black uppercase leading-none tracking-tight" style={{ fontSize: 'clamp(2rem, 4.5vw, 3.5rem)' }}>
           Project
         </h2>

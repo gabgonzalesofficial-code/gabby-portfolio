@@ -43,7 +43,7 @@ export default function TechStack({ techStack, services, onOpenAll }) {
 
         {/* Tech stack */}
         <div className="flex flex-col">
-          <div className="flex items-center justify-between mb-2 flex-shrink-0">
+          <div className="flex items-center justify-between mb-2 flex-shrink-0 pr-16 lg:pr-0">
             <h3 className="font-medium uppercase tracking-widest text-xs text-tan/50">Tech Stack</h3>
             <button
               onClick={onOpenAll}
