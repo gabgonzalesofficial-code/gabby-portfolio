@@ -479,6 +479,11 @@ export default function ThreeEveRobot({
             bottom:max(.75rem,env(safe-area-inset-bottom))!important;
           }
           .eve-orb-btn>div:first-of-type{transform:scale(.85);transform-origin:bottom center}
+          /* Shrink the robot itself on small screens so it covers less content */
+          .eve-orb-btn>div:nth-child(2){
+            transform:scale(.78);
+            transform-origin:bottom right;
+          }
         }
         /* Mobile only — the chat panel goes full-width/centered here, so the
            robot would sit on top of it. Desktop keeps him visible (there's

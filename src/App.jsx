@@ -75,7 +75,7 @@ function App() {
     <div className="min-h-screen bg-black portfolio-enter" style={{ overflowX: 'clip' }}>
       <AnimatedBackground />
 
-      <Navbar />
+      <Navbar profileInfo={profileInfo} />
 
       <Hero
         profileInfo={profileInfo}
