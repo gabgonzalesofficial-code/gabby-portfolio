@@ -1,0 +1,116 @@
+import { useRef, useEffect } from 'react'
+import TechIcon from './TechIcon'
+import ProjectNDAVisual from './ProjectNDAVisual'
+
+/**
+ * Horizontally-scrollable project index rail — shows every project as a
+ * compact thumbnail so visitors immediately see the full range of work.
+ * Clicking a rail item jumps the parent carousel to that project.
+ */
+export default function ProjectRail({ projects, activeIndex, onSelect }) {
+  const railRef = useRef(null)
+  const itemRefs = useRef([])
+
+  // Auto-scroll the active item into view within the rail
+  useEffect(() => {
+    const el = itemRefs.current[activeIndex]
+    if (!el || !railRef.current) return
+    const rail = railRef.current
+    const left = el.offsetLeft - rail.offsetLeft - (rail.clientWidth - el.clientWidth) / 2
+    rail.scrollTo({ left: Math.max(0, left), behavior: 'smooth' })
+  }, [activeIndex])
+
+  return (
+    <div className="mt-10 sm:mt-14">
+      {/* Section label */}
+      <div className="flex items-center gap-3 mb-4 px-1">
+        <span className="text-[11px] uppercase tracking-widest text-tan/40 font-medium">
+          All Projects
+        </span>
+        <div className="flex-1 h-px bg-cream/10" />
+        <span className="text-[11px] text-tan/30 tabular-nums">
+          {activeIndex + 1}/{projects.length}
+        </span>
+      </div>
+
+      {/* Scrollable rail */}
+      <div
+        ref={railRef}
+        className="flex gap-3 overflow-x-auto pb-3 scroll-smooth snap-x snap-mandatory"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+      >
+        <style>{`.project-rail::-webkit-scrollbar { display: none; }`}</style>
+        {projects.map((project, i) => {
+          const isActive = i === activeIndex
+          const num = String(i + 1).padStart(2, '0')
+
+          return (
+            <button
+              key={project.id}
+              ref={(el) => { itemRefs.current[i] = el }}
+              onClick={() => onSelect(i)}
+              className={`
+                group flex-shrink-0 snap-start cursor-pointer
+                w-[130px] sm:w-[145px] md:w-[155px]
+                rounded-lg overflow-hidden border transition-all duration-300 ease-out
+                ${isActive
+                  ? 'border-tan/60 shadow-[0_0_12px_rgba(232,201,153,0.15)] scale-[1.02]'
+                  : 'border-cream/10 hover:border-cream/25 hover:scale-[1.01]'
+                }
+              `}
+              aria-label={`View ${project.name}`}
+              aria-current={isActive ? 'true' : undefined}
+            >
+              {/* Thumbnail */}
+              <div className="w-full aspect-[16/10] relative overflow-hidden bg-black">
+                {project.nda ? (
+                  <ProjectNDAVisual type={project.name.includes('Social') ? 'ai' : 'dashboard'} />
+                ) : project.image ? (
+                  <img
+                    src={project.image}
+                    alt={`${project.name} screenshot`}
+                    className={`w-full h-full object-cover object-top transition-all duration-500 ${
+                      isActive ? 'brightness-110 saturate-110' : 'brightness-75 saturate-90 group-hover:brightness-90'
+                    }`}
+                    loading="lazy"
+                    draggable={false}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cream/5 to-cream/[0.02]">
+                    <TechIcon name={project.stack?.[0] || 'html'} className="w-6 h-6 opacity-30" />
+                  </div>
+                )}
+
+                {/* Active indicator bar */}
+                <div
+                  className={`absolute bottom-0 left-0 right-0 h-[2px] transition-all duration-300 ${
+                    isActive ? 'bg-accent' : 'bg-transparent group-hover:bg-tan/30'
+                  }`}
+                />
+              </div>
+
+              {/* Label */}
+              <div className="px-2.5 py-2">
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-[9px] font-black tracking-wider transition-colors duration-300 ${
+                    isActive ? 'text-accent' : 'text-tan/30 group-hover:text-tan/50'
+                  }`}>
+                    {num}
+                  </span>
+                  <span className={`text-[10px] sm:text-[11px] uppercase font-medium leading-tight truncate transition-colors duration-300 ${
+                    isActive ? 'text-cream' : 'text-cream/60 group-hover:text-cream/80'
+                  }`}>
+                    {project.name}
+                  </span>
+                </div>
+                <span className="text-[9px] text-tan/40 leading-tight block mt-0.5 truncate">
+                  {project.category}
+                </span>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}

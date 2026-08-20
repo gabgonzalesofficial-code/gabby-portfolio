@@ -90,7 +90,7 @@ function App() {
 
       <Projects
         projects={projects}
-        onOpenAll={() => openModal('All Projects', <AllProjectsModalContent projects={projects} />, { size: 'xl' })}
+        onOpenProject={(project) => openModal(project.name, <AllProjectsModalContent projects={[project]} />)}
       />
 
       <ExperienceAwards

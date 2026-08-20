@@ -40,6 +40,7 @@ const CardSwap = ({
   containerClassName = '',
   manual = false,
   onSwap,
+  jumpToRef,
   children
 }) => {
   const config =
@@ -64,7 +65,7 @@ const CardSwap = ({
   const childArr = useMemo(() => Children.toArray(children), [children]);
   const refs = useMemo(
     () => childArr.map(() => React.createRef()),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [childArr.length]
   );
 
@@ -77,12 +78,52 @@ const CardSwap = ({
   const onSwapRef = useRef(onSwap);
   onSwapRef.current = onSwap;
 
+  // Expose jumpTo via callback ref — programmatically brings any card to front
+  useEffect(() => {
+    if (!jumpToRef) return;
+    jumpToRef.current = (targetIndex) => {
+      const currentOrder = order.current;
+      const posInOrder = currentOrder.indexOf(targetIndex);
+      if (posInOrder <= 0) return; // already in front
+
+      // Kill any running animation
+      tlRef.current?.kill();
+      clearInterval(intervalRef.current);
+
+      // Move target card to front of order
+      const newOrder = [targetIndex, ...currentOrder.filter((_, i) => i !== posInOrder)];
+      order.current = newOrder;
+
+      // Animate all cards to their new positions
+      const total = refs.length;
+      const fastDur = 0.4;
+
+      newOrder.forEach((cardIdx, pos) => {
+        const el = refs[cardIdx].current;
+        if (!el) return;
+        const slot = makeSlot(pos, cardDistance, verticalDistance, total);
+        // zIndex must use gsap.set (not animatable), position uses gsap.to
+        gsap.set(el, { zIndex: slot.zIndex });
+        gsap.to(el, {
+          x: slot.x,
+          y: slot.y,
+          z: slot.z,
+          skewY: skewAmount,
+          duration: fastDur,
+          ease: 'power2.out',
+          force3D: true
+        });
+      });
+
+      onSwapRef.current?.(targetIndex);
+    };
+
+  }, [jumpToRef, cardDistance, verticalDistance, skewAmount, refs]);
+
   useEffect(() => {
     const total = refs.length;
     refs.forEach((r, i) => placeNow(r.current, makeSlot(i, cardDistance, verticalDistance, total), skewAmount));
 
-    // Stack still renders (front card readable, others fanned behind it) —
-    // just skip the continuous auto-cycling for reduced-motion users.
     if (prefersReducedMotion()) return;
 
     let animating = false;
@@ -91,9 +132,6 @@ const CardSwap = ({
       animating = true;
 
       const [front, ...rest] = order.current;
-      // Fire the swap notification up front so connected details (like the
-      // project description panel) start transitioning in parallel with the
-      // card animation instead of waiting for it to fully finish.
       onSwapRef.current?.(rest[0]);
       const elFront = refs[front].current;
       const tl = gsap.timeline();
@@ -179,7 +217,7 @@ const CardSwap = ({
       };
     }
     return () => clearInterval(intervalRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [cardDistance, verticalDistance, delay, pauseOnHover, skewAmount, easing, manual]);
 
   const rendered = childArr.map((child, i) =>
