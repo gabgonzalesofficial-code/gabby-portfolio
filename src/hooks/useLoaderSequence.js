@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 
 /**
- * Loader sequence: idle -> initializing -> requesting -> granted -> exiting -> done
+ * Loader sequence: initializing -> requesting -> granted -> exiting -> done
  */
 export function useLoaderSequence() {
-  const [loaderPhase, setLoaderPhase] = useState('idle')
+  const [loaderPhase, setLoaderPhase] = useState('initializing')
 
   useEffect(() => {
     if (loaderPhase === 'initializing') {

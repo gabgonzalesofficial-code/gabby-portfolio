@@ -66,7 +66,6 @@ function App() {
     return (
       <Loader
         step={loaderPhase}
-        onRequestAccess={() => setLoaderPhase('initializing')}
       />
     )
   }

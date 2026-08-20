@@ -1,6 +1,6 @@
 import { PiDownloadLight } from 'react-icons/pi'
 import { FaHeart, FaEnvelope, FaPhone, FaLinkedin } from 'react-icons/fa'
-import Magnet from '../Magnet'
+
 import ReflectiveCard from '../ReflectiveCard'
 import { useStaggerReveal } from '../../hooks'
 import resumePDF from '../../assets/resume/Gabriel_Gonzales_Resume.pdf'
@@ -31,9 +31,9 @@ export default function Hero({ profileInfo, onOpenDonation }) {
             <h1
               className="uppercase"
               style={{
-                fontFamily: "var(--font-display)",
-                fontSize: 'clamp(3.5rem, 7vw, 6rem)',
-                fontWeight: 700,
+                fontFamily: "'Montserrat', sans-serif",
+                fontSize: 'clamp(3.5rem, 7vw, 5rem)',
+                fontWeight: 800,
                 lineHeight: 0.98,
                 color: '#F8FAFC',
                 letterSpacing: '-0.03em',
@@ -134,8 +134,7 @@ export default function Hero({ profileInfo, onOpenDonation }) {
         </div>
 
         <div className="flex-shrink-0">
-          <Magnet padding={80} strength={30}>
-            <ReflectiveCard
+          <ReflectiveCard
               photo={profileInfo.profileImage}
               name={profileInfo.name}
               metaValue={profileInfo.location}
@@ -143,8 +142,7 @@ export default function Hero({ profileInfo, onOpenDonation }) {
               roughness={0.08}
               className="w-[190px] sm:w-[215px] md:w-[240px]"
               style={{ height: 'auto', aspectRatio: '320 / 500' }}
-            />
-          </Magnet>
+          />
         </div>
       </div>
     </section>

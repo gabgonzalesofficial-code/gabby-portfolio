@@ -7,6 +7,8 @@
   background: #000000;
   box-shadow:
     0 20px 50px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(142, 22, 22, 0.25),
+    0 0 120px rgba(142, 22, 22, 0.1),
     0 0 0 1px rgba(232, 201, 153, 0.25) inset;
   isolation: isolate;
 }

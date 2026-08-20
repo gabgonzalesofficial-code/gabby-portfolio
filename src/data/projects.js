@@ -51,20 +51,26 @@ export const projects = [
       "Automated workflows that were previously handled manually"
     ],
     "metrics": [
-      {
-        "value": "+50%",
-        "label": "Team efficiency"
-      },
-      {
-        "value": "10-20/wk",
-        "label": "Leads delivered",
-        "detail": "per client"
-      },
-      {
-        "value": "$0",
-        "label": "3rd-party CRM cost",
-        "detail": "subscriptions cancelled"
-      }
+        {
+          "value": "+50%",
+          "label": "Lead management",
+          "detail": "efficiency"
+        },
+        {
+          "value": "10-20/wk",
+          "label": "High-intent leads delivered",
+          "detail": "per client"
+        },
+       /*  {
+          "value": "$0",
+          "label": "3rd-party CRM cost",
+          "detail": "subscriptions cancelled"
+        }, */
+        {
+          "value": "Multi-stage",
+          "label": "Lead qualification & filtering",
+          "detail": "intent-based screening"
+        }
     ],
     "role": "Main Developer and Architect (working directly with the company founder)",
     "company": "LaunchSmarter Inc.",
