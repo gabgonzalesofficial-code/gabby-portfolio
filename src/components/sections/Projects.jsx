@@ -10,28 +10,38 @@ import { prefersReducedMotion } from '../../lib/motion'
 
 function ProjectDetails({ project, index, onOpenProject }) {
   const number = String(index + 1).padStart(2, '0')
+  const categories = project.categories || []
   return (
     <div>
       <div className="flex items-start justify-between gap-3 mb-2">
-        <span className="font-black text-tan/70 leading-none" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+        <span style={{ fontFamily: "var(--font-display)", fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 700, letterSpacing: '-0.02em' }} className="text-tan/70 leading-none">
           {number}
         </span>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-[10px] uppercase tracking-widest text-tan/50 border border-tan/15 px-2 py-0.5 rounded">
+        <div className="flex flex-col items-end gap-1.5 mt-1">
+          <span style={{ fontFamily: "var(--font-body)", fontSize: '12px', fontWeight: 500, letterSpacing: '0.04em' }} className="uppercase text-tan/50 border border-tan/15 px-2 py-0.5 rounded">
             {project.category}
           </span>
           {project.nda && (
-            <span className="text-[10px] uppercase tracking-widest text-accent/70 border border-accent/20 px-2 py-0.5 rounded flex items-center gap-1">
+            <span style={{ fontFamily: "var(--font-body)", fontSize: '11px', fontWeight: 500, letterSpacing: '0.04em' }} className="uppercase text-accent/70 border border-accent/20 px-2 py-0.5 rounded flex items-center gap-1">
               <span className="w-1 h-1 rounded-full bg-accent" />
               NDA
             </span>
           )}
         </div>
       </div>
-      <h3 className="font-medium uppercase text-cream mb-2" style={{ fontSize: 'clamp(1.25rem, 2.5vw, 2rem)' }}>
+      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 'clamp(1.5rem, 2.5vw, 2.25rem)', fontWeight: 600, lineHeight: 1.1, letterSpacing: '-0.02em' }} className="text-cream mb-2">
         {project.name}
       </h3>
-      <p className="text-cream/80 mb-3 max-w-lg text-sm leading-relaxed">{project.tagline || project.summary}</p>
+      {categories.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {categories.map((cat) => (
+            <span key={cat} style={{ fontFamily: "var(--font-body)", fontSize: '11px', fontWeight: 500, letterSpacing: '0.04em' }} className="uppercase text-tan/40 border border-tan/10 px-1.5 py-0.5 rounded">
+              {cat}
+            </span>
+          ))}
+        </div>
+      )}
+      <p style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.9rem, 1.1vw, 1rem)', fontWeight: 400, lineHeight: 1.6 }} className="text-cream/75 mb-3 max-w-lg">{project.tagline || project.summary}</p>
       {project.metrics?.length > 0 && <ProjectStatStrip metrics={project.metrics} large dark />}
       {project.stack?.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-3">
@@ -42,15 +52,17 @@ function ProjectDetails({ project, index, onOpenProject }) {
           ))}
         </div>
       )}
-      <div className="flex flex-wrap items-center gap-3 mt-3">
+      <div className="flex flex-wrap items-center gap-3 mt-4">
         {project.url && (
           <a href={project.url.startsWith('http') ? project.url : 'https://' + project.url} target="_blank" rel="noopener noreferrer"
-            className="px-5 py-2 rounded-full border-2 border-tan text-tan uppercase tracking-widest text-xs hover:bg-cream/10 transition-all duration-300 cursor-pointer">
+            style={{ fontFamily: "var(--font-body)", fontSize: '13px', fontWeight: 600 }}
+            className="px-5 py-2.5 rounded-full border-2 border-tan text-tan uppercase tracking-wider hover:bg-cream/10 transition-all duration-300 cursor-pointer">
             Live Project
           </a>
         )}
         <button onClick={() => onOpenProject?.(project)}
-          className="px-5 py-2 rounded-full border border-cream/20 text-cream/70 uppercase tracking-widest text-xs hover:border-cream/40 hover:text-cream transition-all duration-300 cursor-pointer">
+          style={{ fontFamily: "var(--font-body)", fontSize: '13px', fontWeight: 500 }}
+          className="px-5 py-2.5 rounded-full border border-cream/20 text-cream/70 uppercase tracking-wider hover:border-cream/40 hover:text-cream transition-all duration-300 cursor-pointer">
           Case Study
         </button>
       </div>
@@ -84,7 +96,7 @@ export default function Projects({ projects, onOpenProject }) {
   return (
     <section id="projects" ref={sectionRef} className="bg-black text-cream py-12 sm:py-16 md:py-20 lg:min-h-screen lg:flex lg:flex-col lg:justify-center">
       <div className="px-6 sm:px-12 md:px-16 lg:px-24 pr-16 lg:pr-24 mb-8 sm:mb-10">
-        <h2 className="gradient-text font-black uppercase leading-none tracking-tight" style={{ fontSize: 'clamp(1.75rem, 4vw, 3rem)' }}>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: 'clamp(2.5rem, 4vw, 4rem)', fontWeight: 600, lineHeight: 1, letterSpacing: '-0.025em' }} className="gradient-text leading-none">
           Projects
         </h2>
       </div>
@@ -118,16 +130,16 @@ export default function Projects({ projects, onOpenProject }) {
                   </div>
                   <div className="p-3 flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <h4 className="font-medium uppercase text-cream text-xs truncate">{project.name}</h4>
-                      <span className="text-[9px] text-tan/40">{project.category}</span>
+                      <h4 style={{ fontFamily: "var(--font-display)", fontWeight: 600 }} className="text-cream text-xs truncate uppercase">{project.name}</h4>
+                      <span style={{ fontFamily: "var(--font-body)", fontSize: '10px' }} className="text-tan/40">{project.category}</span>
                     </div>
-                    <span className="text-[9px] font-black text-tan/50 flex-shrink-0">{String(projects.indexOf(project) + 1).padStart(2, '0')}</span>
+                    <span style={{ fontFamily: "var(--font-display)", fontWeight: 700 }} className="text-[10px] text-tan/50 flex-shrink-0">{String(projects.indexOf(project) + 1).padStart(2, '0')}</span>
                   </div>
                 </Card>
               ))}
             </CardSwap>
           </div>
-          <p className="text-center text-[11px] text-tan/50 mt-1">Click the card to browse projects</p>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: '11px' }} className="text-center text-tan/50 mt-1">Click the card to browse projects</p>
         </div>
       </div>
 

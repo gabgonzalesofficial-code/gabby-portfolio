@@ -77,6 +77,7 @@ const CardSwap = ({
   const swapRef = useRef(() => {});
   const onSwapRef = useRef(onSwap);
   onSwapRef.current = onSwap;
+  const animatingRef = useRef(false);
 
   // Expose jumpTo via callback ref — programmatically brings any card to front
   useEffect(() => {
@@ -86,9 +87,10 @@ const CardSwap = ({
       const posInOrder = currentOrder.indexOf(targetIndex);
       if (posInOrder <= 0) return; // already in front
 
-      // Kill any running animation
+      // Kill any running animation and reset animating flag
       tlRef.current?.kill();
       clearInterval(intervalRef.current);
+      animatingRef.current = false;
 
       // Move target card to front of order
       const newOrder = [targetIndex, ...currentOrder.filter((_, i) => i !== posInOrder)];
@@ -126,10 +128,9 @@ const CardSwap = ({
 
     if (prefersReducedMotion()) return;
 
-    let animating = false;
     const swap = () => {
-      if (order.current.length < 2 || animating) return;
-      animating = true;
+      if (order.current.length < 2 || animatingRef.current) return;
+      animatingRef.current = true;
 
       const [front, ...rest] = order.current;
       onSwapRef.current?.(rest[0]);
@@ -184,7 +185,7 @@ const CardSwap = ({
 
       tl.call(() => {
         order.current = [...rest, front];
-        animating = false;
+        animatingRef.current = false;
       });
     };
 

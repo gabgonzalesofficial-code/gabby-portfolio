@@ -1,11 +1,9 @@
 import { PiDownloadLight } from 'react-icons/pi'
 import { FaHeart, FaEnvelope, FaPhone, FaLinkedin } from 'react-icons/fa'
 import Magnet from '../Magnet'
-import MaskedHeading from '../MaskedHeading'
 import ReflectiveCard from '../ReflectiveCard'
 import { useStaggerReveal } from '../../hooks'
 import resumePDF from '../../assets/resume/Gabriel_Gonzales_Resume.pdf'
-import heroReel from '../../assets/reels/heading mask.mp4'
 
 export default function Hero({ profileInfo, onOpenDonation }) {
   const contentRef = useStaggerReveal({ y: 24 })
@@ -18,69 +16,105 @@ export default function Hero({ profileInfo, onOpenDonation }) {
       >
         <div className="flex-1 flex flex-col gap-8 min-w-0">
           <div>
-            <p className="text-sm sm:text-base uppercase tracking-widest text-tan/70 mb-4">
+            <p
+              className="uppercase mb-4"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: '14px',
+                fontWeight: 500,
+                letterSpacing: '0.08em',
+                color: '#A1A1AA',
+              }}
+            >
               {profileInfo.title}
             </p>
-            <MaskedHeading
-              text={profileInfo.name.toUpperCase()}
-              tag="h1"
-              mediaType="video"
-              src={heroReel}
-              trigger="mount"
-              reveal="rise"
-              align="left"
-              weight={900}
-              tracking={-0.03}
-              lineHeight={0.95}
-              textScale={0.15}
-              parallax={0}
-              drift={10}
-            />
+            <h1
+              className="uppercase"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: 'clamp(3.5rem, 7vw, 6rem)',
+                fontWeight: 700,
+                lineHeight: 0.98,
+                color: '#F8FAFC',
+                letterSpacing: '-0.03em',
+              }}
+            >
+              {profileInfo.name}
+            </h1>
           </div>
 
           <p
-            className="text-cream/80 font-light uppercase tracking-wide leading-snug max-w-md"
-            style={{ fontSize: 'clamp(0.85rem, 1.4vw, 1.25rem)' }}
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: 'clamp(1rem, 1.2vw, 1.125rem)',
+              fontWeight: 400,
+              lineHeight: 1.6,
+              color: '#9CA3AF',
+              maxWidth: '32rem',
+            }}
           >
-            {profileInfo.tagline}
+            Building digital solutions that cut manual work and boost efficiency — specializing in custom WordPress websites and robust in-house tools.
           </p>
 
           <div className="flex flex-wrap gap-3">
             <a
               href="#projects"
-              className="px-6 py-3 rounded-full font-semibold text-xs sm:text-sm uppercase tracking-widest bg-accent text-cream shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/40 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: '14px',
+                fontWeight: 600,
+              }}
+              className="px-6 py-3 rounded-full uppercase tracking-widest bg-accent text-cream shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/40 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
             >
               View Work
             </a>
             <a
               href="#contact"
-              className="px-6 py-3 rounded-full font-medium text-xs sm:text-sm uppercase tracking-widest border border-cream/30 text-cream hover:border-cream/60 hover:bg-cream/10 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: '14px',
+                fontWeight: 500,
+              }}
+              className="px-6 py-3 rounded-full uppercase tracking-widest border border-cream/30 text-cream hover:border-cream/60 hover:bg-cream/10 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
             >
               Get In Touch
             </a>
             <a
               href={resumePDF}
               download="Gabriel_Gonzales_Resume.pdf"
-              className="inline-flex items-center gap-1.5 px-6 py-3 rounded-full font-medium text-xs sm:text-sm uppercase tracking-widest border border-cream/30 text-cream hover:border-cream/60 hover:bg-cream/10 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: '14px',
+                fontWeight: 500,
+              }}
+              className="inline-flex items-center gap-1.5 px-6 py-3 rounded-full uppercase tracking-widest border border-cream/30 text-cream hover:border-cream/60 hover:bg-cream/10 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
             >
               <PiDownloadLight className="w-4 h-4" />
               Resume
             </a>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-tan/70">
+          <div
+            className="flex flex-wrap items-center gap-x-8 gap-y-3"
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: '14px',
+              fontWeight: 500,
+              color: '#A1A1AA',
+            }}
+          >
             <a
               href={`mailto:${profileInfo.contact.email}`}
               className="flex items-center gap-2 hover:text-cream transition-colors duration-300 cursor-pointer"
             >
-              <FaEnvelope className="w-4 h-4 text-tan/50" aria-hidden />
+              <FaEnvelope className="w-4 h-4 opacity-50" aria-hidden />
               {profileInfo.contact.email}
             </a>
             <a
               href={`tel:${profileInfo.contact.mobile.replace(/\s/g, '')}`}
               className="flex items-center gap-2 hover:text-cream transition-colors duration-300 cursor-pointer"
             >
-              <FaPhone className="w-3.5 h-3.5 text-tan/50" aria-hidden />
+              <FaPhone className="w-3.5 h-3.5 opacity-50" aria-hidden />
               {profileInfo.contact.mobile}
             </a>
             <a
@@ -89,7 +123,7 @@ export default function Hero({ profileInfo, onOpenDonation }) {
               rel="noopener noreferrer"
               className="flex items-center gap-2 hover:text-cream transition-colors duration-300 cursor-pointer"
             >
-              <FaLinkedin className="w-4 h-4 text-tan/50" aria-hidden />
+              <FaLinkedin className="w-4 h-4 opacity-50" aria-hidden />
               LinkedIn Profile
             </a>
             <button onClick={onOpenDonation} className="flex items-center gap-2 hover:text-cream transition-colors duration-300 cursor-pointer">

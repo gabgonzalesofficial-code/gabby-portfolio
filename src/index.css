@@ -7,19 +7,56 @@
 }
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  /* Typography */
+  --font-display: 'Satoshi', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Type Scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+  --text-4xl: 2.5rem;
+  --text-5xl: clamp(3.5rem, 7vw, 6rem);
+
+  /* Line Heights */
+  --leading-tight: 0.98;
+  --leading-snug: 1.1;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.6;
+
+  /* Letter Spacing */
+  --tracking-tight: -0.03em;
+  --tracking-snug: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+  --tracking-wider: 0.08em;
+
+  font-family: var(--font-body);
+  line-height: var(--leading-normal);
   font-weight: 400;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Glassmorphism surface tokens — see src/App.css .glass-inner (Hero's stat panel) */
+  /* Glassmorphism surface tokens */
   --glass-inner-bg: rgba(0, 0, 0, 0.45);
   --glass-inner-border: rgba(232, 201, 153, 0.2);
   --glass-inner-bg-hover: rgba(0, 0, 0, 0.65);
   --glass-inner-border-hover: rgba(248, 238, 223, 0.4);
+}
+
+/* Global typography defaults */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
+
+p, span, a, li, td, th, label, input, textarea, select, button {
+  font-family: var(--font-body);
 }
 
 @media (prefers-reduced-motion: no-preference) {
