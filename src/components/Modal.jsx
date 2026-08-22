@@ -33,7 +33,7 @@ function Modal({ isOpen, onClose, title, children, size = 'md', bodyScroll = tru
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 cursor-pointer"
+      className="fixed inset-0 z-[10010] flex items-center justify-center p-4 cursor-pointer"
       onClick={onClose}
     >
       {/* Backdrop */}

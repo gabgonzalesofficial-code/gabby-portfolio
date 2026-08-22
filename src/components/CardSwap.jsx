@@ -46,18 +46,18 @@ const CardSwap = ({
   const config =
     easing === 'elastic'
       ? {
-          ease: 'elastic.out(0.6,0.9)',
-          durDrop: 2,
-          durMove: 2,
-          durReturn: 2,
-          promoteOverlap: 0.9,
+          ease: 'elastic.out(0.6,0.85)',
+          durDrop: 1.5,
+          durMove: 1.5,
+          durReturn: 1.5,
+          promoteOverlap: 0.7,
           returnDelay: 0.05
         }
       : {
           ease: 'power1.inOut',
-          durDrop: 0.8,
-          durMove: 0.8,
-          durReturn: 0.8,
+          durDrop: 0.4,
+          durMove: 0.4,
+          durReturn: 0.4,
           promoteOverlap: 0.45,
           returnDelay: 0.2
         };
@@ -78,6 +78,7 @@ const CardSwap = ({
   const onSwapRef = useRef(onSwap);
   onSwapRef.current = onSwap;
   const animatingRef = useRef(false);
+  const jumpCooldownRef = useRef(false);
 
   // Expose jumpTo via callback ref — programmatically brings any card to front
   useEffect(() => {
@@ -85,15 +86,23 @@ const CardSwap = ({
     jumpToRef.current = (targetIndex) => {
       const currentOrder = order.current;
       const posInOrder = currentOrder.indexOf(targetIndex);
-      if (posInOrder <= 0) return; // already in front
+      console.log('[CardSwap] jumpTo', { targetIndex, posInOrder, order: [...currentOrder] });
+      if (posInOrder <= 0) { console.log('[CardSwap] jumpTo skipped - already front'); return; }
 
       // Kill any running animation and reset animating flag
       tlRef.current?.kill();
       clearInterval(intervalRef.current);
       animatingRef.current = false;
 
-      // Move target card to front of order
-      const newOrder = [targetIndex, ...currentOrder.filter((_, i) => i !== posInOrder)];
+      // Move target card to front, remaining cards in ascending order
+      // starting from the NEXT project so swaps continue forward
+      const remaining = currentOrder.filter((idx) => idx !== targetIndex).sort((a, b) => a - b);
+      const nextStart = remaining.findIndex((idx) => idx > targetIndex);
+      const reordered = nextStart > 0
+        ? [...remaining.slice(nextStart), ...remaining.slice(0, nextStart)]
+        : remaining;
+      const newOrder = [targetIndex, ...reordered];
+      console.log('[CardSwap] jumpTo newOrder', newOrder);
       order.current = newOrder;
 
       // Animate all cards to their new positions
@@ -117,6 +126,11 @@ const CardSwap = ({
         });
       });
 
+      // Prevent next swap() from firing — user just jumped, they should
+      // see the new card before it auto-advances
+      jumpCooldownRef.current = true;
+      setTimeout(() => { jumpCooldownRef.current = false; }, 2000);
+
       onSwapRef.current?.(targetIndex);
     };
 
@@ -129,10 +143,11 @@ const CardSwap = ({
     if (prefersReducedMotion()) return;
 
     const swap = () => {
-      if (order.current.length < 2 || animatingRef.current) return;
+      if (order.current.length < 2 || animatingRef.current || jumpCooldownRef.current) { console.log('[CardSwap] swap blocked', { len: order.current.length, anim: animatingRef.current, cool: jumpCooldownRef.current }); return; }
       animatingRef.current = true;
 
       const [front, ...rest] = order.current;
+      console.log('[CardSwap] swap firing', { front, next: rest[0], order: [...order.current] });
       onSwapRef.current?.(rest[0]);
       const elFront = refs[front].current;
       const tl = gsap.timeline();
@@ -230,7 +245,11 @@ const CardSwap = ({
           onClick: e => {
             child.props.onClick?.(e);
             onCardClick?.(i);
-            if (manual) swapRef.current();
+            if (manual) {
+              jumpCooldownRef.current = false;
+              console.log('[CardSwap] card click, calling swap. order:', [...order.current]);
+              swapRef.current();
+            }
           }
         })
       : child

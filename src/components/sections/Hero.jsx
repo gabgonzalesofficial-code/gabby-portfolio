@@ -12,7 +12,7 @@ export default function Hero({ profileInfo, onOpenDonation }) {
     <section id="hero" className="min-h-screen flex flex-col bg-black text-cream overflow-hidden">
       <div
         ref={contentRef}
-        className="flex-1 flex flex-col lg:flex-row items-center gap-12 lg:gap-16 pl-6 sm:pl-12 md:pl-16 lg:pl-24 pr-6 sm:pr-12 md:pr-16 lg:pr-56 pt-16 sm:pt-20 pb-12"
+        className="flex-1 flex flex-col lg:flex-row items-center gap-12 lg:gap-16 pl-6 sm:pl-12 md:pl-16 lg:pl-24 pr-6 sm:pr-12 md:pr-16 lg:pr-24 xl:pr-40 pt-16 sm:pt-20 pb-12"
       >
         <div className="flex-1 flex flex-col gap-8 min-w-0">
           <div>

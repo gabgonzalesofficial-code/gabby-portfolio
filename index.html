@@ -28,6 +28,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+
+    <!-- DNS prefetch for external resources -->
+    <link rel="dns-prefetch" href="https://formspree.io" />
+    <link rel="dns-prefetch" href="https://vite.dev" />
+
+    <!-- Preload hero profile image (LCP candidate) -->
+    <link rel="preload" as="image" href="src/assets/PP.png" />
+
+    <!-- Critical CSS inline for above-the-fold content -->
+    <style>
+      /* Prevent layout shift from font loading */
+      body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+      h1, h2, h3, h4, h5, h6 { font-family: 'Satoshi', 'Inter', sans-serif; }
+      /* Loading state */
+      #root { min-height: 100vh; background: #000; }
+    </style>
   </head>
   <body>
     <div id="root"></div>

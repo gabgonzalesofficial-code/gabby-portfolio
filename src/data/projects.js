@@ -61,16 +61,16 @@ export const projects = [
           "label": "High-intent leads delivered",
           "detail": "per client"
         },
-       /*  {
+        {
           "value": "$0",
           "label": "3rd-party CRM cost",
           "detail": "subscriptions cancelled"
-        }, */
-        {
+        },
+        /* {
           "value": "Multi-stage",
           "label": "Lead qualification & filtering",
           "detail": "intent-based screening"
-        }
+        } */
     ],
     "role": "Main Developer and Architect (working directly with the company founder)",
     "company": "LaunchSmarter Inc.",

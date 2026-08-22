@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import TechIcon from './TechIcon'
 import ProjectNDAVisual from './ProjectNDAVisual'
 
@@ -6,10 +6,30 @@ import ProjectNDAVisual from './ProjectNDAVisual'
  * Horizontally-scrollable project index rail — shows every project as a
  * compact thumbnail so visitors immediately see the full range of work.
  * Clicking a rail item jumps the parent carousel to that project.
+ * Scroll arrows appear when content overflows the viewport.
  */
 export default function ProjectRail({ projects, activeIndex, onSelect }) {
   const railRef = useRef(null)
   const itemRefs = useRef([])
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const checkOverflow = useCallback(() => {
+    const rail = railRef.current
+    if (!rail) return
+    setCanScrollLeft(rail.scrollLeft > 4)
+    setCanScrollRight(rail.scrollLeft + rail.clientWidth < rail.scrollWidth - 4)
+  }, [])
+
+  useEffect(() => {
+    const rail = railRef.current
+    if (!rail) return
+    checkOverflow()
+    rail.addEventListener('scroll', checkOverflow, { passive: true })
+    const ro = new ResizeObserver(checkOverflow)
+    ro.observe(rail)
+    return () => { rail.removeEventListener('scroll', checkOverflow); ro.disconnect() }
+  }, [checkOverflow])
 
   // Auto-scroll the active item into view within the rail
   useEffect(() => {
@@ -19,6 +39,12 @@ export default function ProjectRail({ projects, activeIndex, onSelect }) {
     const left = el.offsetLeft - rail.offsetLeft - (rail.clientWidth - el.clientWidth) / 2
     rail.scrollTo({ left: Math.max(0, left), behavior: 'smooth' })
   }, [activeIndex])
+
+  const scrollBy = (dir) => {
+    const rail = railRef.current
+    if (!rail) return
+    rail.scrollBy({ left: dir * 200, behavior: 'smooth' })
+  }
 
   return (
     <div className="mt-10 sm:mt-14">
@@ -33,12 +59,43 @@ export default function ProjectRail({ projects, activeIndex, onSelect }) {
         </span>
       </div>
 
-      {/* Scrollable rail */}
-      <div
-        ref={railRef}
-        className="flex gap-3 overflow-x-auto pb-3 scroll-smooth snap-x snap-mandatory"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
-      >
+      {/* Scrollable rail with arrows */}
+      <div className="relative group/rail">
+        {/* Left arrow */}
+        {canScrollLeft && (
+          <button
+            onClick={() => scrollBy(-1)}
+            className="absolute left-0 top-0 bottom-3 z-10 w-8 flex items-center justify-center
+              bg-gradient-to-r from-black/90 to-transparent opacity-0 group-hover/rail:opacity-100
+              transition-opacity duration-300 cursor-pointer"
+            aria-label="Scroll projects left"
+          >
+            <svg className="w-4 h-4 text-tan/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+        )}
+
+        {/* Right arrow */}
+        {canScrollRight && (
+          <button
+            onClick={() => scrollBy(1)}
+            className="absolute right-0 top-0 bottom-3 z-10 w-8 flex items-center justify-center
+              bg-gradient-to-l from-black/90 to-transparent opacity-0 group-hover/rail:opacity-100
+              transition-opacity duration-300 cursor-pointer"
+            aria-label="Scroll projects right"
+          >
+            <svg className="w-4 h-4 text-tan/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
+
+        <div
+          ref={railRef}
+          className="flex gap-3 overflow-x-auto pb-3 scroll-smooth snap-x snap-mandatory"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+        >
         <style>{`.project-rail::-webkit-scrollbar { display: none; }`}</style>
         {projects.map((project, i) => {
           const isActive = i === activeIndex
@@ -110,6 +167,7 @@ export default function ProjectRail({ projects, activeIndex, onSelect }) {
             </button>
           )
         })}
+        </div>
       </div>
     </div>
   )

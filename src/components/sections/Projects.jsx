@@ -80,10 +80,12 @@ export default function Projects({ projects, onOpenProject }) {
 
   const handleRailSelect = useCallback((index) => {
     if (index === displayedIndex) return
+    // Set index immediately — jumpTo's onSwap already handles the carousel,
+    // and the useEffect on displayedIndex handles the fade-in animation.
+    // Using gsap onComplete here causes a race condition when clicking the
+    // card before the 150ms timer fires, overwriting the new displayedIndex.
+    setDisplayedIndex(index)
     if (carouselJumpRef.current) carouselJumpRef.current(index)
-    const el = detailsRef.current
-    if (!el || prefersReducedMotion()) { setDisplayedIndex(index); return }
-    gsap.to(el, { opacity: 0, y: -8, duration: 0.15, ease: 'power2.in', onComplete: () => setDisplayedIndex(index) })
   }, [displayedIndex])
 
   useEffect(() => {

@@ -29,6 +29,7 @@ export default function ExperienceAwards({ experience, certifications, onOpenAll
                       <img
                         src={exp.logo}
                         alt={`${exp.company} logo`}
+                        loading="lazy"
                         className="w-10 h-10 rounded-md object-contain bg-cream border border-cream/10 flex-shrink-0 mt-0.5"
                       />
                     )}

@@ -20,9 +20,19 @@ export default defineConfig({
           if (id.includes('node_modules/gsap')) {
             return 'vendor-gsap'
           }
+          if (id.includes('node_modules/react-icons')) {
+            return 'vendor-icons'
+          }
         },
       },
     },
     chunkSizeWarningLimit: 600,
+    target: 'es2020',
+  },
+  server: {
+    host: true,
+    headers: {
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    },
   },
 })

@@ -315,7 +315,7 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
       <div
         onClick={onClose}
         style={{
-          position:'fixed', inset:0, zIndex:50,
+          position:'fixed', inset:0, zIndex:10010,
           background: T.backdrop,
           backdropFilter:'blur(3px)',
           WebkitBackdropFilter:'blur(3px)',
@@ -327,9 +327,9 @@ export default function ChatBot({ isOpen, onClose, onStateChange }) {
         className="chat-panel"
         style={{
         position:'fixed',
-        right:'calc(0.25rem + 150px)',
+        right:'max(0.75rem, calc(150px + 0.5rem))',
         bottom:'0.75rem',
-        zIndex:51,
+        zIndex:10011,
         width:'min(90vw, 388px)',
         height:'min(82vh, 565px)',
         display:'flex',
