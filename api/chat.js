@@ -288,7 +288,7 @@ export default async function handler(req, res) {
     // Call Groq API
     const completion = await groq.chat.completions.create({
       messages,
-      model: 'llama-3.3-70b-versatile',
+      model: 'openai/gpt-oss-120b',
       temperature: 0.7, // Balanced for accuracy while maintaining personality
       max_tokens: 1024,
       top_p: 1,
