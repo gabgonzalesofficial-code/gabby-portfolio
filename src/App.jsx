@@ -36,6 +36,16 @@ function App() {
   const [modalContent, setModalContent] = useState({ title: '', content: null, size: 'lg', bodyScroll: true })
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [currentProject, setCurrentProject] = useState(null)
+  const [robotReady, setRobotReady] = useState(false)
+
+  // Defer Three.js robot until after page is interactive
+  useEffect(() => {
+    if (document.readyState === 'complete') {
+      setRobotReady(true)
+    } else {
+      window.addEventListener('load', () => setRobotReady(true), { once: true })
+    }
+  }, [])
 
 
 
@@ -151,20 +161,22 @@ function App() {
 
       <Footer footer={footer} />
 
-      {/* EVE Robot — Chat trigger */}
-      <Suspense fallback={
-        <div
-          className="fixed bottom-4 right-4 w-[110px] h-[110px] rounded-full bg-tan/10 animate-pulse"
-          style={{ zIndex: 9999 }}
-          aria-hidden
-        />
-      }>
-        <EveRobot
-          onClick={() => setIsChatOpen((prev) => !prev)}
-          aria-label={isChatOpen ? "Close chat" : "Open chat with Gabriel"}
-          chatOpen={isChatOpen}
-        />
-      </Suspense>
+      {/* EVE Robot — Chat trigger (deferred until after first paint) */}
+      {robotReady && (
+        <Suspense fallback={
+          <div
+            className="fixed bottom-4 right-4 w-[110px] h-[110px] rounded-full bg-tan/10 animate-pulse"
+            style={{ zIndex: 9999 }}
+            aria-hidden
+          />
+        }>
+          <EveRobot
+            onClick={() => setIsChatOpen((prev) => !prev)}
+            aria-label={isChatOpen ? "Close chat" : "Open chat with Gabriel"}
+            chatOpen={isChatOpen}
+          />
+        </Suspense>
+      )}
 
       {/* ChatBot Component */}
       {isChatOpen && (

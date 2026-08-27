@@ -3,7 +3,11 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { prefersReducedMotion } from '../lib/motion'
 
-gsap.registerPlugin(ScrollTrigger)
+let registered = false
+if (!registered) {
+  gsap.registerPlugin(ScrollTrigger)
+  registered = true
+}
 
 // Fades + rises a single element in once, when it scrolls into view.
 export function useScrollReveal({ y = 24, duration = 0.5, start = 'top 85%' } = {}) {

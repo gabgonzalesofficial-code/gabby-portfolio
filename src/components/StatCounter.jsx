@@ -3,7 +3,11 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { prefersReducedMotion } from '../lib/motion'
 
-gsap.registerPlugin(ScrollTrigger)
+let registered = false
+if (!registered) {
+  gsap.registerPlugin(ScrollTrigger)
+  registered = true
+}
 
 // Parses a leading sign/currency + number out of strings like "+50%", "-70%", "$0".
 // Ranges like "10-20/wk" aren't a single number to count up to, so they're left as static text.

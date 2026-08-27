@@ -28,19 +28,12 @@
     <link rel="dns-prefetch" href="https://formspree.io" />
 
     <!-- Preload hero profile image (LCP candidate) -->
-    <link rel="preload" as="image" href="/assets/PP.webp" type="image/webp" />
-    <link rel="preload" as="image" href="/assets/PP.png" />
+    <link rel="preload" as="image" href="src/assets/PP.png" />
 
-    <!-- Critical fonts: preload the most important weight, defer the rest -->
-    <link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=satoshi@700&display=swap" />
-    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-    <noscript>
-      <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700&display=swap" rel="stylesheet" />
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
-    </noscript>
+    <!-- Fonts: Satoshi (headings) + Inter (body) + Montserrat (hero name) -->
+    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,600,500,400&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
 
     <!-- Critical CSS inline for above-the-fold content -->
     <style>

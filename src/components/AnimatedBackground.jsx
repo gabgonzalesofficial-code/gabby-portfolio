@@ -33,9 +33,11 @@ export function AnimatedBackground() {
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Particles (reduced from 50 to 28 for better performance)
+    // Particles (reduced for performance)
     const particles = [];
-    const particleCount = 28;
+    const particleCount = 18;
+    let lastFrame = 0;
+    const FPS = 24; // Cap at 24fps to reduce CPU usage
 
     for (let i = 0; i < particleCount; i++) {
       particles.push({
@@ -47,7 +49,11 @@ export function AnimatedBackground() {
       });
     }
 
-    const animate = () => {
+    const animate = (timestamp) => {
+      animationFrameId = requestAnimationFrame(animate);
+      if (timestamp - lastFrame < 1000 / FPS) return;
+      lastFrame = timestamp;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Update and draw particles
@@ -82,10 +88,9 @@ export function AnimatedBackground() {
         });
       });
 
-      animationFrameId = requestAnimationFrame(animate);
     };
 
-    animate();
+    animationFrameId = requestAnimationFrame(animate);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
