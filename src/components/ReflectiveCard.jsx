@@ -66,7 +66,7 @@ const ReflectiveCard = ({
 
   return (
     <div className={`reflective-card-container ${className}`} style={{ ...style, ...cssVariables }}>
-      <img src={photo} alt={name} className="reflective-video" draggable={false} />
+      <img src={photo} alt={name} className="reflective-video" draggable={false} fetchPriority="high" width="320" height="500" />
 
       <div className="reflective-noise" />
       <div className="reflective-sheen" />

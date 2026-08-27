@@ -8,13 +8,13 @@ export default function ExperienceAwards({ experience, certifications, onOpenAll
 
   return (
     <section id="experience" ref={sectionRef} className="min-h-screen bg-black text-cream px-6 sm:px-12 md:px-16 lg:px-24 py-20 sm:py-24">
-      <h2 className="font-medium uppercase tracking-widest text-sm text-tan/50 mb-12 sm:mb-16 max-w-6xl mx-auto">
+      <h2 className="font-medium uppercase tracking-widest text-sm text-tan/60 mb-12 sm:mb-16 max-w-6xl mx-auto">
         Experience &amp; Awards
       </h2>
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-12">
         <div>
-          <h3 className="font-medium uppercase tracking-widest text-xs text-tan/50 mb-8">Experience</h3>
+          <h2 className="font-medium uppercase tracking-widest text-xs text-tan/60 mb-8">Experience</h2>
           <div className="relative">
             <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-cream/15" />
             <div ref={experienceRef} className="space-y-8">
@@ -47,7 +47,7 @@ export default function ExperienceAwards({ experience, certifications, onOpenAll
 
         <div>
           <div className="flex items-center justify-between mb-8 pr-16 lg:pr-0">
-            <h3 className="font-medium uppercase tracking-widest text-xs text-tan/50">Certifications &amp; Awards</h3>
+            <h2 className="font-medium uppercase tracking-widest text-xs text-tan/60">Certifications &amp; Awards</h2>
             <button
               onClick={onOpenAllCertifications}
               className="text-sm uppercase tracking-widest text-cream border-b border-cream/30 hover:border-cream pb-1 transition-all duration-300 ease-out cursor-pointer"

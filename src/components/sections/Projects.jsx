@@ -18,7 +18,7 @@ function ProjectDetails({ project, index, onOpenProject }) {
           {number}
         </span>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span style={{ fontFamily: "var(--font-body)", fontSize: '12px', fontWeight: 500, letterSpacing: '0.04em' }} className="uppercase text-tan/50 border border-tan/15 px-2 py-0.5 rounded">
+          <span style={{ fontFamily: "var(--font-body)", fontSize: '12px', fontWeight: 500, letterSpacing: '0.04em' }} className="uppercase text-tan/60 border border-tan/15 px-2 py-0.5 rounded">
             {project.category}
           </span>
           {project.nda && (
@@ -135,13 +135,13 @@ export default function Projects({ projects, onOpenProject }) {
                       <h4 style={{ fontFamily: "var(--font-display)", fontWeight: 600 }} className="text-cream text-xs truncate uppercase">{project.name}</h4>
                       <span style={{ fontFamily: "var(--font-body)", fontSize: '10px' }} className="text-tan/40">{project.category}</span>
                     </div>
-                    <span style={{ fontFamily: "var(--font-display)", fontWeight: 700 }} className="text-[10px] text-tan/50 flex-shrink-0">{String(projects.indexOf(project) + 1).padStart(2, '0')}</span>
+                    <span style={{ fontFamily: "var(--font-display)", fontWeight: 700 }} className="text-[10px] text-tan/60 flex-shrink-0">{String(projects.indexOf(project) + 1).padStart(2, '0')}</span>
                   </div>
                 </Card>
               ))}
             </CardSwap>
           </div>
-          <p style={{ fontFamily: "var(--font-body)", fontSize: '11px' }} className="text-center text-tan/50 mt-1">Click the card to browse projects</p>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: '11px' }} className="text-center text-tan/60 mt-1">Click the card to browse projects</p>
         </div>
       </div>
 

@@ -9,7 +9,7 @@ export default function GalleryReviews({ galleryImages, recommendations, onOpenF
   return (
     <section id="gallery" ref={sectionRef} className="min-h-screen bg-black text-cream px-6 sm:px-12 md:px-16 lg:px-24 py-20 sm:py-24">
       <div className="max-w-6xl mx-auto">
-        <h2 className="font-medium uppercase tracking-widest text-sm text-tan/50 mb-10 sm:mb-12">
+        <h2 className="font-medium uppercase tracking-widest text-sm text-tan/60 mb-10 sm:mb-12">
           Gallery &amp; Reviews
         </h2>
 
@@ -86,7 +86,7 @@ export default function GalleryReviews({ galleryImages, recommendations, onOpenF
                     >
                       &ldquo;{truncated}&rdquo;
                     </blockquote>
-                    <p className="text-tan/50 text-sm mt-4">
+                    <p className="text-tan/60 text-sm mt-4">
                       — <span className="font-medium text-cream/85">{rec.author}</span>, {rec.position}
                     </p>
                     {shouldTruncate && (

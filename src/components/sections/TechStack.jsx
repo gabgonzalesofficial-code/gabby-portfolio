@@ -25,7 +25,7 @@ export default function TechStack({ techStack, services, onOpenAll }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 xl:gap-24 w-full">
         {/* Expertise */}
         <div>
-          <h3 className="font-medium uppercase tracking-widest text-xs text-tan/50 mb-5">Expertise</h3>
+          <h2 className="font-medium uppercase tracking-widest text-xs text-tan/60 mb-5">Expertise</h2>
           <div className="space-y-4">
             {services.map((service) => (
               <div key={service.id} className="border-t border-cream/15 pt-3">
@@ -44,7 +44,7 @@ export default function TechStack({ techStack, services, onOpenAll }) {
         {/* Tech stack */}
         <div className="flex flex-col">
           <div className="flex items-center justify-between mb-2 flex-shrink-0 pr-16 lg:pr-0">
-            <h3 className="font-medium uppercase tracking-widest text-xs text-tan/50">Tech Stack</h3>
+            <h2 className="font-medium uppercase tracking-widest text-xs text-tan/60">Tech Stack</h2>
             <button
               onClick={onOpenAll}
               className="text-sm uppercase tracking-widest text-tan border-b border-cream/30 hover:border-cream pb-1 transition-all duration-300 ease-out cursor-pointer"
