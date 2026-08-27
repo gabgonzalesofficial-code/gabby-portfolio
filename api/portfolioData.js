@@ -23,9 +23,9 @@ export const portfolioData = {
   ],
 
   expertise: [
-    { name: 'WordPress Development', description: 'Custom themes and plugins, complex form flows, and ongoing maintenance.' },
+    { name: 'WordPress Development', description: 'Custom themes, page builders, and plugins, complex form flows, and ongoing maintenance.' },
     { name: 'Internal Tools & Automation', description: 'In-house platforms that replace costly third-party SaaS and cut repetitive manual work.' },
-    { name: 'API & Platform Integrations', description: 'Connecting CRMs, telephony, ad platforms, and internal systems.' },
+    { name: 'API & Platform Integrations', description: 'Connecting CRMs, telephone, ad platforms, and internal systems.' },
     { name: 'AI Integration', description: 'Weaving LLMs and AI workflows into real products.' },
     { name: 'Debugging & Troubleshooting', description: 'Finding root causes in unfamiliar codebases and fixing them properly.' }
   ],

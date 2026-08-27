@@ -4,14 +4,16 @@ import {
   FormConversionToolShot, LizbethGalarzaShot,
   Conversion1Shot, KnwRepo1Shot, KnwRepo2Shot, KnwRepo3Shot, KnwRepo4Shot, KnwRepo5Shot,
   Pos1Shot, Pos2Shot, Pos3Shot, Pos4Shot, Pos5Shot,
-  PageSpeedBeforeShot, PageSpeedAfterShot
+  PageSpeedBeforeShot, PageSpeedAfterShot,
+  Budgjet1Shot, Budgjet3Shot
 } from './profileImages'
 
 const imageMap = {
   SmartPOSShot, BudgjetShot, KBAppShot, RoseatteShot, FormConversionToolShot, LizbethGalarzaShot,
   Conversion1Shot, KnwRepo1Shot, KnwRepo2Shot, KnwRepo3Shot, KnwRepo4Shot, KnwRepo5Shot,
   Pos1Shot, Pos2Shot, Pos3Shot, Pos4Shot, Pos5Shot,
-  PageSpeedBeforeShot, PageSpeedAfterShot
+  PageSpeedBeforeShot, PageSpeedAfterShot,
+  Budgjet1Shot, Budgjet3Shot
 }
 
 // Merge text data from projectsText with images
@@ -26,10 +28,11 @@ export const projects = projectsText.map(p => {
       break
     case 'Form Conversion Tool':
       enriched.image = imageMap.FormConversionToolShot
-      enriched.screenshots = [imageMap.Conversion1Shot]
+      enriched.screenshots = [imageMap.Conversion1Shot, imageMap.FormConversionToolShot]
       break
     case 'Budgjet':
       enriched.image = imageMap.BudgjetShot
+      enriched.screenshots = [imageMap.Budgjet1Shot, imageMap.Budgjet3Shot]
       break
     case 'Knowledge Base App':
       enriched.image = imageMap.KBAppShot

@@ -216,7 +216,7 @@ export const projectsText = [
       "Personal Finance"
     ],
     "tagline": "A personal finance application that combines budget tracking with AI-powered insights into spending patterns.",
-    "overview": "Budgjet is a personal finance application designed to help users track spending and better understand their financial habits. The application combines traditional budget tracking with AI-powered analysis. Instead of simply recording transactions, the application uses AI to analyze spending patterns and surface insights and recommendations based on the user financial activity.",
+    "overview": "Budgjet is a personal finance application designed to help users track spending and better understand their financial habits. The application combines traditional budget tracking with AI-powered analysis. Instead of simply recording transactions, the application uses AI to analyze spending patterns and surface insights and recommendations based on the user's financial activity.",
     "challenge": "Most budget trackers focus primarily on recording income and expenses. The goal of Budgjet was to explore how AI could add another layer of value by helping users interpret their spending patterns rather than simply presenting raw financial data.",
     "solution": "Built a web application that combines budget tracking with AI-generated insights. Users can manage their financial information while the AI analyzes spending behavior and provides recommendations based on available data.",
     "highlights": [
@@ -320,14 +320,14 @@ export const projectsText = [
     "categories": [
       "Portfolio Website"
     ],
-    "tagline": "A custom WordPress website designed and developed to showcase an artist work and creative portfolio, with significant performance optimization to improve loading speed and Core Web Vitals.",
+    "tagline": "A custom WordPress website designed and developed to showcase an artist's work and creative portfolio, with significant performance optimization to improve loading speed and Core Web Vitals.",
     "overview": "A custom WordPress website designed and developed as an online portfolio for an artist. The goal was to create a visually focused website that allows artwork and creative projects to take center stage while remaining easy to manage and update.",
-    "challenge": "The website needed to function as more than a simple collection of images. It needed to present creative work in a structured way while maintaining a design that reflected the artist style and personality.",
+    "challenge": "The website needed to function as more than a simple collection of images. It needed to present creative work in a structured way while maintaining a design that reflected the artist's style and personality.",
     "solution": "Designed and developed a WordPress website focused on visual storytelling and portfolio presentation. The site was built to provide a responsive experience across devices while giving the artist a dedicated online space to showcase their work.",
     "highlights": [
       {
         "title": "Custom Design",
-        "description": "Visual-first presentation designed around the artist style and personality."
+        "description": "Visual-first presentation designed around the artist's style and personality."
       },
       {
         "title": "Portfolio Structure",

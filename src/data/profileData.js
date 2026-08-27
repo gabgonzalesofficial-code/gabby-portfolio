@@ -10,7 +10,7 @@ import {
   BestResearchPaper,
   PautakanFirstPlace,
   WordPressFundamentals,
-  AIforCommmunitiesWorkshop,
+  AIforCommunitiesWorkshop,
   GalleryPic1,
   GalleryPic2,
   LaunchSmarterLogo,
@@ -216,7 +216,7 @@ export const beyondCoding = [
 // Certifications
 export const certifications = [
   { id: 1, name: 'WordPress Fundamentals (Content Management System)', issuer: 'Alison', year: '2026', image: WordPressFundamentals },
-  { id: 2, name: 'AI for Commmunities Workshop', issuer: 'Vjal Institure', year: '2026', image: AIforCommmunitiesWorkshop },
+  { id: 2, name: 'AI for Communities Workshop', issuer: 'Vjal Institute', year: '2026', image: AIforCommunitiesWorkshop },
   { id: 3, name: 'Top Performer (Multiple Awards)', issuer: 'Proweaver Inc.', year: '2024-2025', image: TopPerformer },
   { id: 4, name: 'Top Conversion (Multiple Awards)', issuer: 'Proweaver Inc.', year: '2024-2025', image: TopConversion },
   { id: 6, name: 'Java Programming', issuer: 'University of Southern Philippines Foundation', year: '2022', image: JavaProgramming },
