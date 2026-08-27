@@ -1,9 +1,17 @@
 import {
   BudgjetShot, SmartPOSShot, KBAppShot, RoseatteShot,
   FormConversionToolShot, LizbethGalarzaShot,
+  Conversion1Shot, KnwRepo1Shot, KnwRepo2Shot, KnwRepo3Shot, KnwRepo4Shot, KnwRepo5Shot,
+  Pos1Shot, Pos2Shot, Pos3Shot, Pos4Shot, Pos5Shot,
+  PageSpeedBeforeShot, PageSpeedAfterShot
 } from './profileImages'
 
-const imageMap = { SmartPOSShot, BudgjetShot, KBAppShot, RoseatteShot, FormConversionToolShot, LizbethGalarzaShot }
+const imageMap = {
+  SmartPOSShot, BudgjetShot, KBAppShot, RoseatteShot, FormConversionToolShot, LizbethGalarzaShot,
+  Conversion1Shot, KnwRepo1Shot, KnwRepo2Shot, KnwRepo3Shot, KnwRepo4Shot, KnwRepo5Shot,
+  Pos1Shot, Pos2Shot, Pos3Shot, Pos4Shot, Pos5Shot,
+  PageSpeedBeforeShot, PageSpeedAfterShot
+}
 
 export const projects = [
   {
@@ -130,7 +138,14 @@ export const projects = [
       "typescript",
       "tailwind"
     ],
-    "image": imageMap.SmartPOSShot
+    "image": imageMap.SmartPOSShot,
+    "screenshots": [
+      imageMap.Pos1Shot,
+      imageMap.Pos2Shot,
+      imageMap.Pos3Shot,
+      imageMap.Pos4Shot,
+      imageMap.Pos5Shot
+    ]
   },
   {
     "id": 3,
@@ -175,7 +190,10 @@ export const projects = [
       "react",
       "vite"
     ],
-    "image": imageMap.FormConversionToolShot
+    "image": imageMap.FormConversionToolShot,
+    "screenshots": [
+      imageMap.Conversion1Shot
+    ]
   },
   {
     "id": 4,
@@ -286,7 +304,14 @@ export const projects = [
       "s3",
       "tailwind"
     ],
-    "image": imageMap.KBAppShot
+    "image": imageMap.KBAppShot,
+    "screenshots": [
+      imageMap.KnwRepo1Shot,
+      imageMap.KnwRepo2Shot,
+      imageMap.KnwRepo3Shot,
+      imageMap.KnwRepo4Shot,
+      imageMap.KnwRepo5Shot
+    ]
   },
   {
     "id": 7,
@@ -328,7 +353,7 @@ export const projects = [
     "categories": [
       "Portfolio Website"
     ],
-    "tagline": "A custom WordPress website designed and developed to showcase an artist work and creative portfolio.",
+    "tagline": "A custom WordPress website designed and developed to showcase an artist work and creative portfolio, with significant performance optimization to improve loading speed and Core Web Vitals.",
     "overview": "A custom WordPress website designed and developed as an online portfolio for an artist. The goal was to create a visually focused website that allows artwork and creative projects to take center stage while remaining easy to manage and update.",
     "challenge": "The website needed to function as more than a simple collection of images. It needed to present creative work in a structured way while maintaining a design that reflected the artist style and personality.",
     "solution": "Designed and developed a WordPress website focused on visual storytelling and portfolio presentation. The site was built to provide a responsive experience across devices while giving the artist a dedicated online space to showcase their work.",
@@ -344,14 +369,42 @@ export const projects = [
       {
         "title": "Responsive Layouts",
         "description": "Provides a consistent experience across all devices."
+      },
+      {
+        "title": "3D Art Gallery",
+        "description": "Built an interactive 3D art gallery using WebGL and Three.js for an immersive viewing experience."
+      },
+      {
+        "title": "Performance Optimization",
+        "description": "Implemented comprehensive performance optimization including image compression, code minification, lazy loading, and caching strategies to dramatically improve PageSpeed scores and Core Web Vitals."
       }
     ],
-    "impact": "Dedicated online portfolio with custom WordPress design.",
+    "impact": "Dedicated online portfolio with custom WordPress design. Incorporated WebGL and Three.js for an interactive 3D art gallery experience. Achieved significant PageSpeed performance improvements through targeted optimization.",
+    "metrics": [
+      { "value": "Before", "label": "PageSpeed Score", "detail": "Low initial performance score" },
+      { "value": "After", "label": "PageSpeed Score", "detail": "Dramatically improved after optimization" },
+      { "value": "3D", "label": "Interactive Gallery", "detail": "WebGL and Three.js powered" }
+    ],
+    "capabilities": [
+      "Image compression and optimization",
+      "Code minification and bundling",
+      "Lazy loading for images and media",
+      "Browser caching strategies",
+      "Critical CSS inlining",
+      "WebGL and Three.js 3D gallery integration",
+      "Responsive design across all devices",
+      "WordPress theme customization"
+    ],
     "url": "https://roseatte.lovestoblog.com",
     "stack": [
       "wordpress"
     ],
-    "image": imageMap.RoseatteShot
+    "image": imageMap.RoseatteShot,
+    "screenshots": [
+      imageMap.RoseatteShot,
+      imageMap.PageSpeedBeforeShot,
+      imageMap.PageSpeedAfterShot
+    ]
   },
   {
     "id": 9,

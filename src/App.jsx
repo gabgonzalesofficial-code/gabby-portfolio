@@ -2,7 +2,7 @@ import { useState, lazy, Suspense, useEffect } from 'react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import './App.css'
 import Modal from './components/Modal'
-import Loader from './components/Loader'
+import ProjectPage from './components/ProjectPage'
 import { AnimatedBackground } from './components/AnimatedBackground'
 import { DonationModalContent, TechStackModalContent, AllProjectsModalContent, AllCertificationsModalContent } from './components/modals'
 import {
@@ -26,7 +26,6 @@ import {
   footer,
 } from './data/profileData'
 import { projects } from './data/projects'
-import { useLoaderSequence } from './hooks'
 
 // Lazy load heavy components (Three.js, GSAP, AI chat)
 const EveRobot = lazy(() => import('./components/ThreeEveRobot'))
@@ -36,41 +35,68 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalContent, setModalContent] = useState({ title: '', content: null, size: 'lg', bodyScroll: true })
   const [isChatOpen, setIsChatOpen] = useState(false)
-  const [loaderPhase, setLoaderPhase] = useLoaderSequence()
+  const [currentProject, setCurrentProject] = useState(null)
+
+
+
+  const goToProject = (project) => {
+    setCurrentProject(project)
+    window.history.pushState({}, '', '/project/' + project.id)
+    document.body.style.overflow = 'hidden'
+  }
+
+  const goBack = () => {
+    setCurrentProject(null)
+    window.history.pushState({}, '', '/')
+    document.body.style.overflow = ''
+    setTimeout(() => {
+      document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" })
+    }, 100)
+  }
+
+  // Handle browser back button
+  useEffect(() => {
+    const handlePop = () => {
+      const match = window.location.pathname.match(/\/project\/(\d+)/)
+      if (match) {
+        const projectId = parseInt(match[1])
+        const project = projects.find(p => p.id === projectId)
+        if (project) {
+          setCurrentProject(project)
+          document.body.style.overflow = 'hidden'
+        }
+      } else {
+        setCurrentProject(null)
+        document.body.style.overflow = ''
+      }
+    }
+    window.addEventListener('popstate', handlePop)
+    return () => window.removeEventListener('popstate', handlePop)
+  }, [])
 
   const openModal = (title, content, options = {}) => {
     setModalContent({ title, content, size: options.size ?? 'lg', bodyScroll: options.bodyScroll ?? true })
     setIsModalOpen(true)
   }
 
-  // Every section computes its ScrollTrigger positions as soon as it mounts,
-  // but async content below the fold (the hero's video, DomeGallery's
-  // ResizeObserver-driven sizing, images) can still shift page layout after
-  // that. Recalculate once everything has actually finished loading so
-  // trigger points match the real, final layout instead of a stale one.
+  // Refresh ScrollTrigger after async content loads
   useEffect(() => {
-    if (loaderPhase !== 'done') return
-
     const refresh = () => ScrollTrigger.refresh()
-
     if (document.readyState === 'complete') {
       const id = requestAnimationFrame(refresh)
       return () => cancelAnimationFrame(id)
     }
-
     window.addEventListener('load', refresh)
     return () => window.removeEventListener('load', refresh)
-  }, [loaderPhase])
+  }, [])
 
-  if (loaderPhase !== 'done') {
+    // Project page: render only the case study
+    if (currentProject) {
+      return <ProjectPage project={currentProject} onBack={goBack} />
+    }
+
+    // Main portfolio
     return (
-      <Loader
-        step={loaderPhase}
-      />
-    )
-  }
-
-  return (
     <div className="min-h-screen bg-black portfolio-enter" style={{ overflowX: 'clip' }}>
       <AnimatedBackground />
 
@@ -89,7 +115,7 @@ function App() {
 
       <Projects
         projects={projects}
-        onOpenProject={(project) => openModal(project.name, <AllProjectsModalContent projects={[project]} />)}
+        onOpenProject={goToProject}
       />
 
       <ExperienceAwards
@@ -125,7 +151,7 @@ function App() {
 
       <Footer footer={footer} />
 
-      {/* EVE Robot — Chat trigger (hidden when chat open to avoid overlap) */}
+      {/* EVE Robot — Chat trigger */}
       <Suspense fallback={
         <div
           className="fixed bottom-4 right-4 w-[110px] h-[110px] rounded-full bg-tan/10 animate-pulse"
@@ -140,7 +166,7 @@ function App() {
         />
       </Suspense>
 
-      {/* ChatBot Component — lazy loaded when chat opens */}
+      {/* ChatBot Component */}
       {isChatOpen && (
         <Suspense fallback={
           <div

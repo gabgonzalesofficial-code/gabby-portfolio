@@ -1,6 +1,7 @@
 import TechIcon from '../TechIcon'
 import ProjectStatStrip from '../ProjectStatStrip'
 import ProjectNDAVisual from '../ProjectNDAVisual'
+import Masonry from '../Masonry'
 
 export default function AllProjectsModalContent({ projects }) {
   const project = projects[0]
@@ -57,6 +58,31 @@ export default function AllProjectsModalContent({ projects }) {
           <img src={project.image} alt={project.name + ' screenshot'} className="w-full aspect-video object-cover object-top" loading="lazy" />
         </div>
       ) : null}
+
+      {/* Screenshots Gallery */}
+      {project.screenshots?.length > 1 && (
+        <div>
+          <h4 className="text-tan text-xs uppercase tracking-widest mb-3">Screenshots</h4>
+          <div style={{ height: 400 }}>
+            <Masonry
+              items={project.screenshots.map((src, i) => ({
+                id: String(i),
+                img: src,
+                url: '#',
+                height: 300
+              }))}
+              ease="power3.out"
+              duration={0.5}
+              stagger={0.04}
+              animateFrom="bottom"
+              scaleOnHover={true}
+              hoverScale={0.97}
+              blurToFocus={true}
+              colorShiftOnHover={false}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Metrics */}
       {project.metrics?.length > 0 && <ProjectStatStrip metrics={project.metrics} large dark />}

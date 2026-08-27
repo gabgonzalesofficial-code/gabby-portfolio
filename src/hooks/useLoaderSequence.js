@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
  * Loader sequence: initializing -> requesting -> granted -> exiting -> done
  */
 export function useLoaderSequence() {
-  const [loaderPhase, setLoaderPhase] = useState('initializing')
+  const [loaderPhase, setLoaderPhase] = useState('done')
 
   useEffect(() => {
     if (loaderPhase === 'initializing') {

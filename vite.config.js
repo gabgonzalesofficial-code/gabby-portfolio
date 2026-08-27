@@ -29,10 +29,13 @@ export default defineConfig({
     chunkSizeWarningLimit: 600,
     target: 'es2020',
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react/jsx-runtime'],
+  },
   server: {
     host: true,
     headers: {
-      'Cache-Control': 'public, max-age=31536000, immutable',
+      'Cache-Control': 'public, max-age=0',
     },
   },
 })

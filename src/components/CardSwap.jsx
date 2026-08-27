@@ -46,10 +46,10 @@ const CardSwap = ({
   const config =
     easing === 'elastic'
       ? {
-          ease: 'elastic.out(0.6,0.85)',
-          durDrop: 1.5,
-          durMove: 1.5,
-          durReturn: 1.5,
+          ease: 'elastic.out(0.5,0.75)',
+          durDrop: 1.2,
+          durMove: 1.0,
+          durReturn: 1.0,
           promoteOverlap: 0.7,
           returnDelay: 0.05
         }
@@ -86,8 +86,7 @@ const CardSwap = ({
     jumpToRef.current = (targetIndex) => {
       const currentOrder = order.current;
       const posInOrder = currentOrder.indexOf(targetIndex);
-      console.log('[CardSwap] jumpTo', { targetIndex, posInOrder, order: [...currentOrder] });
-      if (posInOrder <= 0) { console.log('[CardSwap] jumpTo skipped - already front'); return; }
+            if (posInOrder <= 0) {  return; }
 
       // Kill any running animation and reset animating flag
       tlRef.current?.kill();
@@ -102,8 +101,7 @@ const CardSwap = ({
         ? [...remaining.slice(nextStart), ...remaining.slice(0, nextStart)]
         : remaining;
       const newOrder = [targetIndex, ...reordered];
-      console.log('[CardSwap] jumpTo newOrder', newOrder);
-      order.current = newOrder;
+            order.current = newOrder;
 
       // Animate all cards to their new positions
       const total = refs.length;
@@ -143,12 +141,11 @@ const CardSwap = ({
     if (prefersReducedMotion()) return;
 
     const swap = () => {
-      if (order.current.length < 2 || animatingRef.current || jumpCooldownRef.current) { console.log('[CardSwap] swap blocked', { len: order.current.length, anim: animatingRef.current, cool: jumpCooldownRef.current }); return; }
+      if (order.current.length < 2 || animatingRef.current || jumpCooldownRef.current) {  return; }
       animatingRef.current = true;
 
       const [front, ...rest] = order.current;
-      console.log('[CardSwap] swap firing', { front, next: rest[0], order: [...order.current] });
-      onSwapRef.current?.(rest[0]);
+            onSwapRef.current?.(rest[0]);
       const elFront = refs[front].current;
       const tl = gsap.timeline();
       tlRef.current = tl;
@@ -173,7 +170,7 @@ const CardSwap = ({
             duration: config.durMove,
             ease: config.ease
           },
-          `promote+=${i * 0.15}`
+          `promote+=${i * 0.1}`
         );
       });
 
@@ -247,8 +244,7 @@ const CardSwap = ({
             onCardClick?.(i);
             if (manual) {
               jumpCooldownRef.current = false;
-              console.log('[CardSwap] card click, calling swap. order:', [...order.current]);
-              swapRef.current();
+                            swapRef.current();
             }
           }
         })
