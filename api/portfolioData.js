@@ -2,7 +2,7 @@
 // Projects are imported from api/projectsText.js (copied from src/data/projectsText.js)
 // Other profile data is defined here for the chatbot context.
 
-import { projectsText } from './projectsText'
+import { projectsText } from './projectsText.js'
 
 export const portfolioData = {
   profileInfo: {
