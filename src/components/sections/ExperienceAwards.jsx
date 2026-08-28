@@ -1,4 +1,5 @@
 import { useStaggerReveal, useSectionTransition } from '../../hooks'
+import OptimizedImage from '../OptimizedImage'
 
 export default function ExperienceAwards({ experience, certifications, onOpenAllCertifications }) {
   const recentCerts = certifications.slice(0, 5)
@@ -26,9 +27,11 @@ export default function ExperienceAwards({ experience, certifications, onOpenAll
                   />
                   <div className="flex items-start gap-4">
                     {exp.logo && (
-                      <img
+                      <OptimizedImage
                         src={exp.logo}
                         alt={`${exp.company} logo`}
+                        width={40}
+                        height={40}
                         loading="lazy"
                         className="w-10 h-10 rounded-md object-contain bg-cream border border-cream/10 flex-shrink-0 mt-0.5"
                       />

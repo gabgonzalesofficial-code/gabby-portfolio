@@ -4,6 +4,7 @@ import ProjectStatStrip from './ProjectStatStrip'
 import ProjectNDAVisual from './ProjectNDAVisual'
 import Masonry from './Masonry'
 import Lightbox from './Lightbox'
+import OptimizedImage from './OptimizedImage'
 
 export default function ProjectPage({ project, onBack }) {
   useEffect(() => { window.scrollTo(0, 0) }, [])
@@ -42,7 +43,7 @@ export default function ProjectPage({ project, onBack }) {
           </div>
           {project.url && (<a href={project.url.startsWith('http') ? project.url : 'https://' + project.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-full border border-tan/30 text-tan text-xs uppercase tracking-wider hover:bg-cream/10 transition-all mt-2">Live Project <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>)}
         </div>
-        {project.nda ? (<div className="rounded-xl overflow-hidden border border-tan/10" style={{ height: 'clamp(300px, 50vw, 500px)' }}><ProjectNDAVisual type={project.name.includes('Social') ? 'ai' : 'dashboard'} /></div>) : project.image ? (<div className="rounded-xl overflow-hidden border border-tan/10 cursor-zoom-in hover:opacity-90 transition-opacity"><img src={project.image} alt={project.name + ' screenshot'} className="w-full aspect-video object-cover object-top" loading="lazy" onClick={() => setLightbox({ src: project.image, alt: project.name + ' screenshot' })} /></div>) : null}
+        {project.nda ? (<div className="rounded-xl overflow-hidden border border-tan/10" style={{ height: 'clamp(300px, 50vw, 500px)' }}><ProjectNDAVisual type={project.name.includes('Social') ? 'ai' : 'dashboard'} /></div>) : project.image ? (<div className="rounded-xl overflow-hidden border border-tan/10 cursor-zoom-in hover:opacity-90 transition-opacity"><OptimizedImage src={project.image} alt={project.name + ' screenshot'} className="w-full aspect-video object-cover object-top" loading="lazy" onClick={() => setLightbox({ src: project.image, alt: project.name + ' screenshot' })} /></div>) : null}
       </div>
       <div className="max-w-6xl mx-auto px-6 pb-16">
         <p className="text-cream/80 text-lg leading-relaxed mb-10 max-w-3xl">{project.tagline}</p>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import OptimizedImage from './OptimizedImage'
 
 export default function Lightbox({ src, alt, onClose }) {
   const [scale, setScale] = useState(1)
@@ -44,12 +45,14 @@ export default function Lightbox({ src, alt, onClose }) {
         <button onClick={(e) => { e.stopPropagation(); setScale(1) }} className="text-cream/50 hover:text-cream text-xs transition-colors">Reset</button>
       </div>
 
-      <img
+      <OptimizedImage
         src={src}
         alt={alt}
         className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg transition-transform duration-300"
         style={{ transform: `scale(${scale})` }}
         onClick={(e) => e.stopPropagation()}
+        loading="eager"
+        fetchPriority="high"
         draggable={false}
       />
     </div>

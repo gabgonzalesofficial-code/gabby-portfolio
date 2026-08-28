@@ -14,7 +14,7 @@ export default defineConfig({
           if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
             return 'vendor-react'
           }
-          if (id.includes('node_modules/three')) {
+          if (id.includes('node_modules/three') || id.includes('node_modules/@react-three')) {
             return 'vendor-three'
           }
           if (id.includes('node_modules/gsap')) {
@@ -27,6 +27,8 @@ export default defineConfig({
       },
     },
     chunkSizeWarningLimit: 600,
+    cssMinify: true,
+    modulePreload: { polyfill: false },
     target: 'es2020',
   },
   optimizeDeps: {

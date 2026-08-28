@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useRecommendationCarousel, useSectionTransition } from '../../hooks'
+import OptimizedImage from '../OptimizedImage'
 
 export default function GalleryReviews({ galleryImages, recommendations, onOpenFull }) {
   const [index, setIndex] = useState(0)
@@ -20,9 +21,11 @@ export default function GalleryReviews({ galleryImages, recommendations, onOpenF
               <div className="flex overflow-hidden rounded-2xl">
                 {galleryImages.map((img, idx) => (
                   <div key={img.id} className={`flex-shrink-0 w-full ${idx === index ? 'block' : 'hidden'}`}>
-                    <img
+                    <OptimizedImage
                       src={img.src}
                       alt={img.alt}
+                      width={1200}
+                      height={848}
                       className="w-full h-64 sm:h-80 lg:h-[440px] object-cover"
                       loading={idx === index ? 'eager' : 'lazy'}
                     />

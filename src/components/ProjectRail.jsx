@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import TechIcon from './TechIcon'
 import ProjectNDAVisual from './ProjectNDAVisual'
+import OptimizedImage from './OptimizedImage'
 
 /**
  * Horizontally-scrollable project index rail — shows every project as a
@@ -123,7 +124,7 @@ export default function ProjectRail({ projects, activeIndex, onSelect }) {
                 {project.nda ? (
                   <ProjectNDAVisual type={project.name.includes('Social') ? 'ai' : 'dashboard'} />
                 ) : project.image ? (
-                  <img
+                  <OptimizedImage
                     src={project.image}
                     alt={`${project.name} screenshot`}
                     className={`w-full h-full object-cover object-top transition-all duration-500 ${

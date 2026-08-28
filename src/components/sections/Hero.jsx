@@ -2,25 +2,26 @@ import { useState, useEffect } from 'react'
 import { PiDownloadLight } from 'react-icons/pi'
 import { FaHeart, FaEnvelope, FaPhone, FaLinkedin } from 'react-icons/fa'
 
-import heroPic from '../../assets/HeroPic.webp'
-import heroColored from '../../assets/HeroColored.webp'
-import { useStaggerReveal } from '../../hooks'
 import { prefersReducedMotion } from '../../lib/motion'
 import resumePDF from '../../assets/resume/Gabriel_Gonzales_Resume.pdf'
 
-export default function Hero({ profileInfo, onOpenDonation }) {
-  const contentRef = useStaggerReveal({ y: 24 })
+const HERO_SRC = '/hero.webp'
+const HERO_COLOR_SRC = '/hero-color.webp'
 
+export default function Hero({ profileInfo, onOpenDonation }) {
   // Scan sequence: pending → scanning → verified
   const [phase, setPhase] = useState(() =>
     prefersReducedMotion() ? 'verified' : 'pending'
   )
+  // Hold the color portrait until the scan starts so it doesn't compete with LCP.
+  const [loadColor, setLoadColor] = useState(() => prefersReducedMotion())
 
   useEffect(() => {
     if (prefersReducedMotion()) return
     const t1 = setTimeout(() => setPhase('scanning'), 1500)
     const t2 = setTimeout(() => setPhase('verified'), 4500)
-    return () => { clearTimeout(t1); clearTimeout(t2) }
+    const tColor = setTimeout(() => setLoadColor(true), 800)
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(tColor) }
   }, [])
 
   // Dispatch events so the 3D robot reacts
@@ -44,8 +45,7 @@ export default function Hero({ profileInfo, onOpenDonation }) {
 
       {/* Main hero content */}
       <div
-        ref={contentRef}
-        className="flex-1 flex flex-col items-center justify-start relative z-10 px-6 sm:px-12 lg:px-24 pt-12 sm:pt-14 pb-2 min-h-0"
+        className="hero-stagger flex-1 flex flex-col items-center justify-start relative z-10 px-6 sm:px-12 lg:px-24 pt-12 sm:pt-14 pb-2 min-h-0"
       >
         {/* Name + portrait composition */}
         <div className="flex flex-col items-center w-full max-w-6xl">
@@ -82,28 +82,39 @@ export default function Hero({ profileInfo, onOpenDonation }) {
               </span>
 
               <div className="absolute left-1/2 -translate-x-1/2 -top-[84px] z-10 w-[min(58vw,400px)] sm:w-[min(52vw,440px)] lg:w-[min(44vw,480px)]">
-                {/* B&W portrait (initial) */}
+                {/* B&W portrait (LCP) — URL must match the <link rel="preload"> in index.html */}
                 <img
-                  src={heroPic}
+                  src={HERO_SRC}
                   alt="Gabriel Gonzales"
+                  width={768}
+                  height={1376}
                   fetchPriority="high"
+                  loading="eager"
+                  decoding="async"
                   className="block w-full h-auto"
                   style={{
                     opacity: isVerified ? 0 : 1,
                     transition: 'opacity 0.7s ease-in-out',
                   }}
                 />
-                {/* Color portrait (after scan) */}
-                <img
-                  src={heroColored}
-                  alt=""
-                  aria-hidden
-                  className="absolute top-0 left-0 block w-full h-auto"
-                  style={{
-                    opacity: isVerified ? 1 : 0,
-                    transition: 'opacity 0.7s ease-in-out',
-                  }}
-                />
+                {/* Color portrait (after scan) — deferred so it doesn't contend with LCP */}
+                {loadColor && (
+                  <img
+                    src={HERO_COLOR_SRC}
+                    alt=""
+                    aria-hidden
+                    width={768}
+                    height={1376}
+                    loading="lazy"
+                    fetchPriority="low"
+                    decoding="async"
+                    className="absolute top-0 left-0 block w-full h-auto"
+                    style={{
+                      opacity: isVerified ? 1 : 0,
+                      transition: 'opacity 0.7s ease-in-out',
+                    }}
+                  />
+                )}
 
                 {/* Scan line overlay */}
                 {isScanning && (
@@ -228,11 +239,23 @@ export default function Hero({ profileInfo, onOpenDonation }) {
         </div>
       </div>
 
-      {/* Scan line keyframe */}
+      {/* Scan line + hero entrance (CSS so GSAP stays off the critical path) */}
       <style>{`
         @keyframes heroScanLine {
           0% { top: -2%; }
           100% { top: 102%; }
+        }
+        @media (prefers-reduced-motion: no-preference) {
+          .hero-stagger > *:nth-child(2),
+          .hero-stagger > *:nth-child(3) {
+            animation: heroStaggerIn 0.5s ease-out both;
+          }
+          .hero-stagger > *:nth-child(2) { animation-delay: 0.08s; }
+          .hero-stagger > *:nth-child(3) { animation-delay: 0.16s; }
+        }
+        @keyframes heroStaggerIn {
+          from { opacity: 0; transform: translateY(24px); }
+          to { opacity: 1; transform: none; }
         }
       `}</style>
     </section>

@@ -2,24 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="src/assets/PP.png" />
+    <link rel="icon" type="image/jpeg" href="/favicon.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Gabriel Gonzales — Full Stack Web/WordPress Developer</title>
     <meta name="description" content="Gabriel Gonzales is a Full Stack Web/WordPress Developer building tools that boost team efficiency and cut manual work — from AI-driven admin dashboards to offline-first POS systems." />
+    <link rel="canonical" href="https://gabby-dev.vercel.app/" />
+    <meta name="robots" content="index, follow" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://gabby-dev.vercel.app/" />
     <meta property="og:title" content="Gabriel Gonzales — Full Stack Web/WordPress Developer" />
     <meta property="og:description" content="Full Stack Web/WordPress Developer building tools that boost team efficiency and cut manual work — from AI-driven admin dashboards to offline-first POS systems." />
-    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:image" content="https://gabby-dev.vercel.app/og-image.jpg" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Gabriel Gonzales — Full Stack Web/WordPress Developer" />
     <meta name="twitter:description" content="Full Stack Web/WordPress Developer building tools that boost team efficiency and cut manual work — from AI-driven admin dashboards to offline-first POS systems." />
-    <meta name="twitter:image" content="/og-image.jpg" />
+    <meta name="twitter:image" content="https://gabby-dev.vercel.app/og-image.jpg" />
 
-    <!-- Preconnect for faster font loading -->
+    <!-- Preconnect to font origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
@@ -27,21 +30,26 @@
     <!-- DNS prefetch for external resources -->
     <link rel="dns-prefetch" href="https://formspree.io" />
 
-    <!-- Preload hero profile image (LCP candidate) -->
-    <link rel="preload" as="image" href="src/assets/PP.png" />
+    <!-- Preload LCP portrait (must match the hero <img> URL) -->
+    <link rel="preload" as="image" href="/hero.webp" type="image/webp" fetchpriority="high" />
 
-    <!-- Fonts: Satoshi (headings) + Inter (body) + Montserrat (hero name) -->
-    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,600,500,400&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+    <!-- Fonts load async so they never block first paint. font-display:swap is on each URL. -->
+    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@700,600,500,400&display=swap" media="print" onload="this.onload=null;this.media='all'" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.onload=null;this.media='all'" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" media="print" onload="this.onload=null;this.media='all'" />
+    <noscript>
+      <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@700,600,500,400&display=swap" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" />
+    </noscript>
 
-    <!-- Critical CSS inline for above-the-fold content -->
+    <!-- Critical CSS for first paint / LCP -->
     <style>
-      /* Prevent layout shift from font loading */
-      body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-      h1, h2, h3, h4, h5, h6 { font-family: 'Satoshi', 'Inter', sans-serif; }
-      /* Loading state */
+      html, body { margin: 0; background: #000; color: #F8EEDF; }
+      body { font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+      h1, h2, h3, h4, h5, h6 { font-family: Satoshi, Inter, sans-serif; }
       #root { min-height: 100vh; background: #000; }
+      #hero { min-height: 100dvh; background: #000; }
     </style>
   </head>
   <body>

@@ -2,6 +2,7 @@ import TechIcon from '../TechIcon'
 import ProjectStatStrip from '../ProjectStatStrip'
 import ProjectNDAVisual from '../ProjectNDAVisual'
 import Masonry from '../Masonry'
+import OptimizedImage from '../OptimizedImage'
 
 export default function AllProjectsModalContent({ projects }) {
   const project = projects[0]
@@ -55,7 +56,7 @@ export default function AllProjectsModalContent({ projects }) {
         </div>
       ) : project.image ? (
         <div className="rounded-lg overflow-hidden border border-tan/10">
-          <img src={project.image} alt={project.name + ' screenshot'} className="w-full aspect-video object-cover object-top" loading="lazy" />
+          <OptimizedImage src={project.image} alt={project.name + ' screenshot'} className="w-full aspect-video object-cover object-top" loading="lazy" />
         </div>
       ) : null}
 

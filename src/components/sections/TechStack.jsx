@@ -1,6 +1,8 @@
-import DomeGallery from '../DomeGallery'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import TechIcon from '../TechIcon'
 import { useSectionTransition } from '../../hooks'
+
+const DomeGallery = lazy(() => import('../DomeGallery'))
 
 function renderTechTile(item) {
   if (!item) return null
@@ -15,6 +17,23 @@ function renderTechTile(item) {
 export default function TechStack({ techStack, services, onOpenAll }) {
   const items = Object.values(techStack).flat()
   const sectionRef = useSectionTransition()
+  const domeWrapRef = useRef(null)
+  const [showDome, setShowDome] = useState(false)
+
+  useEffect(() => {
+    const el = domeWrapRef.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return
+        setShowDome(true)
+        io.disconnect()
+      },
+      { rootMargin: '240px' }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
 
   return (
     <section
@@ -52,23 +71,29 @@ export default function TechStack({ techStack, services, onOpenAll }) {
               View All
             </button>
           </div>
-          <div className="flex-1 h-[400px] sm:h-[460px] lg:h-[520px]">
-            <DomeGallery
-              images={items}
-              renderTile={renderTechTile}
-              dedupeKey={(item) => item?.icon}
-              enableEnlarge={false}
-              grayscale={false}
-              overlayBlurColor="#000000"
-              minRadius={200}
-              maxRadius={400}
-              fit={0.55}
-              padFactor={0.1}
-              maxVerticalRotationDeg={15}
-              dragSensitivity={16}
-              segments={18}
-              imageBorderRadius="24px"
-            />
+          <div ref={domeWrapRef} className="flex-1 h-[400px] sm:h-[460px] lg:h-[520px]">
+            {showDome ? (
+              <Suspense fallback={<div className="w-full h-full rounded-2xl bg-cream/5 animate-pulse" />}>
+                <DomeGallery
+                  images={items}
+                  renderTile={renderTechTile}
+                  dedupeKey={(item) => item?.icon}
+                  enableEnlarge={false}
+                  grayscale={false}
+                  overlayBlurColor="#000000"
+                  minRadius={200}
+                  maxRadius={400}
+                  fit={0.55}
+                  padFactor={0.1}
+                  maxVerticalRotationDeg={15}
+                  dragSensitivity={16}
+                  segments={18}
+                  imageBorderRadius="24px"
+                />
+              </Suspense>
+            ) : (
+              <div className="w-full h-full rounded-2xl bg-cream/5" aria-hidden />
+            )}
           </div>
         </div>
       </div>

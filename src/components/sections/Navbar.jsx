@@ -30,23 +30,39 @@ export default function Navbar({ profileInfo }) {
   }, [])
 
   useEffect(() => {
-    const sections = LINKS.map((link) => document.querySelector(link.href)).filter(Boolean)
-    if (!sections.length) return
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isNavigatingRef.current) return
-        const visible = entries.filter((entry) => entry.isIntersecting)
-        if (!visible.length) return
-        const closest = visible.reduce((best, entry) =>
-          Math.abs(entry.boundingClientRect.top) < Math.abs(best.boundingClientRect.top) ? entry : best
-        )
-        const index = sections.indexOf(closest.target)
-        if (index !== -1) setActiveIndex(index)
-      },
-      { rootMargin: '-40% 0px -40% 0px', threshold: 0 }
-    )
-    sections.forEach((section) => observer.observe(section))
-    return () => observer.disconnect()
+    let observer
+    let timer
+    const bind = () => {
+      observer?.disconnect()
+      const sections = LINKS.map((link) => document.querySelector(link.href)).filter(Boolean)
+      if (!sections.length) return
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (isNavigatingRef.current) return
+          const visible = entries.filter((entry) => entry.isIntersecting)
+          if (!visible.length) return
+          const closest = visible.reduce((best, entry) =>
+            Math.abs(entry.boundingClientRect.top) < Math.abs(best.boundingClientRect.top) ? entry : best
+          )
+          const index = sections.indexOf(closest.target)
+          if (index !== -1) setActiveIndex(index)
+        },
+        { rootMargin: '-40% 0px -40% 0px', threshold: 0 }
+      )
+      sections.forEach((section) => observer.observe(section))
+    }
+    bind()
+    const root = document.getElementById('root') || document.body
+    const mo = new MutationObserver(() => {
+      clearTimeout(timer)
+      timer = setTimeout(bind, 80)
+    })
+    mo.observe(root, { childList: true, subtree: true })
+    return () => {
+      observer?.disconnect()
+      mo.disconnect()
+      clearTimeout(timer)
+    }
   }, [])
 
   useEffect(() => {

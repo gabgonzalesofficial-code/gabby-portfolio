@@ -5,6 +5,7 @@ import ProjectStatStrip from '../ProjectStatStrip'
 import ProjectNDAVisual from '../ProjectNDAVisual'
 import ProjectRail from '../ProjectRail'
 import CardSwap, { Card } from '../CardSwap'
+import OptimizedImage from '../OptimizedImage'
 import { useSectionTransition } from '../../hooks'
 import { prefersReducedMotion } from '../../lib/motion'
 
@@ -123,7 +124,7 @@ export default function Projects({ projects, onOpenProject }) {
                     {project.nda ? (
                       <ProjectNDAVisual type={project.name.includes('Social') ? 'ai' : 'dashboard'} />
                     ) : project.image ? (
-                      <img src={project.image} alt={project.name + ' screenshot'} className="w-full h-full object-cover object-top" loading="lazy" draggable={false} />
+                      <OptimizedImage src={project.image} alt={project.name + ' screenshot'} className="w-full h-full object-cover object-top" loading="lazy" draggable={false} />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-accent/20 to-accent/5">
                         <TechIcon name={project.stack?.[0] || 'html'} className="w-10 h-10 opacity-30" />

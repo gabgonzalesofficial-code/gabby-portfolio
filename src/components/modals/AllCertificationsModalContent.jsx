@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { FaAward } from 'react-icons/fa'
+import OptimizedImage from '../OptimizedImage'
 
 export default function AllCertificationsModalContent({ certifications }) {
   const [selected, setSelected] = useState(null)
@@ -36,7 +37,7 @@ export default function AllCertificationsModalContent({ certifications }) {
             </div>
             {selected.image ? (
               <div className="flex-1 overflow-y-auto pr-2">
-                <img
+                <OptimizedImage
                   src={selected.image}
                   alt={selected.name}
                   className="w-full h-auto rounded-lg shadow-lg border border-tan/20"
