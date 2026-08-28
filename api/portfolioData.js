@@ -1,8 +1,8 @@
 // Portfolio data for AI chatbot
-// Projects are imported from the shared source of truth: src/data/projectsText.js
+// Projects are imported from api/projectsText.js (copied from src/data/projectsText.js)
 // Other profile data is defined here for the chatbot context.
 
-import { projectsText } from '../src/data/projectsText'
+import { projectsText } from './projectsText'
 
 export const portfolioData = {
   profileInfo: {
