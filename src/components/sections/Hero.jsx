@@ -1,150 +1,240 @@
+import { useState, useEffect } from 'react'
 import { PiDownloadLight } from 'react-icons/pi'
 import { FaHeart, FaEnvelope, FaPhone, FaLinkedin } from 'react-icons/fa'
 
-import ReflectiveCard from '../ReflectiveCard'
+import heroPic from '../../assets/HeroPic.webp'
+import heroColored from '../../assets/HeroColored.webp'
 import { useStaggerReveal } from '../../hooks'
+import { prefersReducedMotion } from '../../lib/motion'
 import resumePDF from '../../assets/resume/Gabriel_Gonzales_Resume.pdf'
 
 export default function Hero({ profileInfo, onOpenDonation }) {
   const contentRef = useStaggerReveal({ y: 24 })
 
+  // Scan sequence: pending → scanning → verified
+  const [phase, setPhase] = useState(() =>
+    prefersReducedMotion() ? 'verified' : 'pending'
+  )
+
+  useEffect(() => {
+    if (prefersReducedMotion()) return
+    const t1 = setTimeout(() => setPhase('scanning'), 1500)
+    const t2 = setTimeout(() => setPhase('verified'), 4500)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [])
+
+  // Dispatch events so the 3D robot reacts
+  useEffect(() => {
+    if (phase === 'scanning') window.dispatchEvent(new CustomEvent('eve-card-scan'))
+    if (phase === 'verified') window.dispatchEvent(new CustomEvent('eve-card-verified'))
+  }, [phase])
+
+  const isVerified = phase === 'verified'
+  const isScanning = phase === 'scanning'
+
   return (
-    <section id="hero" className="min-h-screen flex flex-col bg-black text-cream overflow-hidden">
+    <section id="hero" className="relative h-dvh min-h-[640px] flex flex-col bg-black text-cream overflow-hidden">
+      {/* Subtle radial glow behind portrait */}
+      <div
+        className="absolute top-[36%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(90vw,640px)] h-[min(90vw,640px)] rounded-full pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse, rgba(142,22,22,0.22) 0%, rgba(142,22,22,0.08) 40%, transparent 72%)',
+        }}
+      />
+
+      {/* Main hero content */}
       <div
         ref={contentRef}
-        className="flex-1 flex flex-col lg:flex-row items-center gap-12 lg:gap-16 pl-6 sm:pl-12 md:pl-16 lg:pl-24 pr-6 sm:pr-12 md:pr-16 lg:pr-24 xl:pr-40 pt-16 sm:pt-20 pb-12"
+        className="flex-1 flex flex-col items-center justify-start relative z-10 px-6 sm:px-12 lg:px-24 pt-12 sm:pt-14 pb-2 min-h-0"
       >
-        <div className="flex-1 flex flex-col gap-8 min-w-0">
-          <div>
-            <p
-              className="uppercase mb-4"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: '14px',
-                fontWeight: 500,
-                letterSpacing: '0.08em',
-                color: '#A1A1AA',
-              }}
-            >
-              {profileInfo.title}
-            </p>
-            <h1
-              className="uppercase"
+        {/* Name + portrait composition */}
+        <div className="flex flex-col items-center w-full max-w-6xl">
+          <h1 className="flex flex-col items-center w-full m-0">
+            {/* First name — fully visible, never overlapped */}
+            <span
+              className="uppercase text-center leading-none select-none pointer-events-none"
               style={{
                 fontFamily: "'Montserrat', sans-serif",
-                fontSize: 'clamp(3.5rem, 7vw, 5rem)',
-                fontWeight: 800,
-                lineHeight: 0.98,
+                fontSize: 'clamp(2.8rem, 9vw, 8rem)',
+                fontWeight: 900,
+                lineHeight: 0.92,
                 color: '#F8FAFC',
                 letterSpacing: '-0.03em',
               }}
             >
-              {profileInfo.name}
-            </h1>
-          </div>
+              Gabriel
+            </span>
 
+            {/* Last name + portrait — portrait overlaps only Gonzales */}
+            <div className="relative flex justify-center w-full -mt-1 sm:-mt-2 pb-[24vh] lg:pb-[28vh]">
+              <span
+                className="uppercase text-center leading-none select-none pointer-events-none relative z-0"
+                style={{
+                  fontFamily: "'Montserrat', sans-serif",
+                  fontSize: 'clamp(2.8rem, 9vw, 8rem)',
+                  fontWeight: 900,
+                  lineHeight: 0.92,
+                  color: '#F8FAFC',
+                  letterSpacing: '-0.03em',
+                }}
+              >
+                Gonzales
+              </span>
+
+              <div className="absolute left-1/2 -translate-x-1/2 -top-[84px] z-10 w-[min(58vw,400px)] sm:w-[min(52vw,440px)] lg:w-[min(44vw,480px)]">
+                {/* B&W portrait (initial) */}
+                <img
+                  src={heroPic}
+                  alt="Gabriel Gonzales"
+                  fetchPriority="high"
+                  className="block w-full h-auto"
+                  style={{
+                    opacity: isVerified ? 0 : 1,
+                    transition: 'opacity 0.7s ease-in-out',
+                  }}
+                />
+                {/* Color portrait (after scan) */}
+                <img
+                  src={heroColored}
+                  alt=""
+                  aria-hidden
+                  className="absolute top-0 left-0 block w-full h-auto"
+                  style={{
+                    opacity: isVerified ? 1 : 0,
+                    transition: 'opacity 0.7s ease-in-out',
+                  }}
+                />
+
+                {/* Scan line overlay */}
+                {isScanning && (
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div
+                      className="absolute left-0 w-full h-[2px]"
+                      style={{
+                        background: 'linear-gradient(90deg, transparent 0%, #8E1616 20%, #E8C999 50%, #8E1616 80%, transparent 100%)',
+                        boxShadow: '0 0 15px rgba(142,22,22,0.5), 0 0 30px rgba(142,22,22,0.2)',
+                        animation: 'heroScanLine 1.5s ease-in-out infinite',
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </h1>
+
+          {/* Intro text — overlaps only lower legs, not torso */}
           <p
+            className="relative z-20 text-center max-w-xl mt-[calc(7vh*3.5)] px-2"
             style={{
               fontFamily: "var(--font-body)",
-              fontSize: 'clamp(1rem, 1.2vw, 1.125rem)',
+              fontSize: 'clamp(0.8rem, 0.95vw, 0.95rem)',
               fontWeight: 400,
-              lineHeight: 1.6,
+              lineHeight: 1.65,
               color: '#9CA3AF',
-              maxWidth: '32rem',
             }}
           >
             Building digital solutions that cut manual work and boost efficiency — specializing in custom WordPress websites and robust in-house tools.
           </p>
+        </div>
 
-          <div className="flex flex-wrap gap-3">
-            <a
-              href="#projects"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: '14px',
-                fontWeight: 600,
-              }}
-              className="px-6 py-3 rounded-full uppercase tracking-widest bg-accent text-cream shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/40 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
-            >
-              View Work
-            </a>
-            <a
-              href="#contact"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: '14px',
-                fontWeight: 500,
-              }}
-              className="px-6 py-3 rounded-full uppercase tracking-widest border border-cream/30 text-cream hover:border-cream/60 hover:bg-cream/10 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
-            >
-              Get In Touch
-            </a>
-            <a
-              href={resumePDF}
-              download="Gabriel_Gonzales_Resume.pdf"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: '14px',
-                fontWeight: 500,
-              }}
-              className="inline-flex items-center gap-1.5 px-6 py-3 rounded-full uppercase tracking-widest border border-cream/30 text-cream hover:border-cream/60 hover:bg-cream/10 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
-            >
-              <PiDownloadLight className="w-4 h-4" />
-              Resume
-            </a>
-          </div>
-
-          <div
-            className="flex flex-wrap items-center gap-x-8 gap-y-3"
+        {/* CTA buttons — sit below portrait, no overlap */}
+        <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 mt-3 sm:mt-4 shrink-0">
+          <a
+            href="#projects"
             style={{
               fontFamily: "var(--font-body)",
-              fontSize: '14px',
-              fontWeight: 500,
-              color: '#A1A1AA',
+              fontSize: '12px',
+              fontWeight: 600,
+              letterSpacing: '0.1em',
             }}
+            className="px-6 py-2.5 sm:px-7 sm:py-3 rounded-full uppercase bg-accent text-cream shadow-[0_0_24px_rgba(142,22,22,0.45)] hover:shadow-[0_0_32px_rgba(142,22,22,0.6)] hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
           >
-            <a
-              href={`mailto:${profileInfo.contact.email}`}
-              className="flex items-center gap-2 hover:text-cream transition-colors duration-300 cursor-pointer"
-            >
-              <FaEnvelope className="w-4 h-4 opacity-50" aria-hidden />
-              {profileInfo.contact.email}
-            </a>
-            <a
-              href={`tel:${profileInfo.contact.mobile.replace(/\s/g, '')}`}
-              className="flex items-center gap-2 hover:text-cream transition-colors duration-300 cursor-pointer"
-            >
-              <FaPhone className="w-3.5 h-3.5 opacity-50" aria-hidden />
-              {profileInfo.contact.mobile}
-            </a>
-            <a
-              href={profileInfo.contact.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 hover:text-cream transition-colors duration-300 cursor-pointer"
-            >
-              <FaLinkedin className="w-4 h-4 opacity-50" aria-hidden />
-              LinkedIn Profile
-            </a>
-            <button onClick={onOpenDonation} className="flex items-center gap-2 hover:text-cream transition-colors duration-300 cursor-pointer">
-              <FaHeart className="w-3.5 h-3.5 text-red-400" aria-hidden />
-              Support My Work
-            </button>
-          </div>
-        </div>
-
-        <div className="flex-shrink-0">
-          <ReflectiveCard
-              photo={profileInfo.profileImage}
-              name={profileInfo.name}
-              metaValue={profileInfo.location}
-              blurStrength={0}
-              roughness={0.08}
-              className="w-[190px] sm:w-[215px] md:w-[240px]"
-              style={{ height: 'auto', aspectRatio: '320 / 500' }}
-          />
+            View Work
+          </a>
+          <a
+            href="#contact"
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: '12px',
+              fontWeight: 500,
+              letterSpacing: '0.1em',
+            }}
+            className="px-6 py-2.5 sm:px-7 sm:py-3 rounded-full uppercase border border-white/25 text-cream hover:border-white/50 hover:bg-white/5 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
+          >
+            Get In Touch
+          </a>
+          <a
+            href={resumePDF}
+            download="Gabriel_Gonzales_Resume.pdf"
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: '12px',
+              fontWeight: 500,
+              letterSpacing: '0.1em',
+            }}
+            className="inline-flex items-center gap-1.5 px-6 py-2.5 sm:px-7 sm:py-3 rounded-full uppercase border border-white/25 text-cream hover:border-white/50 hover:bg-white/5 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
+          >
+            <PiDownloadLight className="w-4 h-4" />
+            Resume
+          </a>
         </div>
       </div>
+
+      {/* Bottom contact bar */}
+      <div className="relative z-10 px-6 sm:px-12 lg:px-24 py-3 shrink-0">
+        <div
+          className="flex flex-wrap items-center justify-center gap-x-6 sm:gap-x-8 gap-y-2"
+          style={{
+            fontFamily: "var(--font-body)",
+            fontSize: '12px',
+            fontWeight: 500,
+            color: '#A1A1AA',
+          }}
+        >
+          <span className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+            </span>
+            Available for freelance work
+          </span>
+          <a
+            href={`mailto:${profileInfo.contact.email}`}
+            className="flex items-center gap-2 hover:text-cream transition-colors duration-300 cursor-pointer"
+          >
+            <FaEnvelope className="w-3.5 h-3.5 opacity-50" aria-hidden />
+            {profileInfo.contact.email}
+          </a>
+          <a
+            href={`tel:${profileInfo.contact.mobile.replace(/\s/g, '')}`}
+            className="flex items-center gap-2 hover:text-cream transition-colors duration-300 cursor-pointer"
+          >
+            <FaPhone className="w-3 h-3 opacity-50" aria-hidden />
+            {profileInfo.contact.mobile}
+          </a>
+          <a
+            href={profileInfo.contact.linkedin}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 hover:text-cream transition-colors duration-300 cursor-pointer"
+          >
+            <FaLinkedin className="w-3.5 h-3.5 opacity-50" aria-hidden />
+            LinkedIn
+          </a>
+          <button onClick={onOpenDonation} className="flex items-center gap-2 hover:text-cream transition-colors duration-300 cursor-pointer">
+            <FaHeart className="w-3 h-3 text-red-400" aria-hidden />
+            Support
+          </button>
+        </div>
+      </div>
+
+      {/* Scan line keyframe */}
+      <style>{`
+        @keyframes heroScanLine {
+          0% { top: -2%; }
+          100% { top: 102%; }
+        }
+      `}</style>
     </section>
   )
 }
