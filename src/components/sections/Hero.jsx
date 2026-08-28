@@ -185,7 +185,7 @@ export default function Hero({ profileInfo, onOpenDonation }) {
             }}
             className="inline-flex items-center gap-1.5 px-6 py-2.5 sm:px-7 sm:py-3 rounded-full uppercase border border-white/25 text-cream hover:border-white/50 hover:bg-white/5 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
           >
-            <PiDownloadLight className="w-4 h-4" />
+            <PiDownloadLight className="w-4 h-4" aria-hidden />
             Resume
           </a>
         </div>

@@ -50,21 +50,92 @@ import { FaBolt } from 'react-icons/fa'
 import { TbBrandMonday } from 'react-icons/tb'
 import { VscVscode } from 'react-icons/vsc'
 
+const ICON_LABELS = {
+  html: 'HTML',
+  css: 'CSS',
+  javascript: 'JavaScript',
+  jquery: 'jQuery',
+  vue: 'Vue.js',
+  react: 'React',
+  nextjs: 'Next.js',
+  tailwind: 'Tailwind CSS',
+  vite: 'Vite',
+  json: 'JSON',
+  php: 'PHP',
+  laravel: 'Laravel',
+  c: 'C',
+  cpp: 'C++',
+  csharp: 'C#',
+  mysql: 'MySQL',
+  supabase: 'Supabase',
+  prisma: 'Prisma',
+  git: 'Git',
+  github: 'GitHub',
+  bitbucket: 'Bitbucket',
+  vercel: 'Vercel',
+  wordpress: 'WordPress',
+  formspree: 'Formspree',
+  python: 'Python',
+  selenium: 'Selenium',
+  gemini: 'Gemini',
+  godot: 'Godot',
+  figma: 'Figma',
+  claude: 'Claude',
+  suno: 'Suno',
+  hubspot: 'HubSpot',
+  meta: 'Meta',
+  googlecloud: 'Google Cloud',
+  mongodb: 'MongoDB',
+  digitalocean: 'DigitalOcean',
+  cursor: 'Cursor',
+  nestjs: 'NestJS',
+  postgresql: 'PostgreSQL',
+  typescript: 'TypeScript',
+  salesforce: 'Salesforce',
+  s3: 'Amazon S3',
+  canva: 'Canva',
+  chatgpt: 'ChatGPT',
+  java: 'Java',
+  sql: 'SQL',
+  groq: 'Groq',
+  monday: 'Monday.com',
+  vscode: 'VS Code',
+  gohighlevel: 'GoHighLevel',
+  telnyx: 'Telnyx',
+}
+
+function labelFor(key) {
+  return ICON_LABELS[key] || key
+}
+
+function a11y(label, className, extraStyle) {
+  return {
+    className,
+    role: 'img',
+    title: label,
+    'aria-label': label,
+    style: { display: 'inline-block', flexShrink: 0, ...extraStyle },
+  }
+}
+
 // GoHighLevel has no published icon anywhere — render a monogram badge in
 // their official "Space Blue" instead.
 function GoHighLevelIcon({ className }) {
+  const label = labelFor('gohighlevel')
   return (
-    <svg viewBox="0 0 24 24" className={className} style={{ display: 'inline-block', flexShrink: 0 }}>
+    <svg viewBox="0 0 24 24" className={className} role="img" aria-label={label} style={{ display: 'inline-block', flexShrink: 0 }}>
+      <title>{label}</title>
       <rect width="24" height="24" rx="6" fill="#0B223F" />
       <text x="12" y="17" textAnchor="middle" fontSize="13" fontWeight="700" fill="#FFFFFF" fontFamily="Arial, sans-serif">G</text>
     </svg>
   )
 }
 
-// Telnyx isn't in Simple Icons either — monogram badge in their brand black.
 function TelnyxIcon({ className }) {
+  const label = labelFor('telnyx')
   return (
-    <svg viewBox="0 0 24 24" className={className} style={{ display: 'inline-block', flexShrink: 0 }}>
+    <svg viewBox="0 0 24 24" className={className} role="img" aria-label={label} style={{ display: 'inline-block', flexShrink: 0 }}>
+      <title>{label}</title>
       <rect width="24" height="24" rx="6" fill="#000000" />
       <text x="12" y="17" textAnchor="middle" fontSize="13" fontWeight="700" fill="#FFFFFF" fontFamily="Arial, sans-serif">T</text>
     </svg>
@@ -145,6 +216,7 @@ const RI_COLORS = {
 
 function TechIcon({ name, className = "w-5 h-5" }) {
   const key = name.toLowerCase()
+  const label = labelFor(key)
 
   if (key === 'gohighlevel') {
     return <GoHighLevelIcon className={className} />
@@ -156,15 +228,15 @@ function TechIcon({ name, className = "w-5 h-5" }) {
   const RsiComponent = RSI_ICONS[key]
   if (RsiComponent) {
     const color = MONOCHROME_KEYS.has(key) ? undefined : 'default'
-    return <RsiComponent className={className} color={color} style={{ display: 'inline-block', flexShrink: 0 }} />
+    return <RsiComponent {...a11y(label, className)} color={color} />
   }
 
   const RiComponent = RI_ICONS[key]
   if (RiComponent) {
-    return <RiComponent className={className} style={{ display: 'inline-block', flexShrink: 0, color: RI_COLORS[key] }} />
+    return <RiComponent {...a11y(label, className, { color: RI_COLORS[key] })} />
   }
 
-  return <div className={`${className} rounded bg-tan/50`} style={{ minWidth: '1rem', minHeight: '1rem' }}></div>
+  return <div className={`${className} rounded bg-tan/50`} style={{ minWidth: '1rem', minHeight: '1rem' }} aria-hidden />
 }
 
 export default TechIcon

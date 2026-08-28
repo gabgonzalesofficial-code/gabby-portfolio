@@ -1,0 +1,15 @@
+# Gabriel Gonzales — Full Stack Web/WordPress Developer
+
+> Portfolio of Gabriel Gonzales, a Full Stack Web and WordPress developer in Cebu City, Philippines. He builds internal tools, AI-driven admin dashboards, offline-first POS systems, and custom WordPress sites that cut manual work.
+
+This site is a single-page portfolio. Main sections: Hero, Tech Stack, Projects (with case studies at `/project/{id}`), Experience & Awards, Gallery & Reviews, and Contact.
+
+## Pages
+
+- [Home](https://gabby-dev.vercel.app/): Full portfolio — work, stack, experience, and contact
+- [Sitemap](https://gabby-dev.vercel.app/sitemap.xml): Index of public URLs
+
+## Contact
+
+- [Email](mailto:gabgonzalesofficial@gmail.com): gabgonzalesofficial@gmail.com
+- [LinkedIn](https://www.linkedin.com/in/gabriel-gonzales-9733ab1a3): Professional profile
