@@ -1,0 +1,130 @@
+---
+description: PageSpeed, Core Web Vitals, SEO, and Agentic Browsing optimization playbook. Use when the user asks to optimize performance, SEO, PageSpeed Insights, llms.txt, or agentic browsing.
+alwaysApply: false
+---
+
+# Site performance, SEO, and Agentic Browsing prompt
+
+Use this playbook when optimizing a site from PageSpeed Insights (WordPress, Vite/React, or similar). Detect the stack first and map each WordPress path to the equivalent (theme PHP → `index.html` / Vite entry; W3TC → `_headers` / `vercel.json`; plugins → npm dependencies).
+
+## Phase 1: Diagnosis
+
+1. Read PageSpeed Insights screenshot(s) or the live report and record:
+   - Performance score
+   - FCP, LCP, TBT, CLS, Speed Index
+   - Accessibility, Best Practices, SEO
+   - **Agentic Browsing score (n/3)** and every failed **AGENT ACCESSIBILITY** audit (copy the failing selector, snippet, and fix hint)
+2. Inspect theme / app entry files:
+   - `functions.php` or `index.html` / `main.jsx` (script/style enqueuing)
+   - `header.php` or `index.html` (head tags, preloads, meta)
+   - `front-page.php` / `index.php` or `App.jsx` / `Hero.jsx` (template structure)
+   - `style.css` or global CSS (size and sections)
+   - JS in `js/` or `src/`
+3. Check active plugins (`wp-content/plugins/`) or `package.json` for conflicts (especially multiple cache plugins)
+4. Check cache config (`wp-content/w3tc-config/master.php`, `public/_headers`, `vercel.json`)
+5. Check `.htaccess` or host headers for caching/compression
+6. Confirm `/llms.txt` exists as real Markdown (not the SPA HTML fallback)
+
+## Phase 2: Critical Fixes (Highest Impact)
+
+### A. Render-Blocking Resources
+- Load Google Fonts asynchronously (`media="print"` onload trick)
+- Add `font-display: swap` to all font URLs
+- Preconnect to font origins in `<head>`
+
+### B. LCP Element Optimization
+- Identify the LCP element from PageSpeed Insights
+- Add a preload tag for the LCP image in `<head>` (URL must match the `<img>`)
+- LCP image: `fetchpriority="high"` and `loading="eager"`; do not start it at `opacity: 0`
+- Move blocking scripts to defer or async
+
+### C. Image Optimization
+- Convert PNG/JPG to WebP with original fallbacks (`<picture>`)
+- Serve sized assets (do not send 2000px images at 80px display)
+- `loading="lazy"` and `decoding="async"` on below-the-fold images
+
+### D. Unused CSS/JS
+- Split or conditionally load page-specific CSS
+- Defer non-critical JavaScript until after user interaction
+- Keep WebGL / animation libraries off the critical path (lazy or idle)
+
+## Phase 3: Caching & Delivery
+
+### A. Browser Cache (W3TC or host headers)
+- Enable CSS/JS cache control; lifetime 31536000 (1 year) for hashed assets
+- Enable compression (gzip/brotli)
+
+### B. Page Cache
+- Enable page / HTML caching as appropriate for the stack
+- Enable DB/object cache on WordPress; skip on static/Jamstack
+
+### C. Minification
+- Enable CSS and JS minification (or rely on the production bundler)
+
+## Phase 4: Advanced Optimizations
+
+### A. Third-Party Script Deferral
+- Defer GTM / Analytics / similar until first input (scroll, click, keypress, pointer)
+- Fallback timeout (8 seconds) for non-interactive users
+
+### B. Critical CSS
+- Inline above-the-fold CSS in `<head>`
+- Include design tokens, layout, and hero styles
+
+### C. Third-Party Audit
+- List active plugins or npm dependencies and purpose
+- Flag conflicts (e.g. two cache plugins)
+- Recommend keep / update / remove; note known vulnerabilities
+
+## Phase 5: SEO & Indexing
+
+- Check `robots.txt` Allow/Disallow
+- Verify search engines are not discouraged (WordPress Settings → Reading, or equivalent meta/robots)
+- Canonical URL, sitemap (create or fix if missing/placeholder)
+- Rank Math / Yoast (WordPress) or equivalent meta tags
+
+## Phase 6: Agentic Browsing
+
+Target: Agentic Browsing **3/3**. This is separate from Performance/SEO scores.
+
+### A. Accessibility tree (required for agents)
+- A well-formed accessibility tree is required for AI agents to interact with the page
+- Failed audit to always check: **`<svg>` elements with an `img` role must have alternative text**
+- Fix: `aria-label`, `<title>`, or `aria-labelledby` on every `role="img"` SVG (react-icons and Simple Icons often emit `role="img"` with no name)
+- Decorative icons beside visible text: `aria-hidden="true"` (do not leave `role="img"` unnamed)
+- Fix every selector the report lists, not only the first example
+
+### B. llms.txt
+- Serve Markdown at the site root: `/llms.txt`
+- WordPress: web root or a plugin that writes `llms.txt`; Vite: `public/llms.txt`
+- **Required:** first heading is an H1, e.g. `# Site or Project Name` (this is the only mandatory section per [llmstxt.org](https://llmstxt.org/))
+- Recommended: blockquote summary, then H2 sections with markdown link lists (`- [Name](url): note`)
+- If a catch-all SPA rewrite sends unknown paths to `index.html`, **exclude** `/llms.txt` (and `robots.txt` / `sitemap.xml`) so the audit does not score the homepage HTML as a malformed llms.txt (“File is missing a required H1 header”)
+- After deploy, open `/llms.txt` and confirm it is Markdown, not the app shell
+
+### C. Other agent checks
+- Address any additional AGENT ACCESSIBILITY or WebMCP findings the report shows
+- Do not trade away Performance/LCP fixes to pass these audits
+
+## Output Format
+
+For each fix, provide:
+1. The exact file path to modify
+2. The specific code change (before/after)
+3. The expected impact (which metric improves and by how much)
+
+After all changes, provide:
+- Summary of all files modified/created
+- Which files to upload or how to deploy
+- Steps to clear caches and verify
+- Expected score improvement (before → after) including:
+  - Performance (and FCP/LCP/TBT/CLS/SI if known)
+  - **Agentic Browsing (n/3 → 3/3)**
+
+## Important Notes
+
+- Only edit existing files when possible (create files when required: WebP, `llms.txt`, sitemap)
+- Verify syntax; do not break JavaScript, animations, or WebGL
+- Keep WebP with PNG/JPG fallbacks
+- Test mobile and desktop viewports
+- Re-run PageSpeed after deploy and confirm `/llms.txt` is not HTML

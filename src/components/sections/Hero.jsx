@@ -45,7 +45,7 @@ export default function Hero({ profileInfo, onOpenDonation }) {
 
       {/* Main hero content */}
       <div
-        className="hero-stagger flex-1 flex flex-col items-center justify-start relative z-10 px-6 sm:px-12 lg:px-24 pt-12 sm:pt-14 pb-2 min-h-0"
+        className="hero-stagger flex-1 flex flex-col items-center justify-start relative px-6 sm:px-12 lg:px-24 pt-12 sm:pt-14 pb-2 min-h-0"
       >
         {/* Name + portrait composition */}
         <div className="flex flex-col items-center w-full max-w-6xl">
@@ -81,7 +81,7 @@ export default function Hero({ profileInfo, onOpenDonation }) {
                 Gonzales
               </span>
 
-              <div className="absolute left-1/2 -translate-x-1/2 -top-[84px] z-10 w-[min(58vw,400px)] sm:w-[min(52vw,440px)] lg:w-[min(44vw,480px)]">
+              <div className="absolute left-1/2 -translate-x-1/2 -top-[84px] z-10 w-[min(58vw,400px)] sm:w-[min(52vw,440px)] lg:w-[min(44vw,480px)] pointer-events-none">
                 {/* B&W portrait (LCP) — URL must match the <link rel="preload"> in index.html */}
                 <img
                   src={HERO_SRC}
@@ -148,8 +148,8 @@ export default function Hero({ profileInfo, onOpenDonation }) {
           </p>
         </div>
 
-        {/* CTA buttons — sit below portrait, no overlap */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 mt-3 sm:mt-4 shrink-0">
+        {/* CTA buttons — in front of the portrait so they stay clickable */}
+        <div className="relative z-20 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 mt-3 sm:mt-4 shrink-0">
           <a
             href="#projects"
             style={{
